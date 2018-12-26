@@ -1,4 +1,5 @@
 <?php
+use Illuminate\Support\Facades\Cache;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,3 +19,10 @@ Route::get('/', function () {
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
+
+
+
+Route::get('/cache', function () {
+    Cache::put('key',time()."",now()->addMinutes(11));
+    echo Cache::get('key');
+});
