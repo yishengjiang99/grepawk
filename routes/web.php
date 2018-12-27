@@ -23,6 +23,20 @@ Route::get('/home', 'HomeController@index')->name('home');
 
 
 Route::get('/cache', function () {
-    Cache::put('key',time()."",now()->addMinutes(11));
     echo Cache::get('key');
 });
+
+use App\Events\ServerEvent;
+
+Route::get('/ping', function(){
+    echo 'ddd';
+
+    $value = config('app.broadcasting.default');
+    echo $value."]";
+
+    event(new ServerEvent("Ping"));
+});
+
+
+Route::view('/pusher', 'pusher');
+

@@ -37,6 +37,8 @@ return [
         'stack' => [
             'driver' => 'stack',
             'channels' => ['daily'],
+            'level' => 'debug',
+
         ],
 
         'single' => [
@@ -91,3 +93,4 @@ return [
     ],
 
 ];
+echo 'ddd';
