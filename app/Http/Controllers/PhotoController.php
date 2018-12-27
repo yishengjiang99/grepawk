@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Photo;
 use Illuminate\Http\Request;
-
+use View;
+use Storage;
 class PhotoController extends Controller
 {
     /**
@@ -15,6 +16,9 @@ class PhotoController extends Controller
     public function index()
     {
         //
+        $files = Storage::files();
+        return View::make("fileindex", ['files'=>$files]);
+        
     }
 
     /**
@@ -25,6 +29,7 @@ class PhotoController extends Controller
     public function create()
     {
         //
+        return View::make("newfile");
     }
 
     /**
@@ -36,17 +41,23 @@ class PhotoController extends Controller
     public function store(Request $request)
     {
         //
+        $query = $request->input();
+        $ret=Storage::put($query['filename'], $query['content']);
+        
+        return redirect('/photos');
+
     }
 
     /**
      * Display the specified resource.
      *
-     * @param  \App\Photo  $photo
+     * @param  $filename
      * @return \Illuminate\Http\Response
      */
-    public function show(Photo $photo)
+    public function show($filename)
     {
         //
+        return Storage::download($filename);        
     }
 
     /**

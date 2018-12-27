@@ -37,6 +37,16 @@ Route::get('/user/{name}', function($name){
    }
 })->where('id','[A-Za-z]+');
 
+Route::get('/file/{name}', function($name){
+    echo asset('storage/'.$name.'.txt');
+})->where('name','!=','new');;
+
+
+Route::view('/file/new', 'newfile');
+
+Route::post("/file/new", function(){
+    
+});
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
@@ -60,5 +70,5 @@ Route::get('/ping', function(){
 
 Route::view('/pusher', 'pusher');
 
-Route::resource('photos', 'PhotoController');
-
+Route::resource('photos', 'PhotoController')->except(['show']);
+Route::get('photos/{filename}', 'PhotoController@show');
