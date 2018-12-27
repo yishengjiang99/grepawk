@@ -16,6 +16,27 @@ Route::get('/', function () {
     return view('welcome');
 });
 
+
+use App\User;
+Route::get('/user/{id}', function($id){
+   $user = User::find($id);
+   echo $user->name; 
+})->where('id','[0-9]+');
+
+Route::get("/users/", function(){
+   $users = User::all();
+   foreach($users as $user){
+       echo "<br>".$user->email;
+   }    
+});
+
+Route::get('/user/{name}', function($name){
+   $users = User::where('name','like', '%'.$name.'%')->get();
+   foreach($users as $user){
+       echo "<br>".$user->email;
+   }
+})->where('id','[A-Za-z]+');
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
@@ -29,11 +50,6 @@ Route::get('/cache', function () {
 use App\Events\ServerEvent;
 
 Route::get('/ping', function(){
-    echo 'ddd';
-
-    $value = config('app.broadcasting.default');
-    echo $value."]";
-
     event(new ServerEvent("Ping"));
 });
 
