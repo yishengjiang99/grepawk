@@ -19,7 +19,7 @@ Route::get('/', function () {
 
 use App\User;
 Route::get('/user/{id}', function($id){
-   $user = User::find($id);
+   $user = User::findOrFail($id);
    echo $user->name; 
 })->where('id','[0-9]+');
 
@@ -47,6 +47,10 @@ Route::get('/cache', function () {
     echo Cache::get('key');
 });
 
+Route::get('/weather', function(){
+    echo 'weather';
+})->middleware("Location");
+
 use App\Events\ServerEvent;
 
 Route::get('/ping', function(){
@@ -55,4 +59,6 @@ Route::get('/ping', function(){
 
 
 Route::view('/pusher', 'pusher');
+
+Route::resource('photos', 'PhotoController');
 

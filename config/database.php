@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'default' => env('DB_CONNECTION', 'mysql'),
+    'default' => 'pgsql',
 
     /*
     |--------------------------------------------------------------------------
@@ -60,8 +60,8 @@ return [
             'driver' => 'pgsql',
             'host' => env('PG_HOST', '127.0.0.1'),
             'port' => env('PG_PORT', '5432'),
-            'database' => env('PG_DATABASE', 'yisheng'),
-            'username' => env('PG_USERNAME', 'yisheng'),
+            'database' => env('PG_DATABASE', 'grepawk'),
+            'username' => env('PG_USERNAME', 'grepawk'),
             'password' => env('PG_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
