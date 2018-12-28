@@ -173,7 +173,7 @@ $(function() {
 });
 </script>
 </head>
-<body>
+<body style='background-color:black;color:white'>
     <div id="container">
         <output></output>
         <div id="input-line" class="input-line">
