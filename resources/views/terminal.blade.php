@@ -1,3 +1,15 @@
+<html>
+<head>
+    <title>cmd</title>
+     <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
+
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+<script>
+
+//adapted from https://codepen.io/anon/pen/gZGpBZ
+
 var util = util || {};
 util.toArray = function(list) {
   return Array.prototype.slice.call(list || [], 0);
@@ -10,7 +22,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var output_ = document.querySelector(outputContainer);
 
   const CMDS_ = [
-    'cat', 'clear', 'clock', 'date', 'echo', 'help', 'uname', 'whoami'
+    'ls', 'cat', 'search', 'shout', 'say'
   ];
   
   var fs_ = null;
@@ -93,47 +105,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }
 
       switch (cmd) {
-        case 'cat':
-          var url = args.join(' ');
-          if (!url) {
-            output('Usage: ' + cmd + ' https://s.codepen.io/...');
-            output('Example: ' + cmd + ' https://s.codepen.io/AndrewBarfield/pen/LEbPJx.js');
-            break;
-          }
-          $.get( url, function(data) {
-            var encodedStr = data.replace(/[\u00A0-\u9999<>\&]/gim, function(i) {
-               return '&#'+i.charCodeAt(0)+';';
-            });
-            output('<pre>' + encodedStr + '</pre>');
-          });          
-          break;
-        case 'clear':
-          output_.innerHTML = '';
-          this.value = '';
-          return;
-        case 'clock':
-          var appendDiv = jQuery($('.clock-container')[0].outerHTML);
-          appendDiv.attr('style', 'display:inline-block');
-          output_.appendChild(appendDiv[0]);
-          break;
-        case 'date':
-          output( new Date() );
-          break;
-        case 'echo':
-          output( args.join(' ') );
-          break;
-        case 'help':
-          output('<div class="ls-files">' + CMDS_.join('<br>') + '</div>');
-          break;
-        case 'uname':
-          output(navigator.appVersion);
-          break;
-        case 'whoami':
-          var result = "<img src=\"" + codehelper_ip["Flag"]+ "\"><br><br>";
-          for (var prop in codehelper_ip)
-            result += prop + ": " + codehelper_ip[prop] + "<br>";
-          output(result);
-          break;
         default:
           if (cmd) {
             output(cmd + ': command not found');
@@ -199,15 +170,15 @@ $(function() {
   var term = new Terminal('#input-line .cmdline', '#container output');
   term.init();
 
-  // Update the clock every second
-  setInterval(function() {
-    function r(cls, deg) {
-      $('.' + cls).attr('transform', 'rotate('+ deg +' 50 50)')
-    }
-    var d = new Date()
-    r("sec", 6*d.getSeconds())
-    r("min", 6*d.getMinutes())
-    r("hour", 30*(d.getHours()%12) + d.getMinutes()/2)
-  }, 1000);
-
 });
+</script>
+</head>
+<body>
+    <div id="container">
+        <output></output>
+        <div id="input-line" class="input-line">
+            <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+        </div>
+    </div>
+</body>
+</html>
