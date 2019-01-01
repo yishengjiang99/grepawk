@@ -69,6 +69,9 @@ Route::get('/ping', function(){
 
 
 Route::view('/pusher', 'pusher');
-Route::view('/terminal','terminal');
+
+Route::get('/terminal','HomeController@terminal');
+
 Route::resource('photos', 'PhotoController')->except(['show']);
 Route::get('photos/{filename}', 'PhotoController@show');
+Route::get('stdin', 'HomeController@stdin');

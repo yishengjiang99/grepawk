@@ -2,7 +2,7 @@
 <html>
 <head>
     <title>cmd</title>
-     <link href="http://localhost:8002/css/cmd.css" rel="stylesheet">
+     <link href="/pulic/css/cmd.css" rel="stylesheet">
 
     <meta name="csrf-token" content="TU2C6PEkC99KSgjEasqcOYns2932RENDAYCygtMj">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>

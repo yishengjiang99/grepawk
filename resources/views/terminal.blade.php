@@ -14,6 +14,9 @@ var util = util || {};
 util.toArray = function(list) {
   return Array.prototype.slice.call(list || [], 0);
 };
+var FileSystem = FileSystem || function(filesJson, currDir){
+   
+}
 var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   window.URL = window.URL || window.webkitURL;
   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
@@ -27,10 +30,14 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   
   var fs_ = null;
   var cwd_ = null;
+  var fileSystem_ = null;
+
   var history_ = [];
   var histpos_ = 0;
   var histtemp_ = 0;
-
+  var username_="guest";
+  var cd_ = "/public";
+  
   window.addEventListener('click', function(e) {
     cmdLine_.focus();
   }, false);
@@ -76,7 +83,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
 
   //
   function processNewCommand_(e) {
-
     if (e.keyCode == 9) { // tab
       e.preventDefault();
       // Implement tab suggest.
@@ -103,11 +109,21 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
       }
-
+      
       switch (cmd) {
         default:
           if (cmd) {
-            output(cmd + ': command not found');
+            $.getJSON("/stdin?msg="+this.value,function(ret){
+              if(ret.output){
+                output(ret.output);
+              }
+              if(ret.error){
+                outputError(ret.error);
+              }
+              if(ret.cd){
+                set_cd(ret.cd);
+              }
+            });
           }
       };
 
@@ -139,6 +155,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
   }
+  function outputError(html) {
+    output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
+  }
 
   // Cross-browser impl to get document's height.
   function getDocHeight_() {
@@ -150,26 +169,42 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     );
   }
 
+  function set_cd(cd){
+      cd_=cd;
+      updatePrompt();
+  }
+  function setUsername(username){
+    username_=username;
+      updatePrompt();
+  }
+  function updatePrompt(){
+    $(".prompt").html('['+username_+']:'+cd_);
+  }
+
   //
   return {
     init: function() {
-      output('Welcome');
+      output('Welcome to grep|awk 2.0');
     },
-    output: output
+    setUsername:function(username){
+      setUsername(username);
+    },
+    setCd:function(cd){
+      set_cd(cd);
+    },
   }
 };
 
 
 $(function() {
 
-  // Set the command-line prompt to include the user's IP Address
-  //$('.prompt').html('[' + codehelper_ip["IP"] + '@HTML5] # ');
-    $('.prompt').html('{{ Auth::user()->name }}[@grep|awk] # ');
+  // Initialize a new terminal object  
+    var term = new Terminal('#input-line .cmdline', '#container output');
+    term.init();
+    term.setUsername("{{$username}}@grepawk");
+    term.setCd("{{$cd}}");
 
-  // Initialize a new terminal object
-  var term = new Terminal('#input-line .cmdline', '#container output');
-  term.init();
-
+   // term.updatePrompt();
 });
 </script>
 </head>

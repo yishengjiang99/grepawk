@@ -1,6 +1,7 @@
 <?php
-
 return [
+
+    'cache' => in_array(env('APP_ENV','local'), ['production', 'staging']),
 
     /*
     |--------------------------------------------------------------------------
