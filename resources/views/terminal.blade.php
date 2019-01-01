@@ -111,6 +111,8 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }
       
       switch (cmd) {
+        case 'new':
+            parent.iframe_interface('new',args);
         default:
           if (cmd) {
             $.getJSON("/stdin?msg="+this.value,function(ret){
