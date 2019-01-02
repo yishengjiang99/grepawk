@@ -94,6 +94,10 @@ GrepAwk is a webserve that generalizes several storage methods on a filestyle in
 <textarea cols=80 rows=30>
 @include("gitlog");
 </textarea>
+<br>
+<a target=_blank href='https://github.com/yishengjiang99/grepawk/commits/master'>
+https://github.com/yishengjiang99/grepawk/commits/master
+</a>
 </div>
             </div>
         </div>
