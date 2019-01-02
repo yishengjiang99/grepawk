@@ -8,7 +8,8 @@ use Auth;
 use File;
 use Illuminate\Console\Parser;
 use App\FS;
-use Illuminate\Filesystem\Filesystem;
+use App\FileSystem;
+
 class HomeController extends Controller
 {
 
@@ -36,30 +37,27 @@ class HomeController extends Controller
     public function terminal(){
         if(Auth::user()!==null){
             $this->private_dir = str_replace(" ","_",Auth::user()->name);
-            $this->cd = $this->private_dir;
             $this->username=Auth::user()->name;
+            $fs=FileSystem::makeInstance(Auth::user()->name);
+
         }else{
-            $this->cd = "public";
+            $this->private_dir="anon";
+             $fs=FileSystem::makeInstance(0);
             $this->username="guest";
         }
-        session(["cd"=>$this->cd]);
+
 
         if(!File::exists($this->private_dir)){
             Storage::makeDirectory($this->private_dir);
         }       
-        $dirs = Storage::allDirectories($this->cd);
-        $files = Storage::allFiles($this->cd);
 
         return view('terminal',['username'=>$this->username, 
-                                'cd'=>$this->cd,
-                                'dirs'=>$dirs,
-                                'files'=>$files]);
+                                'cd'=>$fs->getCd(),
+                                ]);
     }
 
 
     public function stdin(Request $request){
-        $cd = session("cd");
-        $current_directory_tokens = explode("/",$cd);
         $msg =$request->input("msg");
         if(!$msg) die("");
         $msgt = explode(" ",$msg);
@@ -67,63 +65,41 @@ class HomeController extends Controller
         $output="";
         $error="";
         $hints=null;
-        switch($cmd){
-            case "ls":
-                list($hints,$output)=FS::ls($cd);
-                break;
-            case 'cd':
-                $todir = $msgt[1];
-                $todirT = explode("/",$todir);
-                foreach($todirT as $todirToken){
-                    if($todirToken===".."){
-                        if(count($current_directory_tokens)==0){
-                            $error="Error: already at root dir";
-                            break;
-                        }
-                        array_pop($current_directory_tokens);
-                    }else{
-                        $current_directory_tokens[]=$todirToken;
-                    }
-                }
-                if(count($current_directory_tokens)){
-                    $cd_try = implode("/",$current_directory_tokens);
-                }else{
-                    $cd_try="";
-                } 
-                if(!Storage::exists($cd_try)){
-                    $error="Directory $cd_try does not exist";
+        $fs = FileSystem::makeInstance(Auth::user()->name);
+        $cd = $fs->getCd();
+        try{
+            switch($cmd){
+                case "ls":
+                    $output = $fs->ls("-h");
+                    $hints = array_keys($fs->ls(""));   
                     break;
-                }
-                if(Storage::mimeType($cd_try)!=="directory"){
-                    $error="$cd_try is not a directory";
+                case 'cd':   
+                    $toCd = $msgt[1];
+                    $cd = $fs->cd($toCd);    
                     break;
-                }
-                $cd=$cd_try;              
-                session(["cd"=>$cd]);
-                list($hints,$output)=FS::ls($cd);
-                break;
-            case 'cat':
-                $filename = $msgt[1];
-                if($cd) $dir=$cd."/";
-                else $dir="";
-                $content=Storage::get($dir.$filename);
-                $output=str_replace("\n","<br>",$content);
-                break;
-            case 'pwd':
-                $output=$cd;
-                break;
-            case 'touch':
-                $filename = $msgt[1];
-                if($cd) $dir=$cd."/";
-                else $dir="";
-                Storage::put($dir.$filename,"");
-                list($hints,$output)=FS::ls($cd);
-                break;
-            default:
-                $err=$cmd." known";
-                break;
-        }  
-        $cdt=explode("/",$cd);
+                case 'cat':
+                    $cd = FileSystem::cd($cd);
+                    break;
+                case 'pwd':
+                    $output=$cd;
+                    break;
+                case 'touch':
+                    $filename = $msgt[1];
+                    if($cd) $dir=$cd."/";
+                    else $dir="";
+                    Storage::put($dir.$filename,"");
+                    list($hints,$output)=FS::ls($cd);
+                    break;
+                default:
+                    $err=$cmd." known";
+                    break;
+            }  
+        }catch(\Exception $e){
+            $error=$e->getMessage();
+        }
+
+
+        $cdt=explode("/",$fs->getCd());
         $cd=$cdt[count($cdt)-1];
 
         return response()->json([
