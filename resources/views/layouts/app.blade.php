@@ -11,6 +11,7 @@
 
 
     <!-- Fonts -->
+ <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet" type="text/css">
 <!-- Latest compiled and minified CSS -->
