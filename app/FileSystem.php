@@ -63,7 +63,10 @@ class FileSystem extends Model
 
   public function get_fs_path(){
     $cd = $this->cd;
-    $cd = str_replace("root/myfiles","",$this->privateDir);
+    $cd = str_replace("root/myfiles",$this->privateDir,$cd);
+    if(!Storage::exists($cd)){
+        Storage::makeDirectory($cd);
+    }
     return $cd;
   }
   
@@ -90,25 +93,27 @@ class FileSystem extends Model
         }
         $ret=$ret[$t];
     }
+    //throw new \Exception($this->cd);    
+
     $filetype = isset($ret['_storage']) ? $ret['_storage'] : "folder";
-    if($filetype=="filesystem"){
-        $path=$this->get_fs_path();
-        $dirs=Storage::directories($path);
-        foreach($dirs as $dir){
-            $dirname = str_replace($path."/","",$dir);
-            $dirname = $dirname.'/';
-            $ret[$dirname]=[
-                '_storage'=>'filesystem'
-            ];
-        }
-        $files=Storage::files($path);
-        foreach($files as $filename){
-            $filename = str_replace($path."/","",$filename);
-            $ret[$filename]=[
-                '_storage'=>'files'
-            ];
-        }
+    $path=$this->get_fs_path();
+  //  throw new \Exception($path);    
+    $dirs=Storage::directories($path);
+    foreach($dirs as $dir){
+        $dirname = str_replace($path."/","",$dir);
+        $dirname = $dirname.'/';
+        $ret[$dirname]=[
+            '_storage'=>'filesystem'
+        ];
     }
+    $files=Storage::files($path);
+    foreach($files as $filename){
+        $filename = str_replace($path."/","",$filename);
+        $ret[$filename]=[
+            '_storage'=>'files'
+        ];
+    }
+
 
     if(in_array("-h", $options)){
         $output="";

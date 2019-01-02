@@ -101,7 +101,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
-
       if (this.value && this.value.trim()) {
         var args = this.value.split(' ').filter(function(val, i) {
           return val;
@@ -191,7 +190,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       updatePrompt();
   }
   function updatePrompt(){
-    $(".prompt").html('['+username_+']:'+cd_);
+    $(".prompt").last().html('['+username_+']:'+cd_);
   }
 
   //
