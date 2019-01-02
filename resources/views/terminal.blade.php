@@ -98,7 +98,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       line.removeAttribute('id')
       line.classList.add('line');
       var input = line.querySelector('input.cmdline');
-      input.autofocus = false;
+      input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
 
@@ -225,7 +225,7 @@ $(function() {
     <div id="container">
         <output></output>
         <div id="input-line" class="input-line">
-            <div class="prompt"></div><div><input class="cmdline"  /></div>
+            <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
         </div>
     </div>
 </body>
