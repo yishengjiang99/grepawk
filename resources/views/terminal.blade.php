@@ -39,7 +39,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var cd_ = "/public";
   
   window.addEventListener('click', function(e) {
-    cmdLine_.focus();
+   // cmdLine_.focus();
   }, false);
 
   cmdLine_.addEventListener('click', inputTextClick_, false);
@@ -112,8 +112,16 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       
       switch (cmd) {
         case 'new':
-            parent.iframe_interface('new',args);
+           input.autofocus = false;
+           outputHtl(
+              "<form method='POST'style='background-color:grey;color:white' action='/photos/create'>"
+              + "<textarea style='background-color:transparent' class='cmd' rows=30 cols=60 name='filename' placeholder='filec oontent'></textarea>"
+              + "<br><input style='background-color:transparent' class='cmd' type=text name='filename' placeholder='filename'>"
+              + "<br><input type=submit>"
+              +"</form>");
         default:
+          input.autofocus = false;
+
           if (cmd) {
             $.getJSON("/stdin?msg="+this.value,function(ret){
               if(ret.output){
@@ -154,6 +162,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   }
 
   //
+  function outputHtl(html) {
+    output_.insertAdjacentHTML('beforeEnd', html);
+  }
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
   }
@@ -214,7 +225,7 @@ $(function() {
     <div id="container">
         <output></output>
         <div id="input-line" class="input-line">
-            <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+            <div class="prompt"></div><div><input class="cmdline"  /></div>
         </div>
     </div>
 </body>

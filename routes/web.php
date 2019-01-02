@@ -44,8 +44,7 @@ Route::get('/file/{name}', function($name){
 
 Route::view('/file/new', 'newfile');
 
-Route::post("/file/new", function(){
-    
+Route::post("/file/new", function(){    
 });
 Auth::routes();
 
@@ -75,3 +74,5 @@ Route::get('/terminal','HomeController@terminal');
 Route::resource('photos', 'PhotoController')->except(['show']);
 Route::get('photos/{filename}', 'PhotoController@show');
 Route::get('stdin', 'HomeController@stdin');
+Route::view("modal/newfile","newfile");
+Route::post("photos/create","PhotoController@create");
