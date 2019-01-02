@@ -71,11 +71,13 @@ class HomeController extends Controller
             switch($cmd){
                 case "ls":
                     $output = $fs->ls("-h");
-                    $hints = array_keys($fs->ls(""));   
+                    $hints = $fs->ls("-j");   
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
-                    $cd = $fs->cd($toCd);    
+                    $cd = $fs->cd($toCd); 
+                    $output = $fs->ls("-h");
+                    $hints = $fs->ls("-j");      
                     break;
                 case 'cat':
                     $cd = FileSystem::cd($cd);

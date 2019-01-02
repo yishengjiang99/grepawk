@@ -1,0 +1,21 @@
+<?php
+
+namespace App;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Filesystem extends Model
+{
+    //
+  private $cd="/";
+  private static $_k=[];
+  public static function makeInstance($userId=0){
+    if(!isset(self::$_k[$userId])){
+      self::$_k[$userId] = new Filesystem();
+    }
+  }
+  public function getCd(){
+    return $this->cd;
+  }
+  
+}

@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
+
 
 class Filesystem extends Model
 {
@@ -32,6 +34,9 @@ class Filesystem extends Model
         ],
         'myfiles'=>[
             '_storage'=>'filesystem'
+        ],
+        'public'=>[
+            '_storage'=>'filesystem'
         ]
     ]
   ];
@@ -39,19 +44,27 @@ class Filesystem extends Model
 
   private $cd="root";
   private static $_k=[];
-
-  public static function makeInstance($userId=0){
-    if(!isset(self::$_k[$userId])){
-      self::$_k[$userId] = new Filesystem();
-      if($userId && session('cd')){
-        if(session('cd')===str_replace(" ","_",$userId)){
-            self::$_k[$userId]->setCd('root/myfiles');
+  private $privateDir="guest";
+  public static function makeInstance($userName=0){
+    if(!isset(self::$_k[$userName])){
+      self::$_k[$userName] = new Filesystem();
+      if($userName && session('cd')){
+        if(session('cd')===str_replace(" ","_",$userName)){
+            self::$_k[$userName]->setCd('root/myfiles');
         }else{
-            self::$_k[$userId]->setCd(session('cd'));
+            self::$_k[$userName]->setCd(session('cd'));
         }
+
       }
     }
-    return self::$_k[$userId];
+    self::$_k[$userName]->privateDir = str_replace(" ","_",$userName);
+    return self::$_k[$userName];
+  }
+
+  public function get_fs_path(){
+    $cd = $this->cd;
+    $cd = str_replace("root/myfiles","",$this->privateDir);
+    return $cd;
   }
   
   public function ls($options=""){
@@ -60,27 +73,60 @@ class Filesystem extends Model
     $cdt=explode("/",$cd);
     $ret=self::DIRS;
     $xpath=[];
+    $currentFileType="folder";
+    
     foreach($cdt as $t){
         if(!$t) continue;
+        $xpath[]=$t;
+        $this->cd = implode("/",(Array)$xpath);
+        $filepath = $this->get_fs_path();
         if(!isset($ret[$t])){
-            throw new \Exception("cd to $t not found");
-            $this->cd="root";
-            session(["cd"=>$this->cd]);
+            //echo '<br> checking '.$filepath;
+            $hasPath=Storage::has($filepath);
+            if(!$hasPath){
+                throw new \Exception("cd to $t not found");
+            }
             break;
         }
-        $xpath[]=$t;
         $ret=$ret[$t];
     }
+    $filetype = isset($ret['_storage']) ? $ret['_storage'] : "folder";
+    if($filetype=="filesystem"){
+        $path=$this->get_fs_path();
+        $dirs=Storage::directories($path);
+        foreach($dirs as $dir){
+            $dirname = str_replace($path."/","",$dir);
+            $dirname = $dirname.'/';
+            $ret[$dirname]=[
+                '_storage'=>'filesystem'
+            ];
+        }
+        $files=Storage::files($path);
+        foreach($files as $filename){
+            $filename = str_replace($path."/","",$filename);
+            $ret[$filename]=[
+                '_storage'=>'files'
+            ];
+        }
+    }
+
     if(in_array("-h", $options)){
         $output="";
         foreach($ret as $name=>$attr){
             if(substr($name,0,1)==='_') continue;
             $is_folder = !isset($attr['type']) || $attr['type']!=='folder';
-            $display = $is_folder ? $name."/" : $name;
+            $display = $is_folder ? $name : $name;
             $output.=$display." ";
         }
         return $output;
-
+    }
+    if(in_array("-j", $options)){
+        $hints=[];
+        foreach($ret as $name=>$attr){
+            if(substr($name,0,1)==='_') continue;
+            $hints[]=$name;
+        }
+        return $hints;
     }
     return['xpath'=>$xpath,'list'=>$ret];
   }
@@ -93,6 +139,7 @@ class Filesystem extends Model
       $this->cd=$cd;
   }
   public function cd($todir){
+    //  echo "<br> cd to $todir";
     if($todir=='root'){
         $this->cd = "root";
         session(["cd"=>$this->cd]);
@@ -100,11 +147,12 @@ class Filesystem extends Model
     }
     
     $todirT = explode("/",$todir);
+  //  echo "<br> current cd ".$this->cd;
+
     $fs = $this->ls();
     $xpath = $fs['xpath'];
     foreach($todirT as $todirToken){
         if($todirToken===".."){
-
             if(count($xpath)==1){
                 $this->cd="root";
                 session(["cd"=>$this->cd]);
@@ -121,6 +169,7 @@ class Filesystem extends Model
     }
     if(!$xpath) $xpath=[];
     $this->cd = implode("/",(Array)$xpath);
+    //exit;
     session(["cd"=>$this->cd]);
     return $this->cd;
   }
