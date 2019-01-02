@@ -85,8 +85,7 @@
             <div class="content">
 <h3>grep|awk 2.0</h3>
 <p>
-
-GrepAwk is a webserve that generalizes several storage methods on a filestyle interface.
+GrepAwk is a web service that generalizes several storage methods on a filesystem-style interface.
 </p>
 
 <h3>Recent Changes</h3>
