@@ -83,8 +83,18 @@
             @endif
 
             <div class="content">
-                <div class="links">
-                </div>
+<h3>grep|awk 2.0</h3>
+<p>
+
+GrepAwk is a webserve that generalizes several storage methods on a filestyle interface.
+</p>
+
+<h3>Recent Changes</h3>
+<div>
+<textarea cols=80 rows=30>
+@include("gitlog");
+</textarea>
+</div>
             </div>
         </div>
     </body>

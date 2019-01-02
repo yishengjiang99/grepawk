@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 
 
-class Filesystem extends Model
+class FileSystem extends Model
 {
     //
   private const DIRS=[
