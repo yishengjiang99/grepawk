@@ -84,35 +84,43 @@ class HomeController extends Controller
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output = $fs->ls("-h");
-                    $hints = $fs->ls("-j");   
                     $options=$fs->ls("-o");   
                     break;
                 case 'cat':
-                    $cd = FileSystem::cd($cd);
+                    $output = $fs->cat($argv1);
                     break;
                 case 'pwd':
                     $output=$cd;
                     break;
                 case 'touch':
                     $filename = $msgt[1];
-                    if($cd) $dir=$cd."/";
-                    else $dir="";
-                    Storage::put($dir.$filename,"");
-                    list($hints,$output)=FS::ls($cd);
+                    Storage::put($fs->getCd()."/".$filename,"");
+                    $output = $fs->ls("-h");
+                    $hints = $fs->ls("-j"); 
+                    $options=$fs->ls("-o");
                     break;
-                case 'newfile':
-                    switch($argv1){
-                        case 'upload':
-                        case 'copy-paste':
-
-                            $tmp_filename="tmp_".time()."_".$this->username.".tmp";
-                            $output="$argv1 started";
-                            $meta['prompts']=['filename','filetype'];
-                            $tmp_filepath=$fs->getCd()."/".$tmp_filename;
-                            $meta['tmp_fn']=$tmp_filepath;
-                            Storage::put($tmp_filepath,"tmp-gen");
-                            break;
+                case 'upload':
+                    break;
+                case 'wget':
+                    $url = $argv1;
+                    $content=@file_get_contents($url); 
+                    if(!$content){
+                        $error="$url not reachable";
+                    }else{
+                        $res = preg_match("/<title>(.*)<\/title>/siU", $content,$title_matches);
+                        if(!$res){
+                            $title="web_cache_".parse_url($url, PHP_URL_HOST);
+                        }else{
+                            $title=$title_matches[1];
+                        }
+                        $fileName = $fs->getCd()."/".$title.".html";
+                        Storage::put($fileName,$content);
+                        $output="File Cached as $fileName";
+                        $meta['mime']='html';
+                        $catcmd ="cat /$fileName";
+                        $meta['url']=url()->current()."?msg=$catcmd";
                     }
+                    break;
                 default:
                     $err=$cmd." known";
                     break;

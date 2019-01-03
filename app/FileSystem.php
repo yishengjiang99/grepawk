@@ -13,8 +13,6 @@ class FileSystem extends Model
     'root'=>[
         'data'=>[
             '_storage'=>'psql',
-            'file1'=>'file',
-            'file2'=>'file'
         ],
         'search'=>[
             '_storage'=>'psql',
@@ -24,10 +22,6 @@ class FileSystem extends Model
         ],
         'facebook'=>[
             '_storage'=>'facebook'
-        ],
-        'dps_logs'=>[
-            '_storage'=>'web',
-            '_index'=>'warcraftlogs.com'
         ],
         'dropbox'=>[
             '_storage'=>'dropbox'
@@ -42,7 +36,7 @@ class FileSystem extends Model
   ];
 
 
-  private $cd="root";
+  private $cd="/root";
   private static $_k=[];
   private $privateDir="guest";
   public static function makeInstance($userName=0){
@@ -54,7 +48,6 @@ class FileSystem extends Model
         }else{
             self::$_k[$userName]->setCd(session('cd'));
         }
-
       }
     }
     self::$_k[$userName]->privateDir = str_replace(" ","_",$userName);
@@ -63,7 +56,7 @@ class FileSystem extends Model
 
   public function get_fs_path(){
     $cd = $this->cd;
-    $cd = str_replace("root/myfiles",$this->privateDir,$cd);
+    $cd = str_replace("/root/myfiles",$this->privateDir,$cd);
     if(!Storage::exists($cd)){
         Storage::makeDirectory($cd);
     }
@@ -77,7 +70,6 @@ class FileSystem extends Model
     $ret=self::DIRS;
     $xpath=[];
     $currentFileType="folder";
-    
     foreach($cdt as $t){
         if(!$t) continue;
         $xpath[]=$t;
@@ -149,6 +141,16 @@ class FileSystem extends Model
         return $hints;
     }
     return['xpath'=>$xpath,'list'=>$ret];
+  }
+  public function cat($filename){
+    if(substr($filename,0,1)=='/'){
+        $filepath=$filename;
+    }else{
+        $filepath = $this->get_fs_path()."/".$filename;
+    }
+    if(!Storage::exists($filepath)) throw new \Exception("$filename does not exist on fs");
+    $content = Storage::get($filepath);
+    return $content;
   }
 
 

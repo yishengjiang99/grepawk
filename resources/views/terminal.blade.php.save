@@ -2,7 +2,6 @@
 <head>
     <title>cmd</title>
      <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
-     <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -39,8 +38,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var username_="guest";
   var cd_ = "/public";
   var option_select=[];
-  var activePrompt=null;
-  var prompt_select=[];
   
   window.addEventListener('click', function(e) {
    // cmdLine_.focus();
@@ -106,9 +103,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.readOnly = true;
       output_.appendChild(line);
       var option_index=parseInt(this.value);
-      if(option_index){
-        if(typeof option_select[option_index-1] !== 'undefined') {
-          this.value = option_select[option_index-1];
+      if(option_index!==NaN){
+        if(typeof option_select[option_index] === 'undefined') {
+          this.value = option_select[option_index];
         }
       } 
       if (this.value && this.value.trim()) {
@@ -121,7 +118,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       switch (cmd) {
         case 'new':
            input.autofocus = false;
-           outputHtml(
+           outputHtl(
               "<form method='POST'style='background-color:grey;color:white' action='/photos/create'>"
               + "<textarea style='background-color:transparent' class='cmd' rows=30 cols=60 name='filename' placeholder='filec oontent'></textarea>"
               + "<br><input style='background-color:transparent' class='cmd' type=text name='filename' placeholder='filename'>"
@@ -130,26 +127,20 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         default:
           input.autofocus = false;
           if (cmd) {
-            if(parent && parent.iframe_interface) parent.iframe_interface("debug","/stdin?msg="+this.value);
             $.getJSON("/stdin?msg="+this.value,function(ret){
+            
               if(ret.output){
                 output(ret.output);
               }
               if(ret.options){
-               option_select=ret.options;
-                 outputOptions(ret.options);
+                option_select=ret.options;
+                outputOptions(ret.options);
               }
               if(ret.error){
                 outputError(ret.error);
               }
               if(ret.cd){
                 set_cd(ret.cd);
-              }
-              if(ret.meta && ret.meta.prompts){
-                outputPrompts(ret.meta.prompts);
-              }
-              if(ret.meta && ret.meta.url){
-                outputIframe(ret.meta.url);
               }
             });
           }
@@ -178,30 +169,23 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     return ['<div class="ls-files" style="-webkit-column-width:',
             colWidth, 'px;', height, '">'];
   }
-  function outputPrompts(prompts){
-    $.each(prompts,function(i,prompt){
-      updatePromptWithString("What is the "+prompt+"? >");
-    });
-  }
+
   function outputOptions(options){
     output_.insertAdjacentHTML('beforeEnd',"<p style='color:grey'>Numerical Options");
     output_.insertAdjacentHTML('beforeEnd',"<ul>");
     $.each(options,function(i,cmd){
-      output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): '+cmd + '</li>');
+      output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + i +'): '+cmd + '</li>');
     });
     output_.insertAdjacentHTML('beforeEnd',"</ul>");
     output_.insertAdjacentHTML('beforeEnd',"</p>");
 
   }
   //
-  function outputHtml(html) {
+  function outputHtl(html) {
     output_.insertAdjacentHTML('beforeEnd', html);
   }
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-  }
-  function outputIframe(url){
-     $("#preview_content").html('<iframe width=100% height=100% src="'+url+'"></iframe>').parent().show();
   }
   function outputError(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
@@ -223,13 +207,10 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   }
   function setUsername(username){
     username_=username;
-     updatePrompt();
+      updatePrompt();
   }
   function updatePrompt(){
-    updatePromptWithString('['+username_+']:'+cd_);
-  }
-  function updatePromptWithString(string){
-    $(".prompt").last().html(string);
+    $(".prompt").last().html('['+username_+']:'+cd_);
   }
 
   //
@@ -255,28 +236,16 @@ $(function() {
     term.setUsername("{{$username}}@grepawk");
     term.setCd("{{$cd}}");
 
-    var g_previewModal = document.getElementById('previewModal');
-
    // term.updatePrompt();
 });
 </script>
 </head>
 <body style='background-color:black;color:white'>
-    <div id="container" class='container'>
+    <div id="container">
         <output></output>
         <div id="input-line" class="input-line">
-            <div class="prompt"></div><div><input size=100 class="cmdline" autofocus /></div>
+            <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
         </div>
     </div>
-
-    <!-- The Modal -->
-    <style>
-    </style>
-  <div id="previewModal" class="modal">
-    <span class="close">&times;</span>
-    <div id='preview_content'></div>
-    <div id="caption"></div>
-  </div>
 </body>
-
 </html>

@@ -42,7 +42,6 @@ class PhotoController extends Controller
     {
         //
         $query = $request->input();
-echo 'dd';
         $ret=Storage::put($query['filename'], $query['content']);        
         return redirect('/home');
 
