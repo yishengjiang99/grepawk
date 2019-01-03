@@ -58,26 +58,34 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
+        $this->username="guest";
         $msg =$request->input("msg");
         if(!$msg) die("");
         $msgt = explode(" ",$msg);
         $cmd = $msgt[0];
+
+        $argv1= isset($msgt[1]) ? $msgt[1] : 0;
+        $argv2= isset($msgt[2]) ? $msgt[2] : 0;
         $output="";
         $error="";
         $hints=null;
         $fs = FileSystem::makeInstance(Auth::user()->name);
         $cd = $fs->getCd();
+        $meta=[];
+        $options=null;
         try{
             switch($cmd){
                 case "ls":
                     $output = $fs->ls("-h");
-                    $hints = $fs->ls("-j");   
+                    $hints = $fs->ls("-j"); 
+                    $options=$fs->ls("-o");
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output = $fs->ls("-h");
-                    $hints = $fs->ls("-j");      
+                    $hints = $fs->ls("-j");   
+                    $options=$fs->ls("-o");   
                     break;
                 case 'cat':
                     $cd = FileSystem::cd($cd);
@@ -92,11 +100,25 @@ class HomeController extends Controller
                     Storage::put($dir.$filename,"");
                     list($hints,$output)=FS::ls($cd);
                     break;
+                case 'newfile':
+                    switch($argv1){
+                        case 'upload':
+                        case 'copy-paste':
+
+                            $tmp_filename="tmp_".time()."_".$this->username.".tmp";
+                            $output="$argv1 started";
+                            $meta['prompts']=['filename','filetype'];
+                            $tmp_filepath=$fs->getCd()."/".$tmp_filename;
+                            $meta['tmp_fn']=$tmp_filepath;
+                            Storage::put($tmp_filepath,"tmp-gen");
+                            break;
+                    }
                 default:
                     $err=$cmd." known";
                     break;
             }  
         }catch(\Exception $e){
+            throw $e;
             $error=$e->getMessage();
         }
 
@@ -108,7 +130,11 @@ class HomeController extends Controller
             "cd"=> $cd,
             "hints"=>$hints,
             "output"=>$output,
-            "error"=>$error
+            'options'=>$options,
+            "error"=>$error,
+            'meta'=>$meta,
+
+
         ]);
     }
 

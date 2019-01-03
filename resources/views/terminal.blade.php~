@@ -37,9 +37,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var histtemp_ = 0;
   var username_="guest";
   var cd_ = "/public";
-  var option_select=[];
-  var activePrompt=null;
-  var prompt_select=[];
   
   window.addEventListener('click', function(e) {
    // cmdLine_.focus();
@@ -104,19 +101,14 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
-      var option_index=parseInt(this.value);
-      if(option_index){
-        if(typeof option_select[option_index-1] !== 'undefined') {
-          this.value = option_select[option_index-1];
-        }
-      } 
       if (this.value && this.value.trim()) {
         var args = this.value.split(' ').filter(function(val, i) {
           return val;
         });
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
-      }     
+      }
+      
       switch (cmd) {
         case 'new':
            input.autofocus = false;
@@ -128,23 +120,20 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
               +"</form>");
         default:
           input.autofocus = false;
+
           if (cmd) {
             $.getJSON("/stdin?msg="+this.value,function(ret){
+              if(ret.options){
+                outputOptions(ret.options);
+              }
               if(ret.output){
                 output(ret.output);
-              }
-              if(ret.options){
-               option_select=ret.options;
-                 outputOptions(ret.options);
               }
               if(ret.error){
                 outputError(ret.error);
               }
               if(ret.cd){
                 set_cd(ret.cd);
-              }
-              if(ret.meta && ret.meta.prompts){
-                outputPrompts(ret.meta.prompts);
               }
             });
           }
@@ -173,20 +162,14 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     return ['<div class="ls-files" style="-webkit-column-width:',
             colWidth, 'px;', height, '">'];
   }
-  function outputPrompts(prompts){
-    $.each(prompts,function(i,prompt){
-      updatePromptWithString("What is the "+prompt+"? >");
-    });
-  }
-  function outputOptions(options){
-    output_.insertAdjacentHTML('beforeEnd',"<p style='color:grey'>Numerical Options");
-    output_.insertAdjacentHTML('beforeEnd',"<ul>");
-    $.each(options,function(i,cmd){
-      output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): '+cmd + '</li>');
-    });
-    output_.insertAdjacentHTML('beforeEnd',"</ul>");
-    output_.insertAdjacentHTML('beforeEnd',"</p>");
 
+  function outputOptions(options){
+    output_.insertAdjacentHTML('beforeEnd',"<p>Numerical Options");
+    output_.insertAdjacentHTML('beforeEnd',"<ul>");
+
+    $.each(options,function(i,cmd){
+      output_.insertAdjacentHTML('beforeEnd', '<p style="color:grey">' + i +'): '+cmd + '</p>');
+    });
   }
   //
   function outputHtl(html) {
@@ -218,10 +201,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       updatePrompt();
   }
   function updatePrompt(){
-    updatePromptWithString('['+username_+']:'+cd_);
-  }
-  function updatePromptWithString(string){
-    $(".prompt").last().html(string);
+    $(".prompt").last().html('['+username_+']:'+cd_);
   }
 
   //

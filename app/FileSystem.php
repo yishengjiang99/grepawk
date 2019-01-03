@@ -103,14 +103,15 @@ class FileSystem extends Model
         $dirname = str_replace($path."/","",$dir);
         $dirname = $dirname.'/';
         $ret[$dirname]=[
-            '_storage'=>'filesystem'
+            '_storage'=>'filesystem',
         ];
     }
     $files=Storage::files($path);
     foreach($files as $filename){
         $filename = str_replace($path."/","",$filename);
         $ret[$filename]=[
-            '_storage'=>'files'
+            '_storage'=>'filesystem',
+            '_type'=>'file'
         ];
     }
 
@@ -119,11 +120,25 @@ class FileSystem extends Model
         $output="";
         foreach($ret as $name=>$attr){
             if(substr($name,0,1)==='_') continue;
-            $is_folder = !isset($attr['type']) || $attr['type']!=='folder';
+            $is_file = isset($attr['_type']) && $attr['_type']==='file';
+            $is_folder = !$is_file;
             $display = $is_folder ? $name : $name;
             $output.=$display." ";
         }
         return $output;
+    }
+    if(in_array("-o", $options)){
+        $options=[];
+        $options[]='newfile upload';
+        $options[]='newfile copy-paste';
+        $options[]='cd ..';
+        foreach($ret as $name=>$attr){
+            if(substr($name,0,1)==='_') continue;
+            $is_file = isset($attr['_type']) && $attr['_type']==='file';
+            $is_folder = !$is_file;
+            $options[] = $is_folder ? "cd $name" : "cat $name";
+        }
+        return $options;
     }
     if(in_array("-j", $options)){
         $hints=[];
