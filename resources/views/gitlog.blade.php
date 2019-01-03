@@ -1,3 +1,33 @@
+commit 289d633f04e7ac034bfce266ce67e96ace0adadc
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 13:41:02 2019 -0800
+
+    somewhat hackish things
+
+commit bef9dbc533727482994ec171170868f1b6f36654
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 12:19:49 2019 -0800
+
+    fix
+
+commit 9e480ad0dcaec151d13c282d74e2cef1c53cdab7
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 11:43:39 2019 -0800
+
+    create new file
+
+commit 5ddde9547d029266baeae81604bd4128a5b55272
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 10:43:13 2019 -0800
+
+    cat, cd etc
+
+commit ca5821ac200c64da88a1201572059fbe8018594e
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 2 22:22:27 2019 -0800
+
+    compile
+
 commit ffef43a85e6f34a4064b949c32c20c9ad4ad6dad
 Author: Yisheng Jiang <yisheng.jiang@gmail.com>
 Date:   Wed Jan 2 22:21:37 2019 -0800
