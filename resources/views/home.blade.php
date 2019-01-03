@@ -5,7 +5,6 @@
     <iframe src="{{ url('/terminal') }}" height=640 width='100%'></iframe>
  </div>
  <div id='debugger'></div>
-
 </div>
 @endsection
 <script>

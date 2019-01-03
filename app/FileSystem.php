@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
-
+use Auth;
 
 class FileSystem extends Model
 {
@@ -39,6 +39,13 @@ class FileSystem extends Model
   private $cd="/root";
   private static $_k=[];
   private $privateDir="guest";
+  public static function getInstance(){
+      if(Auth::user()!==null){
+        return self::makeInstance(Auth::user()->username);
+      }else{
+        return self::makeInstance();
+      }
+  }
   public static function makeInstance($userName=0){
     if(!isset(self::$_k[$userName])){
       self::$_k[$userName] = new Filesystem();
@@ -78,7 +85,6 @@ class FileSystem extends Model
         $this->cd = implode("/",(Array)$xpath);
         $filepath = $this->get_fs_path();
         if(!isset($ret[$t])){
-            //echo '<br> checking '.$filepath;
             $hasPath=Storage::has($filepath);
             if(!$hasPath){
                 throw new \Exception("cd to $t not found");
@@ -87,11 +93,8 @@ class FileSystem extends Model
         }
         $ret=$ret[$t];
     }
-    //throw new \Exception($this->cd);    
-
     $filetype = isset($ret['_storage']) ? $ret['_storage'] : "folder";
     $path=$this->get_fs_path();
-  //  throw new \Exception($path);    
     $dirs=Storage::directories($path);
     foreach($dirs as $dir){
         $dirname = str_replace($path."/","",$dir);
@@ -123,8 +126,8 @@ class FileSystem extends Model
     }
     if(in_array("-o", $options)){
         $options=[];
-        $options[]='newfile upload';
-        $options[]='newfile copy-paste';
+        $options[]='new';
+        $options[]='upload';
         $options[]='cd ..';
         foreach($ret as $name=>$attr){
             if(substr($name,0,1)==='_') continue;
@@ -171,7 +174,10 @@ class FileSystem extends Model
             'ret'=>$ret];
   }
 
-
+  public function put($filename,$content){
+      $filePath=$this->get_fs_path()."/".$filename;
+      return Storage::put($filePath,$content);
+  }
   public function getCd(){
     return $this->cd;
   }
@@ -185,10 +191,7 @@ class FileSystem extends Model
         session(["cd"=>$this->cd]);
         return $this->cd;
     }
-    
     $todirT = explode("/",$todir);
-  //  echo "<br> current cd ".$this->cd;
-
     $fs = $this->ls();
     $xpath = $fs['xpath'];
     foreach($todirT as $todirToken){

@@ -84,7 +84,5 @@
             @yield('content')
         </main>
     </div>
-            @include("modals");
-
 </body>
 </html>
