@@ -62,7 +62,9 @@ class FileSystem extends Model
     }
     return $cd;
   }
-  
+  public function mimeType($filename){
+
+  }
   public function ls($options=""){
     $options=explode(" ",$options);
     $cd = $this->cd;
@@ -148,9 +150,25 @@ class FileSystem extends Model
     }else{
         $filepath = $this->get_fs_path()."/".$filename;
     }
+
     if(!Storage::exists($filepath)) throw new \Exception("$filename does not exist on fs");
-    $content = Storage::get($filepath);
-    return $content;
+    $mimeType="text";
+    if(stripos($filename,".html")){
+        $mimeType='html';
+    }else if(stripos($filename,".jpeg")){
+        $mimeType='jpeg';
+    }else if(stripos($filename,".gif")){
+        $mimeType='gif';
+    }
+    if($mimeType=='text'){
+        $ret=Storage::get($filepath);
+        $preview_url=false;
+    }else{
+        $preview_url=true;
+        $ret=url("stdin")."?msg=".urlencode("get $filepath");
+    }
+    return ['preview_url'=>$preview_url,
+            'ret'=>$ret];
   }
 
 

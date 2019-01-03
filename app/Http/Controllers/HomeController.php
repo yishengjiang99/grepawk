@@ -60,6 +60,7 @@ class HomeController extends Controller
     public function stdin(Request $request){
         $this->username="guest";
         $msg =$request->input("msg");
+        $msg =urldecode($msg);
         if(!$msg) die("");
         $msgt = explode(" ",$msg);
         $cmd = $msgt[0];
@@ -75,6 +76,10 @@ class HomeController extends Controller
         $options=null;
         try{
             switch($cmd){
+                case "get":
+                    die(Storage::get($argv1));
+                    
+                    break;
                 case "ls":
                     $output = $fs->ls("-h");
                     $hints = $fs->ls("-j"); 
@@ -87,7 +92,14 @@ class HomeController extends Controller
                     $options=$fs->ls("-o");   
                     break;
                 case 'cat':
-                    $output = $fs->cat($argv1);
+                    $ret = $fs->cat($argv1);
+                    if($ret['preview_url']==true){
+                        $output="";
+                        $meta['mime']='html';
+                        $meta['url']=$ret['ret'];
+                    }else{
+                        $output=$ret['ret'];
+                    }
                     break;
                 case 'pwd':
                     $output=$cd;

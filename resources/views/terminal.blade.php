@@ -3,6 +3,7 @@
     <title>cmd</title>
      <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
      <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -121,12 +122,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       switch (cmd) {
         case 'new':
            input.autofocus = false;
-           outputHtml(
-              "<form method='POST'style='background-color:grey;color:white' action='/photos/create'>"
-              + "<textarea style='background-color:transparent' class='cmd' rows=30 cols=60 name='filename' placeholder='filec oontent'></textarea>"
-              + "<br><input style='background-color:transparent' class='cmd' type=text name='filename' placeholder='filename'>"
-              + "<br><input type=submit>"
-              +"</form>");
+           outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
         default:
           input.autofocus = false;
           if (cmd) {
@@ -243,6 +239,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     setCd:function(cd){
       set_cd(cd);
     },
+    output_ext:function(string){
+      output(string)
+    }
   }
 };
 
@@ -256,7 +255,15 @@ $(function() {
     term.setCd("{{$cd}}");
 
     var g_previewModal = document.getElementById('previewModal');
-
+    $("body").on('click', "#new-file-submit",function(e){
+      e.preventDefault();
+      var _form =$(this).closest('form');
+      var entries=_form.serialize();
+      $.post("/files/new",entries,function(ret){
+        term.output_ext("File Uploaded");
+        _form.remove();
+      });
+    })
    // term.updatePrompt();
 });
 </script>
@@ -268,14 +275,29 @@ $(function() {
             <div class="prompt"></div><div><input size=100 class="cmdline" autofocus /></div>
         </div>
     </div>
-
-    <!-- The Modal -->
-    <style>
-    </style>
   <div id="previewModal" class="modal">
     <span class="close">&times;</span>
     <div id='preview_content'></div>
     <div id="caption"></div>
+  </div>
+
+  <div style='display:none'>
+    <form id='new_file_form'>
+      @csrf
+      <div class="form-group">
+        <label for="file-name-input">File Name</label>
+        <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
+      </div>
+      <div class="form-group">
+        <label for="file-content-input">File Content</label>
+        <TextArea type="text" name='filecontent' class="form-control" id="file-content-input" placeholder="Another input"></TextArea>
+      </div>
+      <div class="form-group">
+      <div class="offset-sm-2 col-sm-10">
+        <button id='new-file-submit' class="btn btn-primary">Create</button>
+      </div>
+    </div>
+  </form>
   </div>
 </body>
 

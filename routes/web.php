@@ -76,3 +76,4 @@ Route::get('photos/{filename}', 'PhotoController@show');
 Route::get('stdin', 'HomeController@stdin');
 Route::view("modal/newfile","newfile");
 Route::post("photos/create","PhotoController@create");
+Route::post("files/new","FileController@create");
