@@ -128,8 +128,12 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }     
       switch (cmd) {
         case 'new':
-           input.autofocus = false;
-           outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
+          input.autofocus = false;
+          outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
+          break;
+        case 'upload':
+          outputHtml($("#new_file_upload_form").clone().wrap('<div>').parent().html())
+          break;
         default:
           input.autofocus = false;
           if (cmd) {
@@ -225,7 +229,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     $(".prompt").last().html(string);
   }
   function _parse_api_response(ret){
-    if(ret.output){
+      if(ret.output){
         output(ret.output);
       }
       if(ret.options){
@@ -268,7 +272,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
 
 
 $(function() {
-
   // Initialize a new terminal object  
     var term = new Terminal('#input-line .cmdline', '#container output');
     term.init();
@@ -286,8 +289,17 @@ $(function() {
         _form.remove();
       });
     })
+    window.terminal=term;
    // term.updatePrompt();
 });
+function iframe_interface(msg){
+  ret=$.parseJSON(msg);
+  window.terminal.parse_api_response(ret);
+  if(ret.output=='upload completed'){
+    $("#new_file_upload_form").remove();
+  }
+}
+
 </script>
 </head>
 <body style='background-color:black;color:white'>
@@ -315,12 +327,22 @@ $(function() {
         <TextArea type="text" name='filecontent' class="form-control" id="file-content-input" placeholder="Another input"></TextArea>
       </div>
       <div class="form-group">
-      <div class="offset-sm-2 col-sm-10">
-        <button id='new-file-submit' class="btn btn-primary">Create</button>
+        <div class="offset-sm-2 col-sm-10">
+          <button id='new-file-submit' class="btn btn-primary">Create</button>
+        </div>
       </div>
-    </div>
-  </form>
+    </form>
+    <form id='new_file_upload_form' method='POST' 
+          enctype="multipart/form-data" 
+          action='/files/upload' 
+          target="uploadTrg">
+        @csrf
+        <input type="file" class="form-control" id="file-select-input" name="file">
+        <input type="submit" name="submitBtn" value="Upload" />
+    </form>
   </div>
+  <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+
 </body>
 
 </html>
