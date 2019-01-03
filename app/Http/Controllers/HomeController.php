@@ -77,8 +77,9 @@ class HomeController extends Controller
         try{
             switch($cmd){
                 case "get":
+                    $mimetype=mime_content_type(Storage::path($argv1));
+                    header("Content-Type: $mimetype");
                     die(Storage::get($argv1));
-                    
                     break;
                 case "ls":
                     $output = $fs->ls("-h");
