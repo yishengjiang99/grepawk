@@ -241,7 +241,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       html+="</tr>";
     });
     html+="</table>";
-    outputHtml("<div style='height:400px;overflow-y:scroll'>"+html+"</div>");
+    outputHtml("<div style='max-height:400px;overflow-y:scroll'>"+html+"</div>");
   }
 
   // Cross-browser impl to get document's height.
@@ -303,6 +303,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   return {
     init: function() {
       output('Welcome to grep|awk 2.0. <br>Try typing commands like "ls", "new", "upload" to get started.');
+      output("<br><br>");
     },
     setUsername:function(username){
       setUsername(username);

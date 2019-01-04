@@ -184,16 +184,16 @@ class FileSystem extends Model
     $geturl=url("stdin")."?msg=".urlencode("get $filepath");
 
     if(strpos($mimetype, "image")!==false){
-        return ['image_link'=>$geturl];
+        return ['text_output'=>"Displaying $filename as image.",'image_link'=>$geturl];
     }else if($mimetype==="text/html"){
-        return ['iframe_link'=>$geturl];
+        return ['text_output'=>"Displaying $filename in preview iframe.",'iframe_link'=>$geturl];
     }else if(strpos($mimetype, "text")!==false){
         $output="<b>$filename</b>";
         $output.="<br><br>";
-        $output.="<p>".Storage::get($filepath)."</p>";
+        $output.="<p><pre>".Storage::get($filepath)."</pre></p>";
         return ['text_output'=>$output];
     }else{
-        return ['download_link'=>$geturl];
+        return ['text_output'=>"Downloading $filename",'download_link'=>$geturl];
 
     }
   }
