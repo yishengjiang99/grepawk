@@ -202,7 +202,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
   }
   function outputImageLink(imageUrl) {
-    output_.insertAdjacentHTML('beforeEnd', '<p><img height=100 src="' + imageUrl + '"></p>');
+    output_.insertAdjacentHTML('beforeEnd', '<p><img width=320 src="' + imageUrl + '"></p>');
   }
   function outputIframe(url){
      $("#preview_content").html('<iframe width=100% height=100% src="'+url+'"></iframe>').parent().show();
