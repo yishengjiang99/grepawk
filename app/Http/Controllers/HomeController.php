@@ -77,7 +77,6 @@ class HomeController extends Controller
         try{
             switch($cmd){
                 case "get":
-                   // $mimetype=mime_content_type(Storage::path($argv1));
                     header("Content-Type: File/File");
                     $download_file="grepawk_download_".basename($argv1);
                     header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
