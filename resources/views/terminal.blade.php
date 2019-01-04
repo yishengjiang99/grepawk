@@ -128,14 +128,12 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }     
       switch (cmd) {
         case 'new':
-          input.autofocus = false;
           outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
           break;
         case 'upload':
           outputHtml($("#new_file_upload_form").clone().wrap('<div>').parent().html())
           break;
         default:
-          input.autofocus = false;
           if (cmd) {
             if(parent && parent.iframe_interface) parent.iframe_interface("debug","/stdin?msg="+this.value);
             $.getJSON("/stdin?msg="+this.value,function(ret){
