@@ -143,9 +143,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
             });
           }
       };
+	
+	window.scrollTo(0,document.body.scrollHeight+100);
 
-      window.scrollTo(0, getDocHeight_());
-      this.value = ''; // Clear/setup line for next input.
     }
   }
 
@@ -229,9 +229,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     $(".prompt").last().html(string);
   }
   function _parse_api_response(ret){
-      if(ret.output){
-        output(ret.output);
-      }
       if(ret.options){
         option_select=ret.options;
           outputOptions();
@@ -247,6 +244,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }
       if(ret.meta && ret.meta.url){
         outputIframe(ret.meta.url);
+      }
+      if(ret.output){
+        output(ret.output);
       }
   }
 
@@ -266,6 +266,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     },
     output_ext:function(string){
       output(string)
+    },
+    processNewCommand:function(cmd){
+	processNewCommand_(cmd);
     }
   }
 };
@@ -274,10 +277,11 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
 $(function() {
   // Initialize a new terminal object  
     var term = new Terminal('#input-line .cmdline', '#container output');
-    term.init();
     term.setUsername("{{$username}}@grepawk");
     term.setCd("{{$cd}}");
 
+    term.init();
+    term.processNewCommand("ls");
     var g_previewModal = document.getElementById('previewModal');
     $("body").on('click', "#new-file-submit",function(e){
       e.preventDefault();
