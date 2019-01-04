@@ -177,7 +177,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     output_.insertAdjacentHTML('beforeEnd',"<p style='color:grey'>Numerical Options");
     output_.insertAdjacentHTML('beforeEnd',"<ul>");
     $.each(options,function(i,cmd){
-      if(full_options_mode===false && i>5){
+      if(full_options_mode===false && i>50){
         more_options_index=(i+1);
         output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): more option </li>');
         return false;
