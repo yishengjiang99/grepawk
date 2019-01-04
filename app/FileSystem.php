@@ -156,12 +156,10 @@ class FileSystem extends Model
 
     if(!Storage::exists($filepath)) throw new \Exception("$filename does not exist on fs");
     $mimeType="text";
-    if(stripos($filename,".html")){
-        $mimeType='html';
-    }else if(stripos($filename,".jpeg")){
-        $mimeType='jpeg';
-    }else if(stripos($filename,".gif")){
-        $mimeType='gif';
+    foreach(explode(" ","png html gif jpeg html") as $non_bin_ext){
+        if(strpos($filename, ".".$non_bin_ext)!==false){
+            $mimeType=$non_bin_ext;
+        }
     }
     if($mimeType=='text'){
         $ret=Storage::get($filepath);
