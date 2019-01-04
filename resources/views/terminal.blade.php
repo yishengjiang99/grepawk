@@ -172,8 +172,8 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   }
   function outputOptions(){
     options=option_select;
-    output_.insertAdjacentHTML('beforeEnd',"<p style='color:grey'>Numerical Options");
-    output_.insertAdjacentHTML('beforeEnd',"<ul>");
+    output_.insertAdjacentHTML('beforeEnd',"<p>Numerical Options");
+    output_.insertAdjacentHTML('beforeEnd',"<ol>");
     $.each(options,function(i,cmd){
       if(full_options_mode===false && i>50){
         more_options_index=(i+1);
@@ -183,7 +183,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): '+cmd + '</li>');
       }
     });
-    output_.insertAdjacentHTML('beforeEnd',"</ul>");
+    output_.insertAdjacentHTML('beforeEnd',"</ol>");
     output_.insertAdjacentHTML('beforeEnd',"</p>");
     full_options_mode=false;
 
@@ -227,8 +227,11 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     $(".prompt").last().html(string);
   }
   function _parse_api_response(ret){
+      if(ret.output){
+        output(ret.output);
+      }
       if(ret.options){
-        option_select=ret.options;
+          option_select=ret.options;
           outputOptions();
       }
       if(ret.error){
@@ -242,9 +245,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       }
       if(ret.meta && ret.meta.url){
         outputIframe(ret.meta.url);
-      }
-      if(ret.output){
-        output(ret.output);
       }
   }
 
