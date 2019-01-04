@@ -108,7 +108,8 @@ class FileSystem extends Model
         $filename = str_replace($path."/","",$filename);
         $ret[$filename]=[
             '_storage'=>'filesystem',
-            '_type'=>'file'
+            '_type'=>'file',
+            '_mimetype'=>Storage::mimeType($path."/".$filename),
         ];
     }
 
@@ -138,10 +139,11 @@ class FileSystem extends Model
             if(substr($name,0,1)==='_') continue;
             $is_file = isset($attr['_type']) && $attr['_type']==='file';
             $is_folder = !$is_file;
+            $mimeType = isset($attr['_mimetype']) ? $attr['_mimetype'] : "";
             if($is_folder){
-                $options[]=['cmd'=>"cd $name",'display'=>"Open folder $name", 'link'=>"onclick:cd ".urlencode($name)];
+                $options[]=['cmd'=>"cd $name",'type'=>'folder', 'display'=>"Open folder $name", 'link'=>"onclick:cd ".urlencode($name)];
             }else{
-                $options[]=['cmd'=>"cat $name",'display'=>"Download or view file", 'link'=>"onclick:cat ".urlencode($name)];
+                $options[]=['cmd'=>"cat $name",'type'=>$mimeType,'display'=>"Download or view file", 'link'=>"onclick:cat ".urlencode($name)];
             }
         }
         return ['headers'=>['cmd','display','link'],'rows'=>$options];
@@ -177,21 +179,23 @@ class FileSystem extends Model
     }
 
     if(!Storage::exists($filepath)) throw new \Exception("$filename does not exist on fs");
-    $mimeType="text";
-    foreach(explode(" ","png html gif jpeg html") as $non_bin_ext){
-        if(strpos($filename, ".".$non_bin_ext)!==false){
-            $mimeType=$non_bin_ext;
-        }
-    }
-    if($mimeType=='text'){
-        $ret=Storage::get($filepath);
-        $preview_url=false;
+    $mimetype = Storage::mimeType($filepath);
+
+    $geturl=url("stdin")."?msg=".urlencode("get $filepath");
+
+    if(strpos($mimetype, "image")!==false){
+        return ['image_link'=>$geturl];
+    }else if($mimetype==="text/html"){
+        return ['iframe_link'=>$geturl];
+    }else if(strpos($mimetype, "text")!==false){
+        $output="<b>$filename</b>";
+        $output.="<br><br>";
+        $output.="<p>".Storage::get($filepath)."</p>";
+        return ['text_output'=>$output];
     }else{
-        $preview_url=true;
-        $ret=url("stdin")."?msg=".urlencode("get $filepath");
+        return ['download_link'=>$geturl];
+
     }
-    return ['preview_url'=>$preview_url,
-            'ret'=>$ret];
   }
 
   public function put($filename,$content){

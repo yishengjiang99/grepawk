@@ -99,12 +99,10 @@ class HomeController extends Controller
                     break;
                 case 'cat':
                     $ret = $fs->cat($argv1);
-                    if($ret['preview_url']==true){
-                        $output="";
-                        $meta['mime']='html';
-                        $meta['url']=$ret['ret'];
+                    if(isset($ret['text_output'])){
+                        $output = $ret['text_output'];
                     }else{
-                        $output=$ret['ret'];
+                        $meta = array_merge($meta, $ret);
                     }
                     break;
                 case 'pwd':

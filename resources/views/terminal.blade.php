@@ -201,6 +201,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
   }
+  function outputImageLink(imageUrl) {
+    output_.insertAdjacentHTML('beforeEnd', '<p><img height=100 src="' + imageUrl + '"></p>');
+  }
   function outputIframe(url){
      $("#preview_content").html('<iframe width=100% height=100% src="'+url+'"></iframe>').parent().show();
   }
@@ -285,8 +288,13 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       if(ret.meta && ret.meta.prompts){
         outputPrompts(ret.meta.prompts);
       }
+      if(ret.meta && ret.meta.download_link){
+        open_dl_iframe(ret.meta.download_link);
+      }
+      if(ret.meta && ret.meta.image_link){
+        outputImageLink(ret.meta.image_link);
+      }
       if(ret.meta && ret.meta.url){
-        debugger;
         window.open(ret.meta.url,'_blank');
       }
   }
