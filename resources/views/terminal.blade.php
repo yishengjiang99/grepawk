@@ -113,7 +113,8 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         if(more_options_index !=-1 && option_index==more_options_index){
           full_options_mode=true;
           outputOptions();
-          return;
+         window.scrollTo(0,document.body.scrollHeight+100);
+           return;
         }
         if(typeof option_select[option_index-1] !== 'undefined') {
           this.value = option_select[option_index-1];
@@ -135,7 +136,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           break;
         default:
           if (cmd) {
-            if(parent && parent.iframe_interface) parent.iframe_interface("debug","/stdin?msg="+this.value);
+//            if(parent && parent.iframe_interface) parent.iframe_interface("debug","/stdin?msg="+this.value);
             $.getJSON("/stdin?msg="+this.value,function(ret){
               _parse_api_response(ret);
             });
