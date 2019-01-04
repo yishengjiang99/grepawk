@@ -85,7 +85,7 @@ class HomeController extends Controller
                     exit;
                     break;
                 case "ls":
-                    $output = $fs->ls("-h");
+                    $output = "File list of the ".$fs->getCd()." folder";
                     $hints = $fs->ls("-j"); 
                     //$options=$fs->ls("-o");
                     $table = $fs->ls("-t");
@@ -93,7 +93,7 @@ class HomeController extends Controller
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
-                    $output = $fs->ls("-h");
+                    $output ="Opened ".$fs->get_fs_path()." folder";
                    // $options=$fs->ls("-o");   
                     $table = $fs->ls("-t");
                     break;
@@ -101,9 +101,8 @@ class HomeController extends Controller
                     $ret = $fs->cat($argv1);
                     if(isset($ret['text_output'])){
                         $output = $ret['text_output'];
-                    }else{
-                        $meta = array_merge($meta, $ret);
                     }
+                    $meta = array_merge($meta, $ret);
                     break;
                 case 'pwd':
                     $output=$cd;
@@ -111,7 +110,8 @@ class HomeController extends Controller
                 case 'touch':
                     $filename = $msgt[1];
                     Storage::put($fs->getCd()."/".$filename,"");
-                    $output = $fs->ls("-h");
+                    $output ="Created new file $filename";
+
                     $hints = $fs->ls("-j"); 
                    // $options=$fs->ls("-o");
                     $table = $fs->ls("-t");
