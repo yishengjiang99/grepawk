@@ -1,3 +1,54 @@
+commit 8ef82d69d8fe733bfbead4bf0cc1fe186eb8a05b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 19:57:37 2019 -0800
+
+    fix
+
+commit 37269e265f0d4b6e39615c5006c729937edb666b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 19:51:50 2019 -0800
+
+    fix
+
+commit 18e507772cdc12beee08a15f34a2d6a703535a96
+Merge: 348f3ab a226825
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 19:33:30 2019 -0800
+
+    merge conflic
+
+commit 348f3ab07f951ea79c4f099fbb1b56d99522ab54
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 19:32:45 2019 -0800
+
+    rough draft
+
+commit a2268255ce30a170bbcc9e214a38156c731a26d5
+Merge: a24152d 613956e
+Author: Ubuntu <ubuntu@ip-10-0-0-130.us-west-1.compute.internal>
+Date:   Fri Jan 4 03:20:48 2019 +0000
+
+    QqqOø
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit a24152ddc8d979dee1de88dd568e7f171c345f6f
+Author: Ubuntu <ubuntu@ip-10-0-0-130.us-west-1.compute.internal>
+Date:   Fri Jan 4 03:20:43 2019 +0000
+
+    update
+
+commit 613956ee9c14059889735f2dab1ab6fbfe1139ac
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 13:56:23 2019 -0800
+
+    fixerror
+
+commit c132cedc4eccf8c3f616dc776a24f2cc14c0e8ff
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 13:41:34 2019 -0800
+
+    changes
+
 commit 289d633f04e7ac034bfce266ce67e96ace0adadc
 Author: Yisheng Jiang <yisheng.jiang@gmail.com>
 Date:   Thu Jan 3 13:41:02 2019 -0800
@@ -77,7 +128,7 @@ Date:   Wed Jan 2 13:12:07 2019 -0800
     new fs
 
 commit 7fc5b76eb0cb34c5083a8a30d08c8299cd55ef85
-Merge: 6e9237bd d9448280
+Merge: 6e9237b d944828
 Author: Yisheng Jiang <yisheng.jiang@gmail.com>
 Date:   Wed Jan 2 11:27:09 2019 -0800
 
@@ -90,7 +141,7 @@ Date:   Wed Jan 2 11:27:05 2019 -0800
     add back css
 
 commit d94482808e77cff0d31171a6017679a68e420665
-Merge: f322dba7 68b45eb8
+Merge: f322dba 68b45eb
 Author: Ubuntu <ubuntu@ip-10-0-0-130.us-west-1.compute.internal>
 Date:   Wed Jan 2 18:38:55 2019 +0000
 
