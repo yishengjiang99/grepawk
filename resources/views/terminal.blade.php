@@ -114,20 +114,21 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       var cmd = args[0].toLowerCase();
       args = args.splice(1); // Remove cmd from arg list.
 
-      // var option_index=parseInt(cmd);
+      var option_index=parseInt(cmd);
 
-      // if(option_index){
-      //   if(false && more_options_index !=-1 && option_index==more_options_index){
-      //     full_options_mode=true;
-      //     outputOptions(); // todo: ????
-      //     window.scrollTo(0,document.body.scrollHeight+100);// todo: ???
-      //     return;
-      //   }
-      //   if(typeof option_select[option_index-1] !== 'undefined') {
-      //     cmd = option_select[option_index-1];
-      //   }
-      // } 
-      
+      if(option_index){
+        if(false && more_options_index !=-1 && option_index==more_options_index){
+          // full_options_mode=true;
+          // outputOptions(); // todo: ????
+          // window.scrollTo(0,document.body.scrollHeight+100);// todo: ???
+          // return;
+        }
+        if(typeof option_select[option_index-1] !== 'undefined') {
+          cmd = option_select[option_index-1];
+        }
+      } 
+      $(".cmdline").last().val("");
+
       //$(".cmdline").removeAttr("value");
       switch (cmd) {
         case 'new':
@@ -140,10 +141,18 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           if (cmd) {
             $.getJSON("/stdin?msg="+cmd, function(ret){
               _parse_api_response(ret);
+
+              $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
+
+
             });
           }
       };
-	    window.scrollTo(0,document.body.scrollHeight+100);
+
+      $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
+                
     }
   }
 
