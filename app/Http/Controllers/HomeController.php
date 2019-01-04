@@ -79,7 +79,7 @@ class HomeController extends Controller
                 case "get":
                     $mimetype=mime_content_type(Storage::path($argv1));
                     header("Content-Type: $mimetype");
-                    $download_file="grepawk_download_$mimetype_".basename($argv1);
+                    $download_file="grepawk_download_".$mimetype."_".basename($argv1);
                     header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
                     echo Storage::get($argv1);
                     break;
