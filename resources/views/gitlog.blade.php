@@ -1,3 +1,66 @@
+commit a2aeef95003dff8a7312664278658b153cae2ff2
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 11:27:47 2019 -0800
+
+    landing page ui, responsiveness style update
+
+commit ab9d6066490658e12532ad1c028087121e78ebcf
+Merge: e77c8ce 16643b4
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 11:24:11 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit e77c8ce80d7c76a6385af639e19e09511f1bab71
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 11:24:03 2019 -0800
+
+    UI formatting
+
+commit 16643b4ddb612ac12481338912dd85d9b064fc97
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 05:21:43 2019 +0000
+
+    fix
+
+commit ea4ac71716e3ce45cfc916e0d8423779d0688d9c
+Merge: ea66050 1da14e6
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 05:18:18 2019 +0000
+
+    fix
+
+commit ea66050c23aaae81513dd26ccc926945289b60dc
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 05:17:39 2019 +0000
+
+    fix
+
+commit 1da14e60ee694a6920d955ba1b6bc8eaffc62b7a
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 21:16:49 2019 -0800
+
+    fix
+
+commit 8b823be161731e3c072974c85b9e2ccd1f790766
+Merge: 392b6a8 013554c
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 21:11:07 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit 392b6a8d111865d67e321e14e02cc9bad302bd36
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 3 21:11:01 2019 -0800
+
+    fix
+
+commit 013554c49d1554f0047627c409d26e1f85e64373
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 04:33:37 2019 +0000
+
+    git pull from prod
+
 commit 462b0f1a08c855a33525c6690d2f32856d0d3e4d
 Merge: 5184a74 ad1b522
 Author: Yisheng Jiang <yisheng.jiang@gmail.com>
