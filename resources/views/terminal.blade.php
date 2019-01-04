@@ -144,7 +144,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           }
       };
 
-      window.scrollTo(0, getDocHeight_());
+      window.scrollTo(0, getDocHeight_()+800);
       this.value = ''; // Clear/setup line for next input.
     }
   }

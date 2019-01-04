@@ -12,6 +12,15 @@ class FileController extends Controller
     public function upload(Request $request){
         Log::debug("upload api called");
         $fs=FileSystem::getInstance();
+        ob_start("callback");
+
+        $cbstr=json_encode([
+            'output'=>'Started uploading '
+        ]);
+
+        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
+        ob_end_flush();
+
         $output="";
         $error="";
         $hints=[];
@@ -31,7 +40,9 @@ class FileController extends Controller
             'options'=>$options,
             "error"=>$error,
         ]);
-        die("<script>parent.iframe_interface('$cbstr')</script>");
+        echo "<script>parent.iframe_interface('$cbstr')</script>";
+        ob_end_flush();
+
     }
     public function create(Request $request){
         $output="";
