@@ -90,6 +90,8 @@ GrepAwk.net is a web service that generalizes several storage methods on a files
 You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the email 'guest@grepawk.net' and password 'welcome'.
 </p>
 
+<p>If you are logged in, you can try the product at <a href='/home'>here</a></p>
+
 <h3>Recent Changes</h3>
 <div>
 <textarea cols=80 rows=30>
