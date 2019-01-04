@@ -108,25 +108,28 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
-      var option_index=parseInt(this.value);
-      if(option_index){
-        if(more_options_index !=-1 && option_index==more_options_index){
-          full_options_mode=true;
-          outputOptions();
-         window.scrollTo(0,document.body.scrollHeight+100);
-           return;
-        }
-        if(typeof option_select[option_index-1] !== 'undefined') {
-          this.value = option_select[option_index-1];
-        }
-      } 
-      if (this.value && this.value.trim()) {
-        var args = this.value.split(' ').filter(function(val, i) {
+      var args = this.value.split(' ').filter(function(val, i) {
           return val;
         });
-        var cmd = args[0].toLowerCase();
-        args = args.splice(1); // Remove cmd from arg list.
-      }     
+      var cmd = args[0].toLowerCase();
+      args = args.splice(1); // Remove cmd from arg list.
+
+      var option_index=parseInt(cmd);
+
+      if(option_index){
+        if(false && more_options_index !=-1 && option_index==more_options_index){
+          // full_options_mode=true;
+          // outputOptions(); // todo: ????
+          // window.scrollTo(0,document.body.scrollHeight+100);// todo: ???
+          // return;
+        }
+        if(typeof option_select[option_index-1] !== 'undefined') {
+          cmd = option_select[option_index-1];
+        }
+      } 
+      $(".cmdline").last().val("");
+
+      //$(".cmdline").removeAttr("value");
       switch (cmd) {
         case 'new':
           outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
@@ -136,15 +139,20 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           break;
         default:
           if (cmd) {
-//            if(parent && parent.iframe_interface) parent.iframe_interface("debug","/stdin?msg="+this.value);
-            $.getJSON("/stdin?msg="+this.value,function(ret){
+            $.getJSON("/stdin?msg="+cmd, function(ret){
               _parse_api_response(ret);
+
+              $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
+
+
             });
           }
       };
-	
-	window.scrollTo(0,document.body.scrollHeight+100);
 
+      $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
+                
     }
   }
 
@@ -198,6 +206,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   }
   function outputIframe(url){
      $("#preview_content").html('<iframe width=100% height=100% src="'+url+'"></iframe>').parent().show();
+  }
+  function open_dl_iframe(url){
+     $("#file_download_1").attr("src",url);
   }
   function outputError(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
@@ -267,7 +278,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       output(string)
     },
     processNewCommand:function(cmd){
-	processNewCommand_(cmd);
+	    processNewCommand_(cmd);
     }
   }
 };
@@ -318,7 +329,7 @@ function iframe_interface(msg){
     <div id="caption"></div>
   </div>
 
-  <div style='display:none'>
+  <div id='forms-section' style='display:none'>
     <form id='new_file_form'>
       @csrf
       <div class="form-group">
@@ -344,8 +355,11 @@ function iframe_interface(msg){
         <input type="submit" name="submitBtn" value="Upload" />
     </form>
   </div>
-  <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
 
+  <div id='iframes' style='display:none'>
+    <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+    <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+  </div>
 </body>
 
 </html>
