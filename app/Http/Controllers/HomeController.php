@@ -74,6 +74,7 @@ class HomeController extends Controller
         $cd = $fs->getCd();
         $meta=[];
         $options=null;
+        $table=null;
         try{
             switch($cmd){
                 case "get":
@@ -86,13 +87,15 @@ class HomeController extends Controller
                 case "ls":
                     $output = $fs->ls("-h");
                     $hints = $fs->ls("-j"); 
-                    $options=$fs->ls("-o");
+                    //$options=$fs->ls("-o");
+                    $table = $fs->ls("-t");
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output = $fs->ls("-h");
-                    $options=$fs->ls("-o");   
+                   // $options=$fs->ls("-o");   
+                    $table = $fs->ls("-t");
                     break;
                 case 'cat':
                     $ret = $fs->cat($argv1);
@@ -112,7 +115,8 @@ class HomeController extends Controller
                     Storage::put($fs->getCd()."/".$filename,"");
                     $output = $fs->ls("-h");
                     $hints = $fs->ls("-j"); 
-                    $options=$fs->ls("-o");
+                   // $options=$fs->ls("-o");
+                    $table = $fs->ls("-t");
                     break;
                 case 'upload':
                     break;
@@ -138,10 +142,12 @@ class HomeController extends Controller
                     break;
                 default:
                     $err=$cmd." known";
+                    $table = $fs->ls("-t");
                     break;
             }  
         }catch(\Exception $e){
             $error=$e->getMessage();
+            $table = $fs->ls("-t");
         }
 
 
@@ -155,8 +161,7 @@ class HomeController extends Controller
             'options'=>$options,
             "error"=>$error,
             'meta'=>$meta,
-
-
+            'table'=>$table
         ]);
     }
 

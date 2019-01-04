@@ -52,7 +52,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   cmdLine_.addEventListener('click', inputTextClick_, false);
   cmdLine_.addEventListener('keydown', historyHandler_, false);
   cmdLine_.addEventListener('keydown', processNewCommand_, false);
-
   //
   function inputTextClick_(e) {
     this.value = this.value;
@@ -108,10 +107,16 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
-      var args = this.value.split(' ').filter(function(val, i) {
+      var cmd_str = this.value;
+      _cmd_string(cmd_str);
+      $(".cmdline").last().val("");
+    }
+  }
+  function _cmd_string(cmd_str){
+    var args = cmd_str.split(' ').filter(function(val, i) {
           return val;
         });
-      var cmd = args[0].toLowerCase();
+    var cmd = args[0].toLowerCase();
       args = args.splice(1); // Remove cmd from arg list.
 
       var option_index=parseInt(cmd);
@@ -127,9 +132,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           cmd = option_select[option_index-1];
         }
       } 
-      $(".cmdline").last().val("");
-
-      //$(".cmdline").removeAttr("value");
+          //$(".cmdline").removeAttr("value");
       switch (cmd) {
         case 'new':
           outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
@@ -139,23 +142,17 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           break;
         default:
           if (cmd) {
-            $.getJSON("/stdin?msg="+cmd, function(ret){
+           var fullcmd = encodeURIComponent(cmd + " " + args.join());
+            $.getJSON("/stdin?msg="+fullcmd, function(ret){
               _parse_api_response(ret);
-
               $('html, body').animate({scrollTop:$(document).height()}, 'fast');
               window.scrollTo(0,getDocHeight_());
-
-
             });
           }
       };
-
       $('html, body').animate({scrollTop:$(document).height()}, 'fast');
               window.scrollTo(0,getDocHeight_());
-                
-    }
   }
-
   //
   function formatColumns_(entries) {
     var maxName = entries[0].name;
@@ -213,6 +210,36 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   function outputError(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
   }
+  function outputTable(table){
+    var html='<table class=table border=0>';
+    if(table.headers){
+        html+="<thead>";
+        html+="<tr>";
+        $.each(table.headers, function(i,header){
+          html+="<th>"+header+"</th>";
+        });
+        html+="</tr></thead>";
+    }
+    $.each(table.rows, function(index,row){
+      html+="<tr>";
+      $.each(table.headers, function(i,header){
+        var val= row[header] || "";
+        if(header==='link'){
+          if(val.indexOf("onclick:")===0){
+            var cmd_str = val.replace("onclick:","");
+            var onclick = "term.processNewCommand(\""+cmd_str+"\")";
+            val = "<a href='javascript://' class='onclick_cmd' cmd='"+cmd_str+"'>link</a>";
+          }else{
+            val = "<a target=_blank href='"+val+"'>link</a>";
+          }
+        }
+        html+="<td>"+val+"</td>";
+      });
+      html+="</tr>";
+    });
+    html+="</table>";
+    outputHtml("<div style='height:400px;overflow-y:scroll'>"+html+"</div>");
+  }
 
   // Cross-browser impl to get document's height.
   function getDocHeight_() {
@@ -242,6 +269,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       if(ret.output){
         output(ret.output);
       }
+      if(ret.table){
+        outputTable(ret.table);
+      }
       if(ret.options){
           option_select=ret.options;
           outputOptions();
@@ -256,7 +286,8 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         outputPrompts(ret.meta.prompts);
       }
       if(ret.meta && ret.meta.url){
-        outputIframe(ret.meta.url);
+        debugger;
+        window.open(ret.meta.url,'_blank');
       }
   }
 
@@ -279,6 +310,9 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     },
     processNewCommand:function(cmd){
 	    processNewCommand_(cmd);
+    },
+    cmd_string: function(str){
+      _cmd_string(str);
     }
   }
 };
@@ -289,9 +323,7 @@ $(function() {
     var term = new Terminal('#input-line .cmdline', '#container output');
     term.setUsername("{{$username}}@grepawk");
     term.setCd("{{$cd}}");
-
     term.init();
-    term.processNewCommand("ls");
     var g_previewModal = document.getElementById('previewModal');
     $("body").on('click', "#new-file-submit",function(e){
       e.preventDefault();
@@ -303,7 +335,13 @@ $(function() {
         _form.remove();
       });
     })
+    $("body").on('click','.onclick_cmd',function(e){
+        e.preventDefault();
+        term.cmd_string($(this).attr('cmd'));
+    });
     window.terminal=term;
+    term.cmd_string("ls");
+
    // term.updatePrompt();
 });
 function iframe_interface(msg){
@@ -323,11 +361,6 @@ function iframe_interface(msg){
             <div class="prompt"></div><div><input size=100 class="cmdline" autofocus /></div>
         </div>
     </div>
-  <div id="previewModal" class="modal">
-    <span class="close">&times;</span>
-    <div id='preview_content'></div>
-    <div id="caption"></div>
-  </div>
 
   <div id='forms-section' style='display:none'>
     <form id='new_file_form'>

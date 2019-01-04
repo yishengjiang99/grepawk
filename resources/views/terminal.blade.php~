@@ -2,6 +2,8 @@
 <head>
     <title>cmd</title>
      <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
+     <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -37,6 +39,11 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var histtemp_ = 0;
   var username_="guest";
   var cd_ = "/public";
+  var option_select=[];
+  var activePrompt=null;
+  var prompt_select=[];
+  var more_options_index=-1;
+  var full_options_mode=false;
   
   window.addEventListener('click', function(e) {
    // cmdLine_.focus();
@@ -45,7 +52,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   cmdLine_.addEventListener('click', inputTextClick_, false);
   cmdLine_.addEventListener('keydown', historyHandler_, false);
   cmdLine_.addEventListener('keydown', processNewCommand_, false);
-
   //
   function inputTextClick_(e) {
     this.value = this.value;
@@ -101,46 +107,48 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.autofocus = true;
       input.readOnly = true;
       output_.appendChild(line);
-      if (this.value && this.value.trim()) {
-        var args = this.value.split(' ').filter(function(val, i) {
+      var args = this.value.split(' ').filter(function(val, i) {
           return val;
         });
-        var cmd = args[0].toLowerCase();
-        args = args.splice(1); // Remove cmd from arg list.
-      }
-      
+      var cmd = args[0].toLowerCase();
+      args = args.splice(1); // Remove cmd from arg list.
+
+      var option_index=parseInt(cmd);
+
+      if(option_index){
+        if(false && more_options_index !=-1 && option_index==more_options_index){
+          // full_options_mode=true;
+          // outputOptions(); // todo: ????
+          // window.scrollTo(0,document.body.scrollHeight+100);// todo: ???
+          // return;
+        }
+        if(typeof option_select[option_index-1] !== 'undefined') {
+          cmd = option_select[option_index-1];
+        }
+      } 
+      $(".cmdline").last().val("");
+      //$(".cmdline").removeAttr("value");
       switch (cmd) {
         case 'new':
-           input.autofocus = false;
-           outputHtl(
-              "<form method='POST'style='background-color:grey;color:white' action='/photos/create'>"
-              + "<textarea style='background-color:transparent' class='cmd' rows=30 cols=60 name='filename' placeholder='filec oontent'></textarea>"
-              + "<br><input style='background-color:transparent' class='cmd' type=text name='filename' placeholder='filename'>"
-              + "<br><input type=submit>"
-              +"</form>");
+          outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
+          break;
+        case 'upload':
+          outputHtml($("#new_file_upload_form").clone().wrap('<div>').parent().html())
+          break;
         default:
-          input.autofocus = false;
-
           if (cmd) {
-            $.getJSON("/stdin?msg="+this.value,function(ret){
-              if(ret.options){
-                outputOptions(ret.options);
-              }
-              if(ret.output){
-                output(ret.output);
-              }
-              if(ret.error){
-                outputError(ret.error);
-              }
-              if(ret.cd){
-                set_cd(ret.cd);
-              }
+           var fullcmd = encodeURIComponent(cmd + " " + args.join());
+            $.getJSON("/stdin?msg="+fullcmd, function(ret){
+              _parse_api_response(ret);
+              $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
             });
           }
       };
 
-      window.scrollTo(0, getDocHeight_());
-      this.value = ''; // Clear/setup line for next input.
+      $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+              window.scrollTo(0,getDocHeight_());
+                
     }
   }
 
@@ -162,24 +170,74 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     return ['<div class="ls-files" style="-webkit-column-width:',
             colWidth, 'px;', height, '">'];
   }
-
-  function outputOptions(options){
-    output_.insertAdjacentHTML('beforeEnd',"<p>Numerical Options");
-    output_.insertAdjacentHTML('beforeEnd',"<ul>");
-
-    $.each(options,function(i,cmd){
-      output_.insertAdjacentHTML('beforeEnd', '<p style="color:grey">' + i +'): '+cmd + '</p>');
+  function outputPrompts(prompts){
+    $.each(prompts,function(i,prompt){
+      updatePromptWithString("What is the "+prompt+"? >");
     });
   }
+  function outputOptions(){
+    options=option_select;
+    output_.insertAdjacentHTML('beforeEnd',"<p>Numerical Options");
+    output_.insertAdjacentHTML('beforeEnd',"<ol>");
+    $.each(options,function(i,cmd){
+      if(full_options_mode===false && i>50){
+        more_options_index=(i+1);
+        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): more option </li>');
+        return false;
+      }else{
+        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): '+cmd + '</li>');
+      }
+    });
+    output_.insertAdjacentHTML('beforeEnd',"</ol>");
+    output_.insertAdjacentHTML('beforeEnd',"</p>");
+    full_options_mode=false;
+
+  }
   //
-  function outputHtl(html) {
+  function outputHtml(html) {
     output_.insertAdjacentHTML('beforeEnd', html);
   }
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
   }
+  function outputIframe(url){
+     $("#preview_content").html('<iframe width=100% height=100% src="'+url+'"></iframe>').parent().show();
+  }
+  function open_dl_iframe(url){
+     $("#file_download_1").attr("src",url);
+  }
   function outputError(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
+  }
+  function outputTable(table){
+    var html='<table class=table border=0>';
+    if(table.headers){
+        html+="<thead>";
+        html+="<tr>";
+        $.each(table.headers, function(i,header){
+          html+="<th>"+header+"</th>";
+        });
+        html+="</tr></thead>";
+    }
+    $.each(table.rows, function(index,row){
+      html+="<tr>";
+      $.each(table.headers, function(i,header){
+        var val= row[header] || "";
+        if(header==='link'){
+          if(val.indexOf("onclick:")===0){
+            var cmd_str = val.replace("onclick:","");
+            var onclick = "term.processNewCommand(\""+cmd_str+"\")";
+            val = "<a href='javascript://' class=onclick_cmd cmd='"+cmd_str+"'>link</a>";
+          }else{
+            val = "<a target=_blank href='"+val+"'>link</a>";
+          }
+        }
+        html+="<td>"+val+"</td>";
+      });
+      html+="</tr>";
+    });
+    html+="</table>";
+    outputHtml("<div style='height:400px;overflow-y:scroll'>"+html+"</div>");
   }
 
   // Cross-browser impl to get document's height.
@@ -198,16 +256,43 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   }
   function setUsername(username){
     username_=username;
-      updatePrompt();
+     updatePrompt();
   }
   function updatePrompt(){
-    $(".prompt").last().html('['+username_+']:'+cd_);
+    updatePromptWithString('['+username_+']:'+cd_);
+  }
+  function updatePromptWithString(string){
+    $(".prompt").last().html(string);
+  }
+  function _parse_api_response(ret){
+      if(ret.output){
+        output(ret.output);
+      }
+      if(ret.table){
+        outputTable(ret.table);
+      }
+      if(ret.options){
+          option_select=ret.options;
+          outputOptions();
+      }
+      if(ret.error){
+        outputError(ret.error);
+      }
+      if(ret.cd){
+        set_cd(ret.cd);
+      }
+      if(ret.meta && ret.meta.prompts){
+        outputPrompts(ret.meta.prompts);
+      }
+      if(ret.meta && ret.meta.url){
+        outputIframe(ret.meta.url);
+      }
   }
 
   //
   return {
     init: function() {
-      output('Welcome to grep|awk 2.0');
+      output('Welcome to grep|awk 2.0. <br>Try typing commands like "ls", "new", "upload" to get started.');
     },
     setUsername:function(username){
       setUsername(username);
@@ -215,28 +300,95 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     setCd:function(cd){
       set_cd(cd);
     },
+    parse_api_response:function(ret){
+      _parse_api_response(ret);
+    },
+    output_ext:function(string){
+      output(string)
+    },
+    processNewCommand:function(cmd){
+	    processNewCommand_(cmd);
+    }
   }
 };
 
 
 $(function() {
-
   // Initialize a new terminal object  
     var term = new Terminal('#input-line .cmdline', '#container output');
-    term.init();
     term.setUsername("{{$username}}@grepawk");
     term.setCd("{{$cd}}");
 
+    term.init();
+    term.processNewCommand("ls");
+    var g_previewModal = document.getElementById('previewModal');
+    $("body").on('click', "#new-file-submit",function(e){
+      e.preventDefault();
+      var _form =$(this).closest('form');
+      var entries=_form.serialize();
+      $.post("/files/new",entries,function(ret){
+        term.output_ext("File Uploaded");
+        term.parse_api_response(ret)
+        _form.remove();
+      });
+    })
+    window.terminal=term;
    // term.updatePrompt();
 });
+function iframe_interface(msg){
+  ret=$.parseJSON(msg);
+  window.terminal.parse_api_response(ret);
+  if(ret.output=='upload completed'){
+    $("#new_file_upload_form").remove();
+  }
+}
+
 </script>
 </head>
 <body style='background-color:black;color:white'>
-    <div id="container">
+    <div id="container" class='container'>
         <output></output>
         <div id="input-line" class="input-line">
-            <div class="prompt"></div><div><input class="cmdline" autofocus /></div>
+            <div class="prompt"></div><div><input size=100 class="cmdline" autofocus /></div>
         </div>
     </div>
+  <div id="previewModal" class="modal">
+    <span class="close">&times;</span>
+    <div id='preview_content'></div>
+    <div id="caption"></div>
+  </div>
+
+  <div id='forms-section' style='display:none'>
+    <form id='new_file_form'>
+      @csrf
+      <div class="form-group">
+        <label for="file-name-input">File Name</label>
+        <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
+      </div>
+      <div class="form-group">
+        <label for="file-content-input">File Content</label>
+        <TextArea type="text" name='filecontent' class="form-control" id="file-content-input" placeholder="Another input"></TextArea>
+      </div>
+      <div class="form-group">
+        <div class="offset-sm-2 col-sm-10">
+          <button id='new-file-submit' class="btn btn-primary">Create</button>
+        </div>
+      </div>
+    </form>
+    <form id='new_file_upload_form' method='POST' 
+          enctype="multipart/form-data" 
+          action='/files/upload' 
+          target="uploadTrg">
+        @csrf
+        <input type="file" class="form-control" id="file-select-input" name="file">
+        <input type="submit" name="submitBtn" value="Upload" />
+    </form>
+  </div>
+
+  <div id='iframes' style='display:none'>
+    <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+    <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+  </div>
 </body>
+
 </html>

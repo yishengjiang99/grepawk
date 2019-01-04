@@ -124,11 +124,33 @@ class FileSystem extends Model
         }
         return $output;
     }
+    //    $obj=['cmd'=>$cmd,'display'=>$display, 'link'=>$link];
+
+    if(in_array("-t", $options)){
+        $options=[];
+        $stdinurl = url("stdin")."?";
+
+        $options[]=['cmd'=>'ls','display'=>'List Files', 'link'=>$stdinurl."msg=ls"];
+        $options[]=['cmd'=>'new','display'=>'Create a new text file', 'link'=>"onclick:new"];
+        $options[]=['cmd'=>'upload','display'=>'Upload a file of any type', 'link'=>"onclick:upload"];
+
+        foreach($ret as $name=>$attr){
+            if(substr($name,0,1)==='_') continue;
+            $is_file = isset($attr['_type']) && $attr['_type']==='file';
+            $is_folder = !$is_file;
+            if($is_folder){
+                $options[]=['cmd'=>"cd $name",'display'=>"Open folder $name", 'link'=>"onclick:cd ".urlencode($name)];
+            }else{
+                $options[]=['cmd'=>"cat $name",'display'=>"Download or view file", 'link'=>"onclick:cat ".urlencode($name)];
+            }
+        }
+        return ['headers'=>['cmd','display','link'],'rows'=>$options];
+    }
     if(in_array("-o", $options)){
         $options=[];
+        $options[]='ls';
         $options[]='new';
         $options[]='upload';
-        $options[]='cd ..';
         foreach($ret as $name=>$attr){
             if(substr($name,0,1)==='_') continue;
             $is_file = isset($attr['_type']) && $attr['_type']==='file';
