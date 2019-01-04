@@ -177,10 +177,10 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     $.each(options,function(i,cmd){
       if(full_options_mode===false && i>50){
         more_options_index=(i+1);
-        output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): more option </li>');
+        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): more option </li>');
         return false;
       }else{
-        output_.insertAdjacentHTML('beforeEnd', "<li style='color:grey'>" + (i+1) +'): '+cmd + '</li>');
+        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): '+cmd + '</li>');
       }
     });
     output_.insertAdjacentHTML('beforeEnd',"</ol>");
