@@ -133,7 +133,7 @@ class FileSystem extends Model
             if(substr($name,0,1)==='_') continue;
             $is_file = isset($attr['_type']) && $attr['_type']==='file';
             $is_folder = !$is_file;
-            $options[] = $is_folder ? "cd $name" : "cat $name";
+            $options[] = $is_folder ? "cd $name" : "get $name";
         }
         return $options;
     }
