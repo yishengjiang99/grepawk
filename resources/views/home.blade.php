@@ -1,7 +1,7 @@
 @extends('layouts.app')
 @section('content')
 <div class='container-fluid'>
- <div style='margin: auto; width: 80%'>
+ <div class='col-lg-11'>
     <iframe src="{{ url('/terminal') }}" height=640 width='100%'></iframe>
  </div>
  <div id='debugger'></div>

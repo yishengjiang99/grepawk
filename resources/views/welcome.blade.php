@@ -83,9 +83,11 @@
             @endif
 
             <div class="content">
-<h3>grep|awk 2.0</h3>
+<h3>GrepAwk 2.0</h3>
 <p>
-GrepAwk is a web service that generalizes several storage methods on a filesystem-style interface.
+GrepAwk.net is a web service that generalizes several storage methods on a filesystem-style interface.
+<p>
+You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the email 'guest@grepawk.net' and password 'welcome'.
 </p>
 
 <h3>Recent Changes</h3>
