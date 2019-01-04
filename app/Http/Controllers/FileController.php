@@ -12,6 +12,9 @@ class FileController extends Controller
     public function upload(Request $request){
         Log::debug("upload api called");
         $fs=FileSystem::getInstance();
+
+        header( 'Content-type: text/html; charset=utf-8' );
+
         ob_start();
 
         $cbstr=json_encode([
@@ -19,23 +22,27 @@ class FileController extends Controller
         ]);
 
         echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        ob_end_flush();
+        flush();
+        ob_flush();
 
         sleep(2); //sleep for 2 seconds to let other processes run
         $cbstr=json_encode([
             'output'=>'Initiating connection..'
         ]);
+
         echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        ob_end_flush();
+        flush();
+        ob_flush();
 
 
         sleep(1); //sleep for 2 seconds to let other processes run
         $cbstr=json_encode([
             'output'=>'Checking account status'
         ]);
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        ob_end_flush();
 
+        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
+        flush();
+        ob_flush();
 
         //if(true || check_account_status()=='free'){
         if(true){
@@ -45,11 +52,9 @@ class FileController extends Controller
         $cbstr=json_encode([
             'output'=>'Starting upload'
         ]);
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
-        ob_end_flush();   
-
-
-
+        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
+        flush();
+        ob_flush();
 
         $output="";
         $error="";
@@ -61,7 +66,8 @@ class FileController extends Controller
                 'output'=>'Upload initiating.<br><br><br><br>',
             ]);
             echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
-            ob_end_flush();   
+            flush();
+            ob_flush();   
             $filePath =$file->storeAs($fs->getCd(),$file->getClientOriginalName());
             $output="$filePath is uploaded";
             $options=$fs->ls("-o");
@@ -76,8 +82,9 @@ class FileController extends Controller
             "error"=>$error,
         ]);
         echo "<script>parent.iframe_interface('$cbstr')</script>";
-        ob_end_flush();
-
+        flush();
+        ob_flush();   
+        exit;
     }
     public function create(Request $request){
         $output="";
