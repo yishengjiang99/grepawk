@@ -22,7 +22,7 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
+//        $this->middleware('auth');
     }
    
     /**
@@ -70,13 +70,18 @@ class HomeController extends Controller
         $output="";
         $error="";
         $hints=null;
-        $fs = FileSystem::makeInstance(Auth::user()->name);
+        $fs = FileSystem::getInstance();
         $cd = $fs->getCd();
         $meta=[];
         $options=null;
         $table=null;
+
+
         try{
             switch($cmd){
+                case "help":
+                    $output="ls, cd, wget, search, new, upload, mkdir";
+                    break;
                 case "get":
                     header("Content-Type: File/File");
                     $download_file="grepawk_download_".basename($argv1);
@@ -87,14 +92,12 @@ class HomeController extends Controller
                 case "ls":
                     $output = "File list of the ".$fs->getCd()." folder";
                     $hints = $fs->ls("-j"); 
-                    //$options=$fs->ls("-o");
                     $table = $fs->ls("-t");
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened ".$fs->get_fs_path()." folder";
-                   // $options=$fs->ls("-o");   
                     $table = $fs->ls("-t");
                     break;
                 case 'cat':

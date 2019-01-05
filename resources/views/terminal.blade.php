@@ -302,7 +302,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   //
   return {
     init: function() {
-      output('Welcome to grep|awk 2.0. <br>Try typing commands like "ls", "new", "upload" to get started.');
+      output('Welcome to grep|awk 2.0'); 
       output("<br><br>");
     },
     setUsername:function(username){
@@ -349,7 +349,7 @@ $(function() {
         term.cmd_string($(this).attr('cmd'));
     });
     window.terminal=term;
-    term.cmd_string("ls");
+    term.cmd_string("help");
 
    // term.updatePrompt();
 });
