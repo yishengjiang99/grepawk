@@ -368,7 +368,7 @@ $(function() {
   // Initialize a new terminal object  
     var term = new Terminal('#input-line .cmdline', '#container output');
     term.setUsername("{{$username}}@grepawk");
-    term.setCd("{{$cd}}");
+    term.setCd("{{$pwd}}");
     term.init();
     var g_previewModal = document.getElementById('previewModal');
     $("body").on('click', "#new-file-submit",function(e){

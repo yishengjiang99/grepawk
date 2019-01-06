@@ -1,254 +1,204 @@
 <?php
-
+/*
+    yet another attempt at writing vfs
+*/
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\ Database\ Eloquent\ Model;
+use Illuminate\ Support\ Facades\ Storage;
 use Auth;
+use DB;
 
-class FileSystem extends Model
-{
-    //
-  private const DIRS=[
-    'root'=>[
-        '_storage'=>'root',
-        'data'=>[
-            '_storage'=>'psql',
+class FileSystem extends Model {
+    private const virtual_fs = [
+        'data' => [
+            '_storage' => 'psql',
         ],
-        'search'=>[
-            '_storage'=>'search',
+        'search' => [
+            '_storage' => 'search',
+            'page_ranks'=>[
+                '_storage'=>'psql'
+            ]
         ],
-        'files'=>[
-            '_storage'=>'file'
+        'facebook' => [
+            '_storage' => 'facebook',
+            'top_users' => [
+                '_storage' => 'psql'
+            ]
         ],
-        'facebook'=>[
-            '_storage'=>'facebook'
+        'dropbox' => [
+            '_storage' => 'dropbox'
         ],
-        'dropbox'=>[
-            '_storage'=>'dropbox'
+        'myfiles' => [
+            '_storage' => 'filesystem'
         ],
-        'myfiles'=>[
-            '_storage'=>'filesystem'
+        'public' => [
+            '_storage' => 'filesystem'
         ],
-        'public'=>[
-            '_storage'=>'filesystem'
-        ]
-    ]
-  ];
+    ];
+    private static $_k = [];
 
+    private $pwd = "root";
+    private $root_node=null;
+    private $current_node=null;
+    private $privateDir = "guest";
+    private $userName = "guest";
 
-  private $cd="/root";
-  private static $_k=[];
-  private $privateDir="guest";
-  public static function getInstance(){
-    
-      if(Auth::user()!==null){
-        return self::makeInstance(Auth::user()->username);
-      }else{
-        return self::makeInstance();
-      }
-  }
-  public static function makeInstance($userName=0){
-    if(!isset(self::$_k[$userName])){
-
-      self::$_k[$userName] = new Filesystem();
-      if(session('cd')){
-        self::$_k[$userName]->setCd(session('cd'));
-      }
+    public function __construct($username){
+        $this->username=$username;
+        $this->privateDir = $username ? str_replace(" ", "_", $username) : "guest";
+        $this->root_node = new Folder("root","vfs");
+        $this->root_node->setVFS(self::virtual_fs);
+        $this->current_node=$this->root_node;
+        if(session('pwd')) {
+            $this->setPWD(session('pwd'));
+         }
     }
-    self::$_k[$userName]->privateDir = str_replace(" ","_",$userName);
-    return self::$_k[$userName];
-  }
 
-  public function get_fs_path(){
-    $cd = $this->cd;
-    $cd = str_replace("/root/myfiles",$this->privateDir,$cd);
-    if(!Storage::exists($cd)){
-        Storage::makeDirectory($cd);
-    }
-    return $cd;
-  }
-
-  public function ls_filesystem(){
-    $path=$this->get_fs_path();
-    $dirs=Storage::directories($path);
-    $ret=[];
-    foreach($dirs as $dir){
-        $dirname = str_replace($path."/","",$dir);
-        $dirname = $dirname.'/';
-        $ret[$dirname]=[
-            '_storage'=>'filesystem',
-        ];
-    }
-    $files=Storage::files($path);
-    foreach($files as $filename){
-        $filename = str_replace($path."/","",$filename);
-        $ret[$filename]=[
-            '_storage'=>'filesystem',
-            '_type'=>'file',
-            '_mimetype'=>Storage::mimeType($path."/".$filename),
-        ];
-    }
-    return $ret;
-  }
-  public function ls($options=""){
-    $options=explode(" ",$options);
-    $cd = $this->cd;
-    $cdt=explode("/",$cd);
-    $ret=self::DIRS;
-    $xpath=[];
-    $currentFileType="folder";
-    foreach($cdt as $t){
-        if(!$t) continue;
-        $xpath[]=$t;
-        $this->cd = implode("/",(Array)$xpath);
-        $filepath = $this->get_fs_path();
-        if(!isset($ret[$t])){
-            $hasPath=Storage::has($filepath);
-            if(!$hasPath){
-                throw new \Exception("cd to $t not found");
-            }
-            break;
+    public static function getInstance() {
+        if (Auth::user() !== null) {
+            return self::makeInstance(Auth::user() -> username);
+        } else {
+            return self::makeInstance();
         }
-        $ret=$ret[$t];
     }
-    $folderType = isset($ret['_storage']) ? $ret['_storage'] : "folder";
-
-    if($folderType=='filesystem'){
-        $ret = array_merge($ret,$this->ls_filesystem());
-    }
-
-    if(in_array("-h", $options)){
-        $output="";
-        foreach($ret as $name=>$attr){
-            if(substr($name,0,1)==='_') continue;
-            $is_file = isset($attr['_type']) && $attr['_type']==='file';
-            $is_folder = !$is_file;
-            $display = $is_folder ? $name : $name;
-            $output.=$display." ";
+    public static function makeInstance($userName = 0) {
+        if (!isset(self::$_k[$userName])) {
+            self::$_k[$userName] = new Filesystem($userName);
         }
-        return $output;
+        return self::$_k[$userName];
     }
 
-    if(in_array("-t", $options)){
-        $options=[];
-        $stdinurl = url("stdin")."?";
-        switch($folderType){
-            case 'filesystem':
-                $options[]=['cmd'=>'ls','display'=>'List Files', 'link'=>"onclick:msg=ls"];
-                $options[]=['cmd'=>'new','display'=>'Create a new text file', 'link'=>"onclick:new"];
-                $options[]=['cmd'=>'upload','display'=>'Upload a file of any type', 'link'=>"onclick:upload"];
-                break;
-            case 'search':
-                $options[]=['cmd'=>'search','display'=>'search {term}', 'link'=>"onclick:msg=seach <prompt>"];
-                break;
-            case 'search':
-
-                break;
-            default: break;
+    public function get_fs_path() {
+        $pwd = $this->pwd;
+        $pwd = str_replace("root/myfiles", $this->privateDir, $pwd);
+        if (!Storage::exists($pwd)) {
+            Storage::makeDirectory($pwd);
         }
-        foreach($ret as $name=>$attr){
-            if(substr($name,0,1)==='_') continue;
-            $is_file = isset($attr['_type']) && $attr['_type']==='file';
-            $is_folder = !$is_file;
-            $mimeType = isset($attr['_mimetype']) ? $attr['_mimetype'] : "";
-            if($is_folder){
-                $options[]=['cmd'=>"cd $name",'type'=>'folder', 'display'=>"Open folder $name", 'link'=>"onclick:cd ".urlencode($name)];
-            }else{
-                $options[]=['cmd'=>"cat $name",'type'=>$mimeType,'display'=>"Download or view file", 'link'=>"onclick:cat ".urlencode($name)];
-            }
-        }
-        return ['headers'=>['cmd','display','link'],'rows'=>$options];
+        return $pwd;
     }
-    if(in_array("-o", $options)){
-        $options=[];
-        $options[]='ls';
-        $options[]='new';
-        $options[]='upload';
-        foreach($ret as $name=>$attr){
-            if(substr($name,0,1)==='_') continue;
-            $is_file = isset($attr['_type']) && $attr['_type']==='file';
-            $is_folder = !$is_file;
-            $options[] = $is_folder ? "cd $name" : "get $name";
-        }
-        return $options;
+    public function ls($options="") {
+        $options = explode(" ", $options);
+        return $this->_ls($this->pwd,$options);
     }
-    if(in_array("-j", $options)){
-        $hints=[];
-        foreach($ret as $name=>$attr){
-            if(substr($name,0,1)==='_') continue;
-            $hints[]=$name;
-        }
-        return $hints;
-    }
-    return['xpath'=>$xpath,'list'=>$ret];
-  }
-  public function cat($filename){
-    if(substr($filename,0,1)=='/'){
-        $filepath=$filename;
-    }else{
-        $filepath = $this->get_fs_path()."/".$filename;
-    }
-
-    if(!Storage::exists($filepath)) throw new \Exception("$filename does not exist on fs");
-    $mimetype = Storage::mimeType($filepath);
-
-    $geturl=url("stdin")."?msg=".urlencode("get $filepath");
-
-    if(strpos($mimetype, "image")!==false){
-        return ['text_output'=>"Displaying $filename as image.",'image_link'=>$geturl];
-    }else if($mimetype==="text/html"){
-        return ['text_output'=>"Displaying $filename in preview iframe.",'iframe_link'=>$geturl];
-    }else if(strpos($mimetype, "text")!==false){
-        $output="<b>$filename</b>";
-        $output.="<br><br>";
-        $output.="<p><pre>".Storage::get($filepath)."</pre></p>";
-        return ['text_output'=>$output];
-    }else{
-        return ['text_output'=>"Downloading $filename",'download_link'=>$geturl];
-    }
-  }
-
-  public function put($filename,$content){
-      $filePath=$this->get_fs_path()."/".$filename;
-      return Storage::put($filePath,$content);
-  }
-  public function getCd(){
-    return $this->cd;
-  }
-  public function setCd($cd){
-      $this->cd=$cd;
-  }
-  public function cd($todir){
-    //  echo "<br> cd to $todir";
-    if($todir=='root'){
-        $this->cd = "root";
-        session(["cd"=>$this->cd]);
-        return $this->cd;
-    }
-    $todirT = explode("/",$todir);
-    $fs = $this->ls();
-    $xpath = $fs['xpath'];
-    foreach($todirT as $todirToken){
-        if($todirToken===".."){
-            if(count($xpath)==1){
-                $this->cd="root";
-                session(["cd"=>$this->cd]);
-                throw new \Exception("Cannot cd .. when at root directory");
-            }
-            array_pop($xpath);
+    public function _ls($path, $options){      
+        $list = $this->current_node->ls_children();
  
-        }else{
-            $xpath[]=$todirToken;
+        if (in_array("-h", $options)) {
+            $output = "";
+            foreach($list as $name => $attr) {
+                if (substr($name, 0, 1) === '_') continue;
+                $is_file = isset($attr['_type']) && $attr['_type'] === 'file';
+                $is_folder = !$is_file;
+                $display = $is_folder ? $name : $name;
+                $output .= $display." ";
+            }
+            return $output;
         }
-        $this->cd = implode("/",(Array)$xpath);
-        $fs = $this->ls();
-        $xpath = $fs['xpath'];
+
+        if (in_array("-t", $options)) {
+            $options = [];            
+            switch ($this->current_node->storage_type) {
+                case 'filesystem':
+                    $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
+                    $options[] = ['cmd' => 'new', 'display' => 'Create a new text file', 'link' => "onclick:new"];
+                    $options[] = ['cmd' => 'upload', 'display' => 'Upload a file of any type', 'link' => "onclick:upload"];
+                    break;
+                case 'search':
+                    $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}', 'link' => "onclick:msg=seach <prompt>"];
+                    break;
+                default:
+                    break;
+            }
+
+            foreach($list as $name => $attr) {
+                if (substr($name, 0, 1) === '_') continue;
+                $is_file = isset($attr['_type']) && $attr['_type'] === 'file';
+                $is_folder = !$is_file;
+                $mimeType = isset($attr['_mimetype']) ? $attr['_mimetype'] : "";
+                if ($is_folder) {
+                    $options[] = ['cmd' => "cd $name", 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
+                } else {
+                    $options[] = ['cmd' => "cat $name", 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+                }
+            }
+            return ['headers' => ['cmd', 'display', 'link'], 'rows' => $options];
+        }
+        if (in_array("-o", $options)) {
+            $options = [];
+            $options[] = 'ls';
+            $options[] = 'new';
+            $options[] = 'upload';
+            foreach($list as $name => $attr) {
+                if (substr($name, 0, 1) === '_') continue;
+                $is_file = isset($attr['_type']) && $attr['_type'] === 'file';
+                $is_folder = !$is_file;
+                $options[] = $is_folder ? "cd $name" : "get $name";
+            }
+            return $options;
+        }
+        if (in_array("-j", $options)) {
+            $hints = [];
+            foreach($list as $name => $attr) {
+                if (substr($name, 0, 1) === '_') continue;
+                $hints[] = $name;
+            }
+            return $hints;
+        }
+        return ['xpath' => explode("/", $this -> cd), 'list' => $list];
     }
-    if(!$xpath) $xpath=[];
-    $this->cd = implode("/",(Array)$xpath);
-    //exit;
-    session(["cd"=>$this->cd]);
-    return $this->cd;
-  }
+    public function cat($filename) {
+        if (substr($filename, 0, 1) == '/') {
+            $filepath = $filename;
+        } else {
+            $filepath = $this -> get_fs_path().
+            "/".$filename;
+        }
+
+        if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
+        $mimetype = Storage::mimeType($filepath);
+
+        $geturl = url("stdin")."?msg=".urlencode("get $filepath");
+
+        if (strpos($mimetype, "image") !== false) {
+            return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
+        } else if ($mimetype === "text/html") {
+            return ['text_output' => "Displaying $filename in preview iframe.", 'iframe_link' => $geturl];
+        } else if (strpos($mimetype, "text") !== false) {
+            $output = "<b>$filename</b>";
+            $output .= "<br><br>";
+            $output .= "<p><pre>".Storage::get($filepath)."</pre></p>";
+            return ['text_output' => $output];
+        } else {
+            return ['text_output' => "Downloading $filename", 'download_link' => $geturl];
+        }
+    }
+
+    public function put($filename, $content) {
+        $filePath = $this -> get_fs_path()."/".$filename;
+        return Storage::put($filePath, $content);
+    }
+    public function getPWD() {
+        return $this->pwd;
+    }
+    public function setPWD($pwd) {
+        $this->pwd = $pwd;
+        $pwd_parts = explode("/",$this->pwd);
+        $node = $this->root_node;
+        foreach($pwd_parts as $part){
+            $node->cd($part);
+        }
+        session(["pwd" => $this->pwd]);
+    }
+    public function cd($todir) {
+        if($todir==='/'){
+            $this->setPWD('root'); 
+        }elseif(substr($todir,0,1)==='/'){//using absolute path
+            $todir="root".$todir;
+            $this->setPWD($todir); 
+        }else{
+            $this->setPWD($this->getPWD()."/".$todir);
+        }
+        return $this->getPWD();
+    }
 }

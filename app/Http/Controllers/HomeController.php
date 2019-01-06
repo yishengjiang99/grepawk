@@ -13,8 +13,6 @@ use App\FileSystem;
 class HomeController extends Controller
 {
 
-    private $cd='/';
-    private $private_dir;
     /**
      * Create a new controller instance.
      *
@@ -34,25 +32,22 @@ class HomeController extends Controller
     {
         return view('home');
     }
+
     public function terminal(){
         if(Auth::user()!==null){
             $this->private_dir = str_replace(" ","_",Auth::user()->name);
             $this->username=Auth::user()->name;
             $fs=FileSystem::makeInstance(Auth::user()->name);
-
         }else{
             $this->private_dir="anon";
-             $fs=FileSystem::makeInstance(0);
+            $fs=FileSystem::makeInstance(0);
             $this->username="guest";
         }
-
-
         if(!File::exists($this->private_dir)){
             Storage::makeDirectory($this->private_dir);
         }       
-
         return view('terminal',['username'=>$this->username, 
-                                'cd'=>$fs->getCd(),
+                                'pwd'=>$fs->getPWD(),
                                 ]);
     }
 
@@ -71,17 +66,17 @@ class HomeController extends Controller
         $error="";
         $hints=null;
         $fs = FileSystem::getInstance();
-        $cd = $fs->getCd();
+        $pwd = $fs->getPWD();
         $meta=[];
         $options=null;
         $table=null;
         try{
             switch($cmd){
                 case "help":
-                    $output="ls, cd, wget, search, new, upload, mkdir";
                     $options=$fs->ls('-t');
                     break;
                 case 'checkin':
+                    $output="...";
                     $options=$fs->ls('-t');
                     break;
                 case "get":
@@ -92,7 +87,7 @@ class HomeController extends Controller
                     exit;
                     break;
                 case "ls":
-                    $output = "File list of the ".$fs->getCd()." folder";
+                    $output = "File list of the ".$fs->getPWD()." folder";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-t');
@@ -112,15 +107,13 @@ class HomeController extends Controller
                     $meta = array_merge($meta, $ret);
                     break;
                 case 'pwd':
-                    $output=$cd;
+                    $output=$fs->getPWD();
                     break;
                 case 'touch':
                     $filename = $msgt[1];
                     Storage::put($fs->getCd()."/".$filename,"");
                     $output ="Created new file $filename";
-
                     $hints = $fs->ls("-j"); 
-                   // $options=$fs->ls("-o");
                     $table = $fs->ls("-t");
                     break;
                 case 'upload':
@@ -151,16 +144,13 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
+            throw $e;
             $error=$e->getMessage();
             $table = $fs->ls("-t");
         }
 
-
-        $cdt=explode("/",$fs->getCd());
-        $cd=$cdt[count($cdt)-1];
-
         return response()->json([
-            "cd"=> $cd,
+            "pwd"=>$fs->getPWD(),
             "hints"=>$hints,
             "output"=>$output,
             'options'=>$options,
