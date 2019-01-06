@@ -75,12 +75,14 @@ class HomeController extends Controller
         $meta=[];
         $options=null;
         $table=null;
-
-
         try{
             switch($cmd){
                 case "help":
                     $output="ls, cd, wget, search, new, upload, mkdir";
+                    $options=$fs->ls('-t');
+                    break;
+                case 'checkin':
+                    $options=$fs->ls('-t');
                     break;
                 case "get":
                     header("Content-Type: File/File");
@@ -93,12 +95,14 @@ class HomeController extends Controller
                     $output = "File list of the ".$fs->getCd()." folder";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
+                    $options=$fs->ls('-t');
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened ".$fs->get_fs_path()." folder";
                     $table = $fs->ls("-t");
+                    $options=$table;
                     break;
                 case 'cat':
                     $ret = $fs->cat($argv1);

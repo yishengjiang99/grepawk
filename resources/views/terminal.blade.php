@@ -30,10 +30,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
         autoFocus:true,
         source:input_auto_complete_source,
         minLength:1,
-        // position:{
-        //   my: "left bottom",
-        //   at: "left top"
-        // },
         select:function(event,ui){
             //var _val = ui.item && ui.item.cmd || this.value;
             $cmdLine_.val(ui.item && ui.item.cmd || this.value);
@@ -76,14 +72,14 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var full_options_mode=false;
   
   window.addEventListener('click', function(e) {
-    cmdLine_.focus();
+   $(e.target).is("input") || $(e.target).is("input") ||  cmdLine_.focus();
   }, false);
 
 
   cmdLine_.addEventListener('click', inputTextClick_, false);
   cmdLine_.addEventListener('keydown', historyHandler_, false);
   cmdLine_.addEventListener('keydown', processNewCommand_, false);
-
+  
   function inputTextClick_(e) {
     this.value = this.value;
   }

@@ -11,11 +11,12 @@ class FileSystem extends Model
     //
   private const DIRS=[
     'root'=>[
+        '_storage'=>'root',
         'data'=>[
             '_storage'=>'psql',
         ],
         'search'=>[
-            '_storage'=>'psql',
+            '_storage'=>'search',
         ],
         'files'=>[
             '_storage'=>'file'
@@ -40,6 +41,7 @@ class FileSystem extends Model
   private static $_k=[];
   private $privateDir="guest";
   public static function getInstance(){
+    
       if(Auth::user()!==null){
         return self::makeInstance(Auth::user()->username);
       }else{
@@ -48,13 +50,10 @@ class FileSystem extends Model
   }
   public static function makeInstance($userName=0){
     if(!isset(self::$_k[$userName])){
+
       self::$_k[$userName] = new Filesystem();
-      if($userName && session('cd')){
-        if(session('cd')===str_replace(" ","_",$userName)){
-            self::$_k[$userName]->setCd('root/myfiles');
-        }else{
-            self::$_k[$userName]->setCd(session('cd'));
-        }
+      if(session('cd')){
+        self::$_k[$userName]->setCd(session('cd'));
       }
     }
     self::$_k[$userName]->privateDir = str_replace(" ","_",$userName);
@@ -69,8 +68,28 @@ class FileSystem extends Model
     }
     return $cd;
   }
-  public function mimeType($filename){
 
+  public function ls_filesystem(){
+    $path=$this->get_fs_path();
+    $dirs=Storage::directories($path);
+    $ret=[];
+    foreach($dirs as $dir){
+        $dirname = str_replace($path."/","",$dir);
+        $dirname = $dirname.'/';
+        $ret[$dirname]=[
+            '_storage'=>'filesystem',
+        ];
+    }
+    $files=Storage::files($path);
+    foreach($files as $filename){
+        $filename = str_replace($path."/","",$filename);
+        $ret[$filename]=[
+            '_storage'=>'filesystem',
+            '_type'=>'file',
+            '_mimetype'=>Storage::mimeType($path."/".$filename),
+        ];
+    }
+    return $ret;
   }
   public function ls($options=""){
     $options=explode(" ",$options);
@@ -93,26 +112,11 @@ class FileSystem extends Model
         }
         $ret=$ret[$t];
     }
-    $filetype = isset($ret['_storage']) ? $ret['_storage'] : "folder";
-    $path=$this->get_fs_path();
-    $dirs=Storage::directories($path);
-    foreach($dirs as $dir){
-        $dirname = str_replace($path."/","",$dir);
-        $dirname = $dirname.'/';
-        $ret[$dirname]=[
-            '_storage'=>'filesystem',
-        ];
-    }
-    $files=Storage::files($path);
-    foreach($files as $filename){
-        $filename = str_replace($path."/","",$filename);
-        $ret[$filename]=[
-            '_storage'=>'filesystem',
-            '_type'=>'file',
-            '_mimetype'=>Storage::mimeType($path."/".$filename),
-        ];
-    }
+    $folderType = isset($ret['_storage']) ? $ret['_storage'] : "folder";
 
+    if($folderType=='filesystem'){
+        $ret = array_merge($ret,$this->ls_filesystem());
+    }
 
     if(in_array("-h", $options)){
         $output="";
@@ -125,16 +129,24 @@ class FileSystem extends Model
         }
         return $output;
     }
-    //    $obj=['cmd'=>$cmd,'display'=>$display, 'link'=>$link];
 
     if(in_array("-t", $options)){
         $options=[];
         $stdinurl = url("stdin")."?";
+        switch($folderType){
+            case 'filesystem':
+                $options[]=['cmd'=>'ls','display'=>'List Files', 'link'=>"onclick:msg=ls"];
+                $options[]=['cmd'=>'new','display'=>'Create a new text file', 'link'=>"onclick:new"];
+                $options[]=['cmd'=>'upload','display'=>'Upload a file of any type', 'link'=>"onclick:upload"];
+                break;
+            case 'search':
+                $options[]=['cmd'=>'search','display'=>'search {term}', 'link'=>"onclick:msg=seach <prompt>"];
+                break;
+            case 'search':
 
-        $options[]=['cmd'=>'ls','display'=>'List Files', 'link'=>$stdinurl."msg=ls"];
-        $options[]=['cmd'=>'new','display'=>'Create a new text file', 'link'=>"onclick:new"];
-        $options[]=['cmd'=>'upload','display'=>'Upload a file of any type', 'link'=>"onclick:upload"];
-
+                break;
+            default: break;
+        }
         foreach($ret as $name=>$attr){
             if(substr($name,0,1)==='_') continue;
             $is_file = isset($attr['_type']) && $attr['_type']==='file';
@@ -194,7 +206,6 @@ class FileSystem extends Model
         return ['text_output'=>$output];
     }else{
         return ['text_output'=>"Downloading $filename",'download_link'=>$geturl];
-
     }
   }
 
