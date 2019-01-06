@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Auth;
 use File;
+use Log;
 use Illuminate\Console\Parser;
 use App\FS;
 use App\FileSystem;
@@ -53,10 +54,12 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
+        Log::debug("stdin: ".$request->fullUrl());
         $this->username="guest";
         $msg =$request->input("msg");
         $msg =urldecode($msg);
         if(!$msg) die("");
+        $oformat=$request->input("output","json");
         $msgt = explode(" ",$msg);
         $cmd = $msgt[0];
 
@@ -95,7 +98,7 @@ class HomeController extends Controller
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
-                    $output ="Opened ".$fs->get_fs_path()." folder";
+                    $output ="Opened $cd folder";
                     $table = $fs->ls("-t");
                     $options=$table;
                     break;
@@ -148,8 +151,9 @@ class HomeController extends Controller
             $error=$e->getMessage();
             $table = $fs->ls("-t");
         }
-
+        
         return response()->json([
+            "cd"=>basename($fs->getPWD()),
             "pwd"=>$fs->getPWD(),
             "hints"=>$hints,
             "output"=>$output,

@@ -46,8 +46,9 @@ class FileSystem extends Model {
 
     public function __construct($username){
         $this->username=$username;
-        $this->privateDir = $username ? str_replace(" ", "_", $username) : "guest";
+        $this->private_dir = $username ? str_replace(" ", "_", $username) : "guest";
         $this->root_node = new Folder("root","vfs");
+        $this->root_node->set_fs($this);
         $this->root_node->setVFS(self::virtual_fs);
         $this->current_node=$this->root_node;
         if(session('pwd')) {
@@ -68,22 +69,18 @@ class FileSystem extends Model {
         }
         return self::$_k[$userName];
     }
-
+    public function private_dir(){
+        return $this->private_dir;
+    }
     public function get_fs_path() {
-        $pwd = $this->pwd;
-        $pwd = str_replace("root/myfiles", $this->privateDir, $pwd);
-        if (!Storage::exists($pwd)) {
-            Storage::makeDirectory($pwd);
-        }
-        return $pwd;
+        return $this->current_node->fs_path();
     }
     public function ls($options="") {
         $options = explode(" ", $options);
         return $this->_ls($this->pwd,$options);
     }
-    public function _ls($path, $options){      
+    public function _ls($path, $options){  
         $list = $this->current_node->ls_children();
- 
         if (in_array("-h", $options)) {
             $output = "";
             foreach($list as $name => $attr) {
@@ -110,19 +107,17 @@ class FileSystem extends Model {
                 default:
                     break;
             }
-
-            foreach($list as $name => $attr) {
-                if (substr($name, 0, 1) === '_') continue;
-                $is_file = isset($attr['_type']) && $attr['_type'] === 'file';
-                $is_folder = !$is_file;
-                $mimeType = isset($attr['_mimetype']) ? $attr['_mimetype'] : "";
+            foreach($list as $child) {
+                $is_folder = strpos($child->get_mime_type(),"vfs_folder") !==false;
+                $mimeType = $child->get_mime_type();
+                $name = basename($child->path);
                 if ($is_folder) {
-                    $options[] = ['cmd' => "cd $name", 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
+                    $options[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
                 } else {
-                    $options[] = ['cmd' => "cat $name", 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+                    $options[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
                 }
             }
-            return ['headers' => ['cmd', 'display', 'link'], 'rows' => $options];
+            return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
         }
         if (in_array("-o", $options)) {
             $options = [];
@@ -182,12 +177,20 @@ class FileSystem extends Model {
         return $this->pwd;
     }
     public function setPWD($pwd) {
-        $this->pwd = $pwd;
-        $pwd_parts = explode("/",$this->pwd);
+        if($pwd==='root'){
+            $this->pwd=$pwd;
+            $this->current_node=$this->root_node;
+        }
+    
+        $pwd_parts = explode("/",$pwd);
         $node = $this->root_node;
         foreach($pwd_parts as $part){
-            $node->cd($part);
+
+            if($part==='root') continue;
+            $node=$node->cd($part);
         }
+        $this->pwd = $node->path;
+        $this->current_node = $node;
         session(["pwd" => $this->pwd]);
     }
     public function cd($todir) {

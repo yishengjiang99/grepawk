@@ -16,7 +16,7 @@ return [
     |
     */
 
-    'default' => env('LOG_CHANNEL', 'stack'),
+    'default' => env('LOG_CHANNEL', 'slack'),
 
     /*
     |--------------------------------------------------------------------------
@@ -56,16 +56,16 @@ return [
 
         'slack' => [
             'driver' => 'slack',
-            'url' => env('LOG_SLACK_WEBHOOK_URL'),
+            'url' => env('LOG_SLACK_WEBHOOK_URL','https://hooks.slack.com/services/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'),
             'username' => 'Laravel Log',
-            'emoji' => ':boom:',
+            'name'=>'grepawknet',
             'level' => 'critical',
         ],
 
-        'papertrail' => [
+        'papert'=>[
             'driver' => 'monolog',
             'level' => 'debug',
-            'handler' => SyslogUdpHandler::class,
+            'handler'=> SyslogUdpHandler::class,
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
