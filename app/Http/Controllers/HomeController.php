@@ -76,7 +76,7 @@ class HomeController extends Controller
         try{
             switch($cmd){
                 case "help":
-                    $options=$fs->ls('-t');
+                    $output="type 'ls' to get started";
                     break;
                 case 'checkin':
                     $output="...";
