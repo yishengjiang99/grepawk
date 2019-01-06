@@ -4,10 +4,10 @@
      <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
      <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="/js/jquery-ui.js"></script>
 <script>
 
 //adapted from https://codepen.io/anon/pen/gZGpBZ
@@ -22,8 +22,37 @@ var FileSystem = FileSystem || function(filesJson, currDir){
 var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   window.URL = window.URL || window.webkitURL;
   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+  input_auto_complete_source=[];
+  var cmdLine_ = document.querySelector(cmdLineContainer),
+      $cmdLine_ = $(cmdLineContainer);
 
-  var cmdLine_ = document.querySelector(cmdLineContainer);
+  $cmdLine_.autocomplete({
+        autoFocus:true,
+        source:input_auto_complete_source,
+        minLength:1,
+        // position:{
+        //   my: "left bottom",
+        //   at: "left top"
+        // },
+        select:function(event,ui){
+            //var _val = ui.item && ui.item.cmd || this.value;
+            $cmdLine_.val(ui.item && ui.item.cmd || this.value);
+            if (event.keyCode == 7) { //tab
+                event.preventDefault();
+                $(this).focus();
+            }
+            if (event.keyCode == 9) { //tab
+              event.preventDefault();
+              $(this).focus();
+            }
+            //event.preventDefault();
+        }
+      }).autocomplete( "instance" )._renderItem = function( ul, item ) {
+        return $( "<li>" )
+          .append( "<div>" + item.cmd + "<br>" + item.display + "</div>" )
+          .appendTo( ul );
+      };
+
   var output_ = document.querySelector(outputContainer);
 
   const CMDS_ = [
@@ -39,6 +68,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var histtemp_ = 0;
   var username_="guest";
   var cd_ = "/public";
+  var input_auto_complete_source=['help'];
   var option_select=[];
   var activePrompt=null;
   var prompt_select=[];
@@ -46,13 +76,14 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var full_options_mode=false;
   
   window.addEventListener('click', function(e) {
-   // cmdLine_.focus();
+    cmdLine_.focus();
   }, false);
+
 
   cmdLine_.addEventListener('click', inputTextClick_, false);
   cmdLine_.addEventListener('keydown', historyHandler_, false);
   cmdLine_.addEventListener('keydown', processNewCommand_, false);
-  //
+
   function inputTextClick_(e) {
     this.value = this.value;
   }
@@ -89,8 +120,10 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
 
   //
   function processNewCommand_(e) {
-    if (e.keyCode == 9) { // tab
-      e.preventDefault();
+    if (false && e.keyCode == 9) { // tab
+       e.preventDefault();
+
+       //return;
       // Implement tab suggest.
     } else if (e.keyCode == 13) { // enter
       // Save shell history.
@@ -275,9 +308,17 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       if(ret.table){
         outputTable(ret.table);
       }
+      
       if(ret.options){
           option_select=ret.options;
-          outputOptions();
+          if(ret.options.rows){
+            input_auto_complete_source=ret.options.rows.map(function(elem,i){
+              elem.value=elem.cmd;
+              return elem;
+            });
+          }
+          $cmdLine_.autocomplete("option","source",input_auto_complete_source);
+
       }
       if(ret.error){
         outputError(ret.error);
@@ -345,7 +386,6 @@ $(function() {
       });
     })
     $("body").on('click','.onclick_cmd',function(e){
-        e.preventDefault();
         term.cmd_string($(this).attr('cmd'));
     });
     window.terminal=term;
