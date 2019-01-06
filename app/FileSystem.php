@@ -8,6 +8,8 @@ use Illuminate\ Database\ Eloquent\ Model;
 use Illuminate\ Support\ Facades\ Storage;
 use Auth;
 use DB;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Schema\Blueprint;
 
 class FileSystem extends Model {
     private const virtual_fs = [
@@ -40,7 +42,7 @@ class FileSystem extends Model {
 
     private $pwd = "root";
     private $root_node=null;
-    private $current_node=null;
+    public $current_node=null;
     private $privateDir = "guest";
     private $userName = "guest";
 
@@ -79,6 +81,24 @@ class FileSystem extends Model {
         $options = explode(" ", $options);
         return $this->_ls($this->pwd,$options);
     }
+    public function pwd_meta(){
+        $meta=[];
+        switch ($this->current_node->storage_type) {
+            case 'filesystem':
+                break;
+            case 'search':
+                break;
+            case 'psql':
+                break;
+            case 'psql_table':
+                $columns = Schema::getColumnListing($this->current_node->get_db_ns());
+                $meta['cols'] = array_values(array_diff($columns,['id','created_at','updated_at']));
+                break;
+            default:
+                break;
+        }
+        return $meta;
+    }
     public function _ls($path, $options){  
         $list = $this->current_node->ls_children();
         if (in_array("-h", $options)) {
@@ -95,6 +115,7 @@ class FileSystem extends Model {
 
         if (in_array("-t", $options)) {
             $options = [];            
+
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
                     $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
@@ -103,6 +124,12 @@ class FileSystem extends Model {
                     break;
                 case 'search':
                     $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}', 'link' => "onclick:msg=seach <prompt>"];
+                    break;
+                case 'psql':
+                    $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table', 'link'=>'onclick:createtable {tablename}'];
+                    break;
+                case 'psql_table':
+                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row'];
                     break;
                 default:
                     break;
@@ -167,6 +194,25 @@ class FileSystem extends Model {
         } else {
             return ['text_output' => "Downloading $filename", 'download_link' => $geturl];
         }
+    }
+    public function create_db_table($tablename,$columns){
+        $db_ns = $this->current_node->get_db_ns();
+        $tablename=$db_ns."_".$tablename;
+        Schema::create($tablename, function(Blueprint $table) use($columns){
+            $table->increments('id');
+            foreach($columns as $col){
+                list($name,$type) = explode(" ",$col);
+                switch ($type){
+                    case 'int': $table->integer($name); break;
+                    case 'decimal': $table->decimal($name); break;
+                    case 'date':  $table->timestampTz($name); break;
+
+                    case 'string': $table->char($name,255); break;
+                    default: throw new \Exception("Supported column types are: int, decimal, string, date");
+                }
+            }
+            $table->timestamps();
+        });
     }
 
     public function put($filename, $content) {

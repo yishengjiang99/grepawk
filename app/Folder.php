@@ -10,12 +10,13 @@ class FolderException extends \Exception{
 
 }
 
+
 class Folder extends Model
 {
     public static $_map=[];
     public $path="";
     public $name="";
-    private $storage_type="filesystem";
+    public $storage_type="filesystem";
     private $children=null;
     private $fs_base_path =null;
     private $parent=null;
@@ -47,6 +48,9 @@ class Folder extends Model
 
         $path = str_replace("root/myfiles", $this->get_fs()->private_dir(), $path);
         return $path;
+    }
+    public function get_db_ns(){
+        return str_replace("/", "_", $this->path);
     }
     public function set_fs($fs){
         $this->fs=$fs;
@@ -88,7 +92,6 @@ class Folder extends Model
         switch($this->storage_type){
             case 'filesystem':
                 $dirs = Storage::directories($this->fs_path());
-
                 foreach($dirs as $dir){
                     $dir=basename($dir);
                   //  echo "<br>add child ".$this->path."/".$dir;
@@ -104,11 +107,13 @@ class Folder extends Model
                 }
                 break;
             case 'psql':
-                $table_ns = $this->this_path;
+                $table_ns = $this->get_db_ns();
                // $table_ns = "";
-                $tables = DB::connection('pgsql') -> select("select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'");
+                $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
+                $tables = DB::connection('pgsql') -> select($sql);
                 foreach($tables as $table){
-                    $this->addChild('psql_table', $this->path."/".$table->table_name);
+                    $childPath = str_replace("_","/",$table->table_name);
+                    $this->addChild('psql_table', $childPath);
                 }
                 break;
             case 'file':
@@ -118,7 +123,11 @@ class Folder extends Model
         }
         return $this->children;
     }
-    
+    public function get_folder_cmds(){
+        switch($this->storage_type){
+            case "filesystem":
+        }
+    }
     public function setVFS($vfs){
         $this->vfs=$vfs;
         $this->init_children_from_vfs();
@@ -136,8 +145,9 @@ class Folder extends Model
         }
         if(!$this->children) $this->children=[];
         $newChild= new Folder($path,$type);
-       // echo "<br> addoing children at $leaf_path for ".$this->path;
+      //  echo "<br> addoing children at $leaf_path for ".$this->path;
         $newChild->parent=$this;
+        
         $this->children[$leaf_path]=$newChild;
         return $this->children[$leaf_path];
     }
@@ -150,12 +160,15 @@ class Folder extends Model
         if($folderName == "..") return $this->parent ? $this->parent : $this;
 
         if($this->hasChild($folderName)==false){
+
             throw new FolderException("$folderName does not exist on ".$this->path);
         }
         if($this->children[$folderName]->mimeType !=='folder'){
             throw new FolderException("$folderName is a file");
         }
+        $this->children[$folderName]->ls_children();
         return $this->children[$folderName];
     }
     //
 }
+

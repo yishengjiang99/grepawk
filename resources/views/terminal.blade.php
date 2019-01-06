@@ -70,7 +70,11 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   var prompt_select=[];
   var more_options_index=-1;
   var full_options_mode=false;
-  
+  var prompt_loop_mode=false;
+  var prompt_loop_answers=[];
+  var prompt_context="";
+  var prompt_string="";
+
   window.addEventListener('click', function(e) {
    $(e.target).is("input") || $(e.target).is("input") ||  cmdLine_.focus();
   }, false);
@@ -137,6 +141,17 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       input.readOnly = true;
       output_.appendChild(line);
       var cmd_str = this.value;
+      if(prompt_loop_mode){
+        $(".cmdline").last().val("");
+        if(cmd_str==='') return;
+        if(cmd_str==='q' || cmd_str==="Q"){
+          prompt_loop_complete();
+        }else{
+          prompt_loop_answers.push(cmd_str);
+          output("Added "+cmd_str);
+        }
+        return;
+      }
       _cmd_string(cmd_str);
       $(".cmdline").last().val("");
     }
@@ -182,6 +197,17 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       $('html, body').animate({scrollTop:$(document).height()}, 'fast');
               window.scrollTo(0,getDocHeight_());
   }
+  function prompt_loop_complete(){
+    output("Sending api request for "+prompt_context+" with data: "+JSON.stringify(prompt_loop_answers));
+    prompt_loop_mode=false;
+    updatePrompt();
+    $.getJSON("/stdin?msg="+prompt_context+"&data="+JSON.stringify(prompt_loop_answers),function(ret){
+      prompt_loop_answers=[];
+      prompt_context="";
+      prompt_string="";
+      _parse_api_response(ret);
+    })
+  }
   //
   function formatColumns_(entries) {
     var maxName = entries[0].name;
@@ -221,7 +247,6 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
     output_.insertAdjacentHTML('beforeEnd',"</ol>");
     output_.insertAdjacentHTML('beforeEnd',"</p>");
     full_options_mode=false;
-
   }
   //
   function outputHtml(html) {
@@ -292,11 +317,16 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
      updatePrompt();
   }
   function updatePrompt(){
-    updatePromptWithString('['+username_+']:'+cd_);
+    if(prompt_loop_mode && prompt_string){
+      updatePromptWithString(prompt_string);
+    }else{
+      updatePromptWithString('['+username_+']:'+cd_);
+    }
   }
   function updatePromptWithString(string){
     $(".prompt").last().html(string);
   }
+  //parse api ret
   function _parse_api_response(ret){
       if(ret.output){
         output(ret.output);
@@ -314,7 +344,12 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
             });
           }
           $cmdLine_.autocomplete("option","source",input_auto_complete_source);
-
+      }
+      if(ret.meta.prompt_loop){ 
+        prompt_string=ret.meta.prompt_loop;
+        prompt_loop_mode=true;
+        prompt_loop_answers=[];
+        prompt_context=ret.meta.prompt_context;
       }
       if(ret.error){
         outputError(ret.error);

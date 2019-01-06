@@ -9,6 +9,7 @@ use File;
 use Log;
 use Illuminate\Console\Parser;
 use App\FS;
+use DB;
 use App\FileSystem;
 
 class HomeController extends Controller
@@ -58,6 +59,9 @@ class HomeController extends Controller
         $this->username="guest";
         $msg =$request->input("msg");
         $msg =urldecode($msg);
+
+        $data = $request->input('data');
+        $data = json_decode($data);
         if(!$msg) die("");
         $oformat=$request->input("output","json");
         $msgt = explode(" ",$msg);
@@ -112,9 +116,70 @@ class HomeController extends Controller
                 case 'pwd':
                     $output=$fs->getPWD();
                     break;
+                case 'ct':
+                case 'createtable':
+                    $tablename = $argv1;
+                    if(!$argv1){
+                        $error="Usage: createable {tablename}";
+                        break;
+                    }
+                    if(!$data){
+                        $output="Enter Create Table Prompt mode";
+                        $output.="<br>Add column with the format {name} {type}";
+                        $output.="<br>Supported types are: int, decimal, date, string";
+                        $output.="<br>Type 'q' to finish";
+                        $meta['prompt_loop']="add column for '$tablename' or 'q'>";
+                        $meta['prompt_context']="createtable $tablename";
+                    }else{
+                        $fs->create_db_table($tablename,$data);
+                        $output="$tablename created!";
+                    }
+                    break;
+                case 'nd':
+                case 'newdata':
+                    $tablename = $fs->current_node->get_db_ns();
+                    $meta=$fs->pwd_meta();
+                    $columns =$meta['cols'];
+
+                    if(!$data){
+                        $output="Enter rows for $tablename in csv format:";
+
+                        $columns_format="";
+                        foreach($columns as $col){
+                            $columns_format.="\"".$col."\",";
+                        }
+                        $columns_format=rtrim($columns_format,",");
+
+                        $output.="<br>Format is $columns_format";
+                        $output.="<br>Press 'q' to finish";
+                        $meta['prompt_loop']="insert $columns_format for new row or press 'q' to finish>";
+                        $meta['prompt_context']="newdata";
+                    }else{
+                        $output="Inserting rows into $tablename";
+                        foreach($data as $dataline){
+                            $columnvals = \str_getcsv($dataline);
+                            if(count($columnvals) !== count($columns)){
+                                throw new \Exception("Column name mismatch for $dataline. Columns are ".implode(", ",$columns));
+                            }
+                            $colvalMap=[];
+                     
+                            foreach($columns as $i=>$col){
+                                $colvalMap[$col]=$columnvals[$i];
+                            }
+                            $colvalMap['created_at']=new \DateTime();
+
+                            $insertSuccessful=DB::table($tablename)->insert($colvalMap);
+                            if($insertSuccessful){
+                                $output.="<br>$dataline inserted";
+                            }else{
+                                $error.="<br>$dataline NOT inserted";
+                            }
+                        }
+                    }
+                    break;
                 case 'touch':
                     $filename = $msgt[1];
-                    Storage::put($fs->getCd()."/".$filename,"");
+                    Storage::put($fs->current_node->fs_path()."/".$filename,"");
                     $output ="Created new file $filename";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
@@ -150,6 +215,10 @@ class HomeController extends Controller
             throw $e;
             $error=$e->getMessage();
             $table = $fs->ls("-t");
+        }
+        if($oformat=='debug'){
+            echo 'end of debug';
+            exit;
         }
         
         return response()->json([
