@@ -105,7 +105,7 @@ class Folder extends Model
                 break;
             case 'psql':
                 $table_ns = $this->this_path;
-                $table_ns = "";
+               // $table_ns = "";
                 $tables = DB::connection('pgsql') -> select("select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'");
                 foreach($tables as $table){
                     $this->addChild('psql_table', $this->path."/".$table->table_name);
