@@ -78,6 +78,7 @@ Route::view("modal/newfile","newfile");
 Route::post("photos/create","PhotoController@create");
 Route::post("files/new","FileController@create");
 Route::post("files/upload","FileController@upload");
+Route::post("files/upload/csv","FileController@upload");
 
 Route::get("files/upload","FileController@upload");
 

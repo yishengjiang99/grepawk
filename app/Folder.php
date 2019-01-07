@@ -5,6 +5,7 @@ namespace App;
 use Illuminate\Database\Eloquent\Model;
 use Storage;
 use DB;
+use Log;
 
 class FolderException extends \Exception{
 
@@ -37,16 +38,9 @@ class Folder extends Model
     }
     public function fs_path(){
         $path=$this->path;
-        // echo "<br><br>";
-        // echo debug_backtrace()[1]['function'];
-        // echo "<br>".debug_backtrace()[2]['function'];
-        // echo "<br>".debug_backtrace()[3]['function'];
-
-        // echo "<br>DEBUG<BR>".$path;
-        $path = str_replace("root/public", "public", $path);
-       // echo "<br>".$path;
-
         $path = str_replace("root/myfiles", $this->get_fs()->private_dir(), $path);
+       // Log::critical("file path $path");
+
         return $path;
     }
     public function get_db_ns(){
@@ -87,6 +81,7 @@ class Folder extends Model
         //var_dump($this->children);
         //if($this->children!==null && $this->dirty===false) return $this->children; 
         switch($this->storage_type){
+            case 'vfs':
             case 'filesystem':
                 $dirs = Storage::directories($this->fs_path());
                 foreach($dirs as $dir){

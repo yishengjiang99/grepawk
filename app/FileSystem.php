@@ -115,13 +115,16 @@ class FileSystem extends Model {
 
         if (in_array("-o", $options)) {
             $options = [];            
-            $options[]=['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
-            $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
-            
+            $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
+            $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:ls"];
+            $options[] = ['cmd' => 'upload', 'display' => 'List Files', 'link' => "onclick:upload"];
+            $options[] = ['cmd' => 'upload csv', 
+                          'display' => "Import an Excel spread sheet and save it to db",
+                          'link' => "onclick:upload csv"];
+
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
                     $options[] = ['cmd' => 'new', 'display' => 'Create a new text file', 'link' => "onclick:new"];
-                    $options[] = ['cmd' => 'upload', 'display' => 'Upload a file of any type', 'link' => "onclick:upload"];
                     break;
                 case 'search':
                     $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}', 'link' => "onclick:msg=seach <prompt>"];
@@ -211,7 +214,6 @@ class FileSystem extends Model {
                     case 'int': $table->integer($name); break;
                     case 'decimal': $table->decimal($name); break;
                     case 'date':  $table->timestampTz($name); break;
-
                     case 'string': $table->char($name,255); break;
                     default: throw new \Exception("Supported column types are: int, decimal, string, date");
                 }

@@ -10,55 +10,20 @@ class FileController extends Controller
 {
     //
     public function upload(Request $request){
-        Log::debug("upload api called");
+        Log::critical("upload1 api called");
         $fs=FileSystem::getInstance();
 
         header( 'Content-type: text/html; charset=utf-8' );
-
         ob_start();
+        js_callback('Starting upload');
 
-        $cbstr=json_encode([
-            'output'=>'Started uploading '
-        ]);
-
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        flush();
-        ob_flush();
-
-        sleep(2); //sleep for 2 seconds to let other processes run
-        $cbstr=json_encode([
-            'output'=>'Initiating connection..'
-        ]);
-
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        flush();
-        ob_flush();
-
-
-        sleep(1); //sleep for 2 seconds to let other processes run
-        $cbstr=json_encode([
-            'output'=>'Checking account status'
-        ]);
-
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        flush();
-        ob_flush();
-
-        //if(true || check_account_status()=='free'){
-        if(true){
-            sleep(1); //sleep for 2 seconds to let other processes run
-        }
-
-        $cbstr=json_encode([
-            'output'=>'Starting upload'
-        ]);
-        echo "<script>parent.iframe_interface('$cbstr')</script>" ;
-        flush();
-        ob_flush();
 
         $output="";
         $error="";
         $hints=[];
+        $filetype = $request->input("type");
+
+        
         $options=[];
         $file=$request->file("file");
         try{
@@ -68,24 +33,58 @@ class FileController extends Controller
             echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
             flush();
             ob_flush();   
-            $filePath =$file->storeAs($fs->getCd(),$file->getClientOriginalName());
+
+            $filePath =$file->storeAs($fs->getPWD(),$file->getClientOriginalName());
+            Log::critical("upload1 saving file as $filePath");
+
             $output="$filePath is uploaded";
+            $table=$fs->ls("-t");
             $options=$fs->ls("-o");
-            $hints= $fs->ls("-h");
+
+           // $hints= $fs->ls("-h");
         }catch(\Exception $e){
             $error=$e->getMessage();
         }
+
         $cbstr=json_encode([
             "hints"=>$hints,
             "output"=>$output,
             'options'=>$options,
             "error"=>$error,
         ]);
+        Log::critical("Cb: $cbstr");
+
         echo "<script>parent.iframe_interface('$cbstr')</script>";
         flush();
         ob_flush();   
         exit;
     }
+    public function uploadCSV(Request $request){
+        Log::critical("upload api called");
+        $fs=FileSystem::getInstance();
+
+        header( 'Content-type: text/html; charset=utf-8' );
+        ob_start();
+        js_callback('Starting upload');
+
+        $output="";
+        $error="";
+        $hints=[];
+        
+        $options=[];
+        $file=$request->file("file");
+        try{
+            js_callback('Upload initiating');
+            $filePath =$file->storeAs($fs->getPWD(),$file->getClientOriginalName());
+
+            $output="$filePath is uploaded";
+            $options=$fs->ls("-o");
+            $hints= $fs->ls("-h");
+        }catch(\Exception $e){
+            $error=$e->getMessage();
+        }
+    }
+    
     public function create(Request $request){
         $output="";
         $error="";
@@ -98,7 +97,6 @@ class FileController extends Controller
             $ret=$fs->put($filename,$filecontent);
             if($ret){
                 $output="file $filename created";
-                $options=$fs->ls("-o");
             }else{
                 $error="File not created";
             }
