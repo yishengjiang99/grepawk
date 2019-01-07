@@ -24,7 +24,7 @@ class Folder extends Model
     public $dirty=false;
     public $mimeType = 'folder';
     public $vfs = []; //virtual fs map
-    
+    public $content=null;
     public function __construct($path, $storage_type, Array $vfs=null){
         $this->path=$path;
         $this->name = basename($this->path);
@@ -64,22 +64,19 @@ class Folder extends Model
     public function get_mime_type(){
         if($this->storage_type=="file"){
             return Storage::mimeType($this->fs_path());
+        }else if($this->storage_type=="psql_row"){
+            return "psql_row/".$this->parent->get_db_ns();
         }else{
             return "vfs_folder/".$this->storage_type;
         }
     }
     public function init_children_from_vfs(){
         foreach($this->vfs as $name=>$attributes){
-          //  echo "<br>looking $name";
             if (substr($name, 0, 1) === '_') continue; //meta data
-           // echo "<br>adding $name";
-
             $storageType = isset($attributes['_storage']) ? $attributes['_storage'] : 'vfs';
             $child_path=$this->path."/".$name;
             $c=$this->addChild($storageType,$child_path); //->setVFS($attributes);
             $c->setVFS($attributes);
-         //   print_r($attributes);
-
         }
         //echo "<br>done for child from  vfs for ".$this->path;
 
@@ -100,9 +97,6 @@ class Folder extends Model
                 $files = Storage::files($this->fs_path());
                 foreach($files as $filename) {
                     $filename = basename($filename);
-                
-                   // echo "<br>add child file $filename to path ".$this->path;
-                    
                     $this->addChild('file', $this->path."/".$filename);
                 }
                 break;
@@ -114,6 +108,14 @@ class Folder extends Model
                 foreach($tables as $table){
                     $childPath = str_replace("_","/",$table->table_name);
                     $this->addChild('psql_table', $childPath);
+                }
+                break;
+            case 'psql_table':
+                $table_ns = $this->get_db_ns();
+                $rows = DB::table($table_ns)->paginate(4);
+                foreach($rows as $row){
+                    $childPath = $this->path."/".$row->id;
+                    $child=$this->addChild("psql_row", $childPath,$row);
                 }
                 break;
             case 'file':
@@ -134,7 +136,7 @@ class Folder extends Model
         return $this;
     }
 
-    public function addChild($type,$path){
+    public function addChild($type,$path,$content=null){
       //  echo "<br>adding child at $path";
         if(strpos($path,$this->path)===false) {
             throw new FolderException("Child Path $path does not stem from parent path ".$this->path);
@@ -147,9 +149,17 @@ class Folder extends Model
         $newChild= new Folder($path,$type);
       //  echo "<br> addoing children at $leaf_path for ".$this->path;
         $newChild->parent=$this;
-        
+        $newChild->content=$content;
         $this->children[$leaf_path]=$newChild;
         return $this->children[$leaf_path];
+    }
+    public function toString(){
+        $string=""; $this->path;
+        foreach((Array)$this->content as $k=>$v){
+            if(!$v) continue;
+            $string.="<br>$k: $v,";
+        }
+        return $string;
     }
     public function hasChild($name){
         return isset($this->children[$name]);
@@ -160,7 +170,6 @@ class Folder extends Model
         if($folderName == "..") return $this->parent ? $this->parent : $this;
 
         if($this->hasChild($folderName)==false){
-
             throw new FolderException("$folderName does not exist on ".$this->path);
         }
         if($this->children[$folderName]->mimeType !=='folder'){

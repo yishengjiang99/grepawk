@@ -97,14 +97,14 @@ class HomeController extends Controller
                     $output = "File list of the ".$fs->getPWD()." folder";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
-                    $options=$fs->ls('-t');
+                    $options=$fs->ls('-o');
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
-                    $table = $fs->ls("-t");
-                    $options=$table;
+                   // $table = $fs->ls("-t");
+                    $options=$fs->ls('-o');
                     break;
                 case 'cat':
                     $ret = $fs->cat($argv1);
@@ -220,7 +220,8 @@ class HomeController extends Controller
             echo 'end of debug';
             exit;
         }
-        
+       // var_dump($table);
+
         return response()->json([
             "cd"=>basename($fs->getPWD()),
             "pwd"=>$fs->getPWD(),

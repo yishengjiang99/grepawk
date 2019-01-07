@@ -231,22 +231,40 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       updatePromptWithString("What is the "+prompt+"? >");
     });
   }
-  function outputOptions(){
-    options=option_select;
-    output_.insertAdjacentHTML('beforeEnd',"<p>Numerical Options");
-    output_.insertAdjacentHTML('beforeEnd',"<ol>");
-    $.each(options,function(i,cmd){
-      if(full_options_mode===false && i>50){
-        more_options_index=(i+1);
-        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): more option </li>');
-        return false;
-      }else{
-        output_.insertAdjacentHTML('beforeEnd', "<li>" + (i+1) +'): '+cmd + '</li>');
+  function outputOptions(options){
+    html="Commands: <ol>";
+    /*
+            if(header==='link'){
+          if(val.indexOf("onclick:")===0){
+            var cmd_str = val.replace("onclick:","");
+            var onclick = "term.processNewCommand(\""+cmd_str+"\")";
+            val = "<a href='javascript://' class='onclick_cmd' cmd='"+cmd_str+"'>link</a>";
+          }else{
+            val = "<a target=_blank href='"+val+"'>link</a>";
+          }
+        }
+        */
+    $.each(options,function(i,option){
+      var val = "<b style='color:yellow !important'>"+option.cmd+"</b>";
+      if(option.link){
+        if(option.link.indexOf("onclick:")===0){
+            var cmd_str = option.link.replace("onclick:","");
+            var onclick = "term.processNewCommand(\""+cmd_str+"\")";
+            val = "<a href='javascript://' class='onclick_cmd' cmd='"+cmd_str+"'>"+val+"</a>";
+          }else{
+            val = "<a target=_blank href='"+option.link+"'>"+val+"</a>";
+          }
       }
-    });
-    output_.insertAdjacentHTML('beforeEnd',"</ol>");
-    output_.insertAdjacentHTML('beforeEnd',"</p>");
-    full_options_mode=false;
+      if(option.display){
+        val+=": "+option.display;
+      }
+      if(option.mimetype){
+        val+="         ("+option.mimetype+")";
+      }
+      html+="<li>"+val+"</li>";
+    })
+    html+="</ol>";
+    outputHtml("<div style='max-height:400px;overflow-y:scroll'>"+html+"</div>");
   }
   //
   function outputHtml(html) {
@@ -334,8 +352,8 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       if(ret.table){
         outputTable(ret.table);
       }
-      
       if(ret.options){
+          outputOptions(ret.options.rows);
           option_select=ret.options;
           if(ret.options.rows){
             input_auto_complete_source=ret.options.rows.map(function(elem,i){

@@ -113,9 +113,9 @@ class FileSystem extends Model {
             return $output;
         }
 
-        if (in_array("-t", $options)) {
+        if (in_array("-o", $options)) {
             $options = [];            
-
+            $options[]=['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
                     $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
@@ -135,8 +135,10 @@ class FileSystem extends Model {
                     break;
             }
             foreach($list as $child) {
-                $is_folder = strpos($child->get_mime_type(),"vfs_folder") !==false;
                 $mimeType = $child->get_mime_type();
+                $is_folder = strpos($mimeType,"folder") !==false;
+                $is_row = strpos($mimeType,"_row") !==false;
+                if($is_row) continue;
                 $name = basename($child->path);
                 if ($is_folder) {
                     $options[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
@@ -146,18 +148,20 @@ class FileSystem extends Model {
             }
             return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
         }
-        if (in_array("-o", $options)) {
-            $options = [];
-            $options[] = 'ls';
-            $options[] = 'new';
-            $options[] = 'upload';
-            foreach($list as $name => $attr) {
-                if (substr($name, 0, 1) === '_') continue;
-                $is_file = isset($attr['_type']) && $attr['_type'] === 'file';
-                $is_folder = !$is_file;
-                $options[] = $is_folder ? "cd $name" : "get $name";
+        if (in_array("-t", $options)) {
+            $rows=[];
+            $headers=[];
+            foreach($list as $child) {
+                if($child->content===null) continue;
+                $content = $child->content;
+                foreach((Array)$child->content as $header=>$val){
+                    if(!isset($headers[$header])){
+                        $headers[$header]=1;
+                    }
+                }
+                $rows[]=$child->content;
             }
-            return $options;
+            return ['headers' => array_keys($headers), 'rows' => $rows];
         }
         if (in_array("-j", $options)) {
             $hints = [];
@@ -167,7 +171,7 @@ class FileSystem extends Model {
             }
             return $hints;
         }
-        return ['xpath' => explode("/", $this -> cd), 'list' => $list];
+        return ['xpath' =>$this->getPWD(), 'list' => $list];
     }
     public function cat($filename) {
         if (substr($filename, 0, 1) == '/') {
