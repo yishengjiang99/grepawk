@@ -12,7 +12,7 @@
 </head>
 <body>
 <!-- As a link -->
-<nav class="navbar navbar-light bg-light navbar-expand-lg fixed-top">
+<nav class="navbar navbar-light bg-light navbar-expand-lg">
     <a class="navbar-brand" href="#">GrepAwk.net</a>
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul id='nav-bar-right-list' class="navbar-nav mr-auto">
@@ -50,7 +50,8 @@
         </ul>
     </div>
 </nav>
-@yield('content');
-
+<main role='main' class='container'>
+@yield('content')
+</main>
 </body>
 </html>

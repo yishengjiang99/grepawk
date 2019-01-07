@@ -114,8 +114,10 @@ class FileSystem extends Model {
         }
 
         if (in_array("-o", $options)) {
-            $options = [];            
-            $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
+            $options = [];        
+            if($this->current_node->parent !==null ){
+                $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
+            }
             $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:ls"];
             $options[] = ['cmd' => 'upload', 'display' => 'List Files', 'link' => "onclick:upload"];
             $options[] = ['cmd' => 'upload csv', 
@@ -133,39 +135,58 @@ class FileSystem extends Model {
                     $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table', 'link'=>'onclick:createtable {tablename}'];
                     break;
                 case 'psql_table':
-                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row'];
+                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row','link'=>'onclick:newdata'];
                     break;
                 default:
                     break;
             }
-            foreach($list as $child) {
-                $mimeType = $child->get_mime_type();
-                $is_folder = strpos($mimeType,"folder") !==false;
-                $is_row = strpos($mimeType,"_row") !==false;
-                if($is_row) continue;
-                $name = basename($child->path);
-                if ($is_folder) {
-                    $options[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
-                } else {
-                    $options[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+            foreach($options as &$option){
+                if(isset($option['link'])){
+                    $cmd=$option['cmd'];
+                    $option['cmd']="<a href='#' cmd='$cmd' class='onclick_cmd'>$cmd</a>";
+                    unset($option['link']);
                 }
             }
+
             return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
         }
         if (in_array("-t", $options)) {
             $rows=[];
             $headers=[];
-            foreach($list as $child) {
-                if($child->content===null) continue;
-                $content = $child->content;
-                foreach((Array)$child->content as $header=>$val){
-                    if(!isset($headers[$header])){
-                        $headers[$header]=1;
+            if($this->current_node->storage_type==='psql_table'){
+                foreach($list as $child) {
+                    if($child->content===null) continue;
+                    $content = $child->content;
+                    foreach((Array)$child->content as $header=>$val){
+                        if(!isset($headers[$header])){
+                            $headers[$header]=1;
+                        }
+                    }
+                    $rows[]=$child->content;
+                }
+                return ['headers' => array_keys($headers), 'rows' => $rows];
+            }else{
+                foreach($list as $child) {
+                    $mimeType = $child->get_mime_type();
+                    $is_folder = strpos($mimeType,"folder") !==false;
+                    $is_row = strpos($mimeType,"_row") !==false;
+                    if($is_row) continue;
+                    $name = basename($child->path);
+                    if ($is_folder) {
+                        $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
+                    } else {
+                        $rows[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+                    }
+                    foreach($rows as &$row){
+                        if(isset($row['link'])){
+                            $cmd=$row['cmd'];
+                            $row['cmd']="<a href='#' cmd='$cmd' class='onclick_cmd'>$cmd</a>";
+                            unset($row['link']);
+                        }
                     }
                 }
-                $rows[]=$child->content;
+                return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
             }
-            return ['headers' => array_keys($headers), 'rows' => $rows];
         }
         if (in_array("-j", $options)) {
             $hints = [];

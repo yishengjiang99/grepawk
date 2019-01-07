@@ -81,6 +81,7 @@ class HomeController extends Controller
             switch($cmd){
                 case "help":
                     $output="type 'ls' to get started";
+                    $options=$fs->ls('-o');
                     break;
                 case 'checkin':
                     $output="...";
@@ -97,13 +98,13 @@ class HomeController extends Controller
                     $output = "File list of the ".$fs->getPWD()." folder";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
-                    $options=$fs->ls('-o');
+                   // $options=$fs->ls('-o');
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
-                   // $table = $fs->ls("-t");
+                    $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
                 case 'cat':
@@ -212,7 +213,6 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            throw $e;
             $error=$e->getMessage();
             $table = $fs->ls("-t");
         }

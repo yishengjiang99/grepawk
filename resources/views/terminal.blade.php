@@ -7,15 +7,6 @@
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <style>
-    pre{
-      color:#efefef;
-    }
-    body{
-      color:#f1f1f1;
-      background-color:#1d1d1d;
-    }
-  </style>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
@@ -251,39 +242,13 @@
       }
 
       function outputOptions(options) {
-          html = "Commands: <ol>";
-          /*
-                  if(header==='link'){
-                if(val.indexOf("onclick:")===0){
-                  var cmd_str = val.replace("onclick:","");
-                  var onclick = "term.processNewCommand(\""+cmd_str+"\")";
-                  val = "<a href='javascript://' class='onclick_cmd' cmd='"+cmd_str+"'>link</a>";
-                }else{
-                  val = "<a target=_blank href='"+val+"'>link</a>";
-                }
-              }
-              */
+          var html="";
           $.each(options, function(i, option) {
-            var val = "<b style='color:yellow !important'>" + option.cmd + "</b>";
-            if (option.link) {
-              if (option.link.indexOf("onclick:") === 0) {
-                var cmd_str = option.link.replace("onclick:", "");
-                var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
-                val = "<a href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>" + val + "</a>";
-              } else {
-                val = "<a target=_blank href='" + option.link + "'>" + val + "</a>";
-              }
-            }
-            if (option.display) {
-              val += ": " + option.display;
-            }
-            if (option.mimetype) {
-              val += "         (" + option.mimetype + ")";
-            }
-            html += "<li>" + val + "</li>";
+            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+option.cmd+"</button>";
           })
-          html += "</ol>";
-          outputHtml("<div style='max-height:400px;overflow-y:scroll'>" + html + "</div>");
+          outputHtml(html);
+
+          //c$("#hud-options").html(html);
         }
         //
       function outputHtml(html) {
@@ -319,7 +284,7 @@
       }
 
       function outputTable(table) {
-        var html = '<table class=table border=0>';
+        var html = '<table border=1 bordercolor="white">';
         if (table.headers) {
           html += "<thead>";
           html += "<tr>";
@@ -459,17 +424,19 @@
       term.setUsername("{{$username}}@grepawk");
       term.setCd("{{$pwd}}");
       term.init();
-      $("body").on('click', '.onclick_cmd', function(e) {
-        term.cmd_string($(this).attr('cmd'));
+      term.cmd_string("help");
+      $("body").on('click', '.cmd_btn', function(e) {
+
+        term.cmd_string($(this).find('a').first().attr('cmd'));
       });
       window.terminal=term;
     });
-
   </script>
 </head>
 
-<body style='background-color:black;color:white'>
-  <div id="container" class='container'>
+<body  style='background-color:black;color:white;'>
+<div class='position-relative'>
+  <div id="container">
     <output></output>
     <div id="input-line" class="input-line">
       <div class="prompt"></div>
@@ -478,6 +445,9 @@
       </div>
     </div>
   </div>
+</div>
+</body>
+
 
   <div id='forms-section' style='display:none'>
     <form id='new_file_form'>

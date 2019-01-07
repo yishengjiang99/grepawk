@@ -47,9 +47,9 @@ class FileController extends Controller
         }
 
         $cbstr=json_encode([
-            "hints"=>$hints,
+           // "hints"=>$hints,
             "output"=>$output,
-            'options'=>$options,
+            //'options'=>$options,
             "error"=>$error,
         ]);
         Log::critical("Cb: $cbstr");

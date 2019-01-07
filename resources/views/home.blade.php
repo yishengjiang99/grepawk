@@ -1,12 +1,12 @@
 @extends('layouts.app')
 @section('content')
-<div class='container-fluid'>
-   <div class='row'>
-      <main role='main' class="col-lg-10 offset-md-1 mt-5 pt-5">
-         <iframe id='tty1' src="{{ url('/terminal') }}" height=640 width='100%'></iframe>
-      </main>
-   </div>
+
+<div class='container'>
+   <div id='hud-top' class='bg-light' style='height:10px;top:63px'>sssss</div>
+   <div><iframe id='tty1' src="{{ url('/terminal') }}" height='640px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
+   <div id='hud-options' class='container bg-light' style='height:32px'></div>
 </div>
+
 
 <div id='new_file' class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
@@ -41,8 +41,12 @@
 
 <script>
  function iframe_interface(cmd,args){
+    debugger;
     if(cmd=="new"){
         $("#new_file").show();
+    }
+    if(cmd=="update_options"){
+       $("#hud-options").html(args);
     }
     if(cmd=='debug'){
        $("#debugger").append("<p>"+args+"<p>");
