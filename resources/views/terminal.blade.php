@@ -20,6 +20,14 @@
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
   <script>
+    iframe_interface=function(msg) {
+        if(typeof msg ==='string'){
+          ret = $.parseJSON(msg);
+        }else{
+          ret=msg;
+        }
+        window.terminal.parse_api_response(ret);
+    }
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
     var util = util || {};
@@ -177,7 +185,8 @@
         args = args.splice(1); // Remove cmd from arg list.
         switch (cmd) {
           case 'new':
-            outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
+            parent.iframe_interface("new");
+            //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
             break;
           case 'upload':
             file_type = args[0] || "";
@@ -450,33 +459,12 @@
       term.setUsername("{{$username}}@grepawk");
       term.setCd("{{$pwd}}");
       term.init();
-      var g_previewModal = document.getElementById('previewModal');
-      $("body").on('click', "#new-file-submit", function(e) {
-        e.preventDefault();
-        var _form = $(this).closest('form');
-        var entries = _form.serialize();
-        $.post("/files/new", entries, function(ret) {
-          term.output_ext("File Uploaded");
-          term.parse_api_response(ret)
-          _form.remove();
-        });
-      })
       $("body").on('click', '.onclick_cmd', function(e) {
         term.cmd_string($(this).attr('cmd'));
       });
-      window.terminal = term;
-      term.cmd_string("help");
-
-      // term.updatePrompt();
+      window.terminal=term;
     });
 
-    function iframe_interface(msg) {
-      ret = $.parseJSON(msg);
-      window.terminal.parse_api_response(ret);
-      if (ret.output == 'upload completed') {
-        $("#new_file_upload_form").remove();
-      }
-    }
   </script>
 </head>
 

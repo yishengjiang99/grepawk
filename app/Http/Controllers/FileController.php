@@ -88,6 +88,7 @@ class FileController extends Controller
     public function create(Request $request){
         $output="";
         $error="";
+        $options=null;
         $hints=null;
         $filename=$request->input("filename");
         $filecontent=$request->input("filecontent");
