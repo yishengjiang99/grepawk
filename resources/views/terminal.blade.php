@@ -8,6 +8,12 @@
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
     <script src="/js/jquery-ui.js"></script>
+<style>
+iframe {
+  overflow-y:visible;
+}
+overflow-y
+</style>
 <script>
 
 //adapted from https://codepen.io/anon/pen/gZGpBZ
@@ -195,7 +201,7 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
           }
       };
       $('html, body').animate({scrollTop:$(document).height()}, 'fast');
-              window.scrollTo(0,getDocHeight_());
+      window.scrollTo(0,getDocHeight_());
   }
   function prompt_loop_complete(){
     output("Sending api request for "+prompt_context+" with data: "+JSON.stringify(prompt_loop_answers));
@@ -269,9 +275,13 @@ var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
   //
   function outputHtml(html) {
     output_.insertAdjacentHTML('beforeEnd', html);
+    $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+    window.scrollTo(0,getDocHeight_());
   }
   function output(html) {
     output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
+    $('html, body').animate({scrollTop:$(document).height()}, 'fast');
+    window.scrollTo(0,getDocHeight_());
   }
   function outputImageLink(imageUrl) {
     output_.insertAdjacentHTML('beforeEnd', '<p><img width=320 src="' + imageUrl + '"></p>');
