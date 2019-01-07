@@ -39,8 +39,6 @@ class Folder extends Model
     public function fs_path(){
         $path=$this->path;
         $path = str_replace("root/myfiles", $this->get_fs()->private_dir(), $path);
-       // Log::critical("file path $path");
-
         return $path;
     }
     public function get_db_ns(){
@@ -76,17 +74,12 @@ class Folder extends Model
 
     }
     public function ls_children(){
-        //echo "<br>ls childrent";
-
-        //var_dump($this->children);
-        //if($this->children!==null && $this->dirty===false) return $this->children; 
         switch($this->storage_type){
             case 'vfs':
             case 'filesystem':
                 $dirs = Storage::directories($this->fs_path());
                 foreach($dirs as $dir){
                     $dir=basename($dir);
-                  //  echo "<br>add child ".$this->path."/".$dir;
                     $this->addChild('filesystem', $this->path."/".$dir);
                 }
                 $files = Storage::files($this->fs_path());

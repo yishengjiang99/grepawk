@@ -5,11 +5,20 @@
   <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
   <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
   <meta name="csrf-token" content="{{ csrf_token() }}">
+  <style>
+    pre{
+      color:#efefef;
+    }
+    body{
+      color:#f1f1f1;
+      background-color:#1d1d1d;
+    }
+  </style>
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
-
   <script>
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
@@ -413,7 +422,6 @@
       return {
         init: function() {
           output('Welcome to grep|awk 2.0');
-          output("<br><br>");
         },
         setUsername: function(username) {
           setUsername(username);
