@@ -116,9 +116,10 @@ class FileSystem extends Model {
         if (in_array("-o", $options)) {
             $options = [];            
             $options[]=['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
+            $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
+            
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
-                    $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:msg=ls"];
                     $options[] = ['cmd' => 'new', 'display' => 'Create a new text file', 'link' => "onclick:new"];
                     $options[] = ['cmd' => 'upload', 'display' => 'Upload a file of any type', 'link' => "onclick:upload"];
                     break;
