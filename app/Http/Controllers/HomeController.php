@@ -4,14 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Console\Parser;
 use Auth;
 use File;
 use Log;
-use Illuminate\Console\Parser;
-use App\FS;
 use DB;
 use App\FileSystem;
-
+use App\VFile;
 class HomeController extends Controller
 {
 
@@ -87,6 +86,13 @@ class HomeController extends Controller
                     $output="...";
                     $options=$fs->ls('-t');
                     break;
+                case 'convert':
+                    $file=$argv1;
+                    $format=$argv2;
+
+                    $fromFile = VFile::getInstance($fs->getPWD()."/".$file);
+                    $fromFile->init();
+                    echo $fromFile->mimeType;
                 case "get":
                     header("Content-Type: File/File");
                     $download_file="grepawk_download_".basename($argv1);

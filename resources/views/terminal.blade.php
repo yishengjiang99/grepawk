@@ -299,9 +299,10 @@
             var val = row[header] || "";
             if (header === 'link') {
               if (val.indexOf("onclick:") === 0) {
+                debugger;
                 var cmd_str = val.replace("onclick:", "");
                 var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
-                val = "<a href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
+                val = "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
               } else {
                 val = "<a target=_blank href='" + val + "'>link</a>";
               }
@@ -426,8 +427,10 @@
       term.init();
       term.cmd_string("help");
       $("body").on('click', '.cmd_btn', function(e) {
-
         term.cmd_string($(this).find('a').first().attr('cmd'));
+      });
+      $("body").on('click', '.onclick_cmd', function(e) {
+        term.cmd_string($(this).attr('cmd'));
       });
       window.terminal=term;
     });
