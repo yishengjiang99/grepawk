@@ -15,7 +15,6 @@ class FileController extends Controller
 
         header( 'Content-type: text/html; charset=utf-8' );
         ob_start();
-        js_callback('Starting upload');
 
 
         $output="";
