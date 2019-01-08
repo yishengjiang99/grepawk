@@ -262,7 +262,6 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            throw $e;
             $error=$e->getMessage();
             $table = $fs->ls("-t");
         }
