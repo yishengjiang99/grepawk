@@ -218,7 +218,7 @@ class FileSystem extends Model {
         } else if (strpos($mimetype, "text") !== false) {
             $output = "<b>$filename</b>";
             $output .= "<br><br>";
-            $output .= "<p><pre>".Storage::get($filepath)."</pre></p>";
+            $output .= "<p>".Storage::get($filepath)."</p>";
             return ['text_output' => $output];
         } else {
             return ['text_output' => "Downloading $filename", 'download_link' => $geturl];
