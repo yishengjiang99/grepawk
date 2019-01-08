@@ -58,7 +58,7 @@ class HomeController extends Controller
         $this->username="guest";
         $msg =$request->input("msg");
         $msg =urldecode($msg);
-
+  
         $data = $request->input('data');
         $data = json_decode($data);
         if(!$msg) die("");
@@ -67,7 +67,9 @@ class HomeController extends Controller
         $cmd = $msgt[0];
 
         $argv1= isset($msgt[1]) ? $msgt[1] : 0;
+     
         $argv2= isset($msgt[2]) ? $msgt[2] : 0;
+
         $output="";
         $error="";
         $hints=null;
@@ -88,11 +90,52 @@ class HomeController extends Controller
                     break;
                 case 'convert':
                     $file=$argv1;
-                    $format=$argv2;
+                    $tablename = $argv2;
+                    $path = $fs->get_system_path($argv1);
+                    exec("cat $path|grep -v '^$'",$ob);
+        
+                    $headers=null;
+                    $rows = [];
+                    $coltypes=[];
+                    foreach($ob as $i=>$line){
+                        if($i==0) {
+                            $headercsv = str_getcsv($line);
+                            foreach($headercsv as $head){
+                                $headers[] = strtolower(str_replace(" ","_",$head));
+                            }
 
-                    $fromFile = VFile::getInstance($fs->getPWD()."/".$file);
-                    $fromFile->init();
-                    echo $fromFile->mimeType;
+                        }else if($i==1){
+                            $cols = str_getcsv($line);
+                            foreach($cols as $c){
+                                $coltypes[] = is_numeric($c) ? 'decimal' : 'string';
+                            }
+                        }
+                        else{
+                            if(count($headers)!=count(str_getcsv($line))) continue;
+                            $rows[] =array_combine($headers,str_getcsv($line));
+                        }      
+                    }
+
+                    $header_list=[];
+                    foreach($headers as $i=>$header){
+                        $header_list[]=$header." ".$coltypes[$i];
+                    }
+
+                    $full_table_name=$fs->create_db_table($tablename,$header_list);
+                    $row_inserted=0;
+                    foreach($rows as $row){
+                        $row['created_at']=new \DateTime();
+                        $insertSuccessful=DB::table($full_table_name)->insert($row);
+                        if(!$insertSuccessful){
+                            $errors.="<br>Error inserting ".json_encode($row).".";
+                        }else{
+                            $row_inserted++;
+                        }
+                    }
+                    $output = "Inserted $row_inserted rows into table $full_table_name";
+                    $table = $fs->ls("-t");
+
+                    break;
                 case "get":
                     header("Content-Type: File/File");
                     $download_file="grepawk_download_".basename($argv1);
@@ -219,6 +262,7 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
+            throw $e;
             $error=$e->getMessage();
             $table = $fs->ls("-t");
         }

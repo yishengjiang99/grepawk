@@ -189,7 +189,11 @@
             break;
           default:
             if (cmd) {
-              var fullcmd = cmd + " " + encodeURIComponent(args.join());
+              args.map(function(a){
+                return encodeURIComponent(a)
+              })
+              var fullcmd = cmd + " " + args.join(" ");
+
               output("Calling api with msg: "+fullcmd+".<br>cmd_str is "+cmd_str);
               $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
                 _parse_api_response(ret);
@@ -434,7 +438,6 @@
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
       $("body").on('click', '.onclick_cmd', function(e) {
-        debugger;
         var _cmd =$(this).attr('cmd');
         //output("exec cmd from click: "+_cmd)
         term.cmd_string(_cmd);

@@ -74,9 +74,11 @@ class Folder extends Model
 
     }
     public function ls_children(){
+
         switch($this->storage_type){
             case 'vfs':
             case 'filesystem':
+            case 'psql':
                 $dirs = Storage::directories($this->fs_path());
                 foreach($dirs as $dir){
                     $dir=basename($dir);
@@ -87,15 +89,15 @@ class Folder extends Model
                     $filename = basename($filename);
                     $this->addChild('file', $this->path."/".$filename);
                 }
-                break;
-            case 'psql':
                 $table_ns = $this->get_db_ns();
                // $table_ns = "";
+
                 $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
                 $tables = DB::connection('pgsql') -> select($sql);
+           
                 foreach($tables as $table){
-                    $childPath = str_replace("_","/",$table->table_name);
-                    $this->addChild('psql_table', $childPath);
+                    $child_path =str_replace($table_ns."_","",$table->table_name);
+                    $this->addChild('psql_table', $this->fs_path()."/".$child_path);
                 }
                 break;
             case 'psql_table':
@@ -134,11 +136,12 @@ class Folder extends Model
             //throw new FolderException("Folder $path already exists");
         }
         if(!$this->children) $this->children=[];
-        $newChild= new Folder($path,$type);
       //  echo "<br> addoing children at $leaf_path for ".$this->path;
+        $newChild = new Folder($path,$type);
         $newChild->parent=$this;
         $newChild->content=$content;
         $this->children[$leaf_path]=$newChild;
+    
         return $this->children[$leaf_path];
     }
     public function toString(){
@@ -154,6 +157,8 @@ class Folder extends Model
     }
     
     public function cd($folderName){
+        $list=$this->ls_children();
+       // var_dump($list);
         if($folderName ==='.') return $this;
         if($folderName == "..") return $this->parent ? $this->parent : $this;
 

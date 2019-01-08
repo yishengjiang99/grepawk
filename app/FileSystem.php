@@ -77,6 +77,9 @@ class FileSystem extends Model {
     public function get_fs_path() {
         return $this->current_node->fs_path();
     }
+    public function get_system_path($filename) {
+        return storage_path('app/'.$this->current_node->fs_path()."/".$filename); 
+    }
     public function ls($options="") {
         $options = explode(" ", $options);
         return $this->_ls($this->pwd,$options);
@@ -176,7 +179,15 @@ class FileSystem extends Model {
                         $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
                     } else {
                         $rows[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
-                        $rows[] = ['cmd' => "convert $name psql", 'display' => "Convert file into psql", 'link' => "onclick:convert ".urlencode($name)];
+                        if(strpos($name,'.csv')!==false){
+                            $cmd="convert $name ".basename($name,".csv");
+                            $rows[] = [
+                                'cmd' =>$cmd,
+                                'display' => "Convert $name into psql table ".basename($name,".csv"), 
+                                'link' => "onclick:".$cmd
+                            ];
+
+                        }
                     }
                     foreach($rows as &$row){
                         if(isset($row['link'])){
@@ -199,6 +210,9 @@ class FileSystem extends Model {
         }
         return ['xpath' =>$this->getPWD(), 'list' => $list];
     }
+    public function cat_1_11($filename){
+         
+    }
     public function cat($filename) {
         if (substr($filename, 0, 1) == '/') {
             $filepath = $filename;
@@ -208,10 +222,10 @@ class FileSystem extends Model {
         }
 
         if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
+        
         $mimetype = Storage::mimeType($filepath);
 
         $geturl = url("stdin")."?msg=".urlencode("get $filepath");
-
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
         } else if ($mimetype === "text/html") {
@@ -228,6 +242,9 @@ class FileSystem extends Model {
     public function create_db_table($tablename,$columns){
         $db_ns = $this->current_node->get_db_ns();
         $tablename=$db_ns."_".$tablename;
+        if(Schema::hasTable($tablename)){
+            return $tablename;
+        }
         Schema::create($tablename, function(Blueprint $table) use($columns){
             $table->increments('id');
             foreach($columns as $col){
