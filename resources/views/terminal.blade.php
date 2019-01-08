@@ -38,7 +38,8 @@
       $cmdLine_.autocomplete({
         autoFocus: true,
         source: input_auto_complete_source,
-        minLength: 1,
+        minLength: 3,
+        position:{collision: "flip"},
         select: function(event, ui) {
           //var _val = ui.item && ui.item.cmd || this.value;
           $cmdLine_.val(ui.item && ui.item.cmd || this.value);
@@ -188,7 +189,8 @@
             break;
           default:
             if (cmd) {
-              var fullcmd = encodeURIComponent(cmd + " " + args.join());
+              var fullcmd = cmd + " " + encodeURIComponent(args.join());
+              output("Calling api with msg: "+fullcmd+".<br>cmd_str is "+cmd_str);
               $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
                 _parse_api_response(ret);
                 $('html, body').animate({
@@ -349,6 +351,8 @@
         //parse api ret
       function _parse_api_response(ret) {
 
+        output("parsing api response");
+
         if (ret.output) {
           output(ret.output);
         }
@@ -430,7 +434,10 @@
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
       $("body").on('click', '.onclick_cmd', function(e) {
-        term.cmd_string($(this).attr('cmd'));
+        debugger;
+        var _cmd =$(this).attr('cmd');
+        //output("exec cmd from click: "+_cmd)
+        term.cmd_string(_cmd);
       });
       window.terminal=term;
     });
@@ -474,6 +481,7 @@
       <input type="file" class="form-control" id="file-select-input" name="file">
       <input type="submit" class="form-control" name="submitBtn" value="Upload" />
     </form>
+
     <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv' target="upload_csv_form">
       @csrf
       <input type="file" class="form-control" id="file-select-input" name="file">

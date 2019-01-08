@@ -176,11 +176,12 @@ class FileSystem extends Model {
                         $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
                     } else {
                         $rows[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+                        $rows[] = ['cmd' => "convert $name psql", 'display' => "Convert file into psql", 'link' => "onclick:convert ".urlencode($name)];
                     }
                     foreach($rows as &$row){
                         if(isset($row['link'])){
                             $cmd=$row['cmd'];
-                            $row['cmd']="<a href='#' cmd='$cmd' class='onclick_cmd'>$cmd</a>";
+                            $row['cmd']="<a style='color:yellow' href='#' cmd='$cmd' class='onclick_cmd'><b>$cmd</b></a>";
                             unset($row['link']);
                         }
                     }
@@ -231,6 +232,7 @@ class FileSystem extends Model {
             $table->increments('id');
             foreach($columns as $col){
                 list($name,$type) = explode(" ",$col);
+                $type=trim($type);
                 switch ($type){
                     case 'int': $table->integer($name); break;
                     case 'decimal': $table->decimal($name); break;
@@ -241,6 +243,7 @@ class FileSystem extends Model {
             }
             $table->timestamps();
         });
+        return $tablename;
     }
 
     public function put($filename, $content) {
@@ -259,7 +262,6 @@ class FileSystem extends Model {
         $pwd_parts = explode("/",$pwd);
         $node = $this->root_node;
         foreach($pwd_parts as $part){
-
             if($part==='root') continue;
             $node=$node->cd($part);
         }
