@@ -102,7 +102,8 @@ class Folder extends Model
                 break;
             case 'psql_table':
                 $table_ns = $this->get_db_ns();
-                $rows = DB::table($table_ns)->paginate(4);
+                
+                $rows = DB::table($table_ns)->paginate(15);
                 foreach($rows as $row){
                     $childPath = $this->path."/".$row->id;
                     $child=$this->addChild("psql_row", $childPath,$row);
