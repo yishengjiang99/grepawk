@@ -25,6 +25,7 @@
     util.toArray = function(list) {
       return Array.prototype.slice.call(list || [], 0);
     };
+
     var FileSystem = FileSystem || function(filesJson, currDir) {
 
     }
@@ -74,7 +75,7 @@
       var histtemp_ = 0;
       var username_ = "guest";
       var cd_ = "/public";
-      var input_auto_complete_source = ['help','ls'];
+      var input_auto_complete_source = [];
       var option_select = [];
       var activePrompt = null;
       var prompt_select = [];
@@ -140,25 +141,29 @@
           }else{
             tab_complete_source = input_auto_complete_source
           }
-          var current_word = t[t.length-1];
-          var matched_word=[];
-          tab_complete_source.map(function(word){
-            if(word.startsWith(current_word)){
-              matched_word.push(word);
-            }
-          })
 
-          if(!matched_word.length){
+          var current_word = t[t.length-1];
+          var matched_words=[];
+          var matched_length=[];
+          var max_distance=current_word.length;
+          var closest_substring=current_word;
+          tab_complete_source.forEach(function(word,i){
+            console.log(word + " vs "+current_word)
+            if(word.startsWith(current_word)){
+              matched_words.push(word);
+            }
+
+          })
+          if(matched_words.length==0){
             outputError("No matched file/folder name");
+          }else if(matched_words.length==1){
+            var newstr=this.value.replace(current_word,matched_words[0]);
+            this.value=newstr+ " ";
+          }else{
+            var suggested_str=this.value.replace(current_word,closest_substring);
+            $("#ending").find().last().html(suggested_str)
           }
-          if(matched_word.length==1){
-            var newstr=this.value.replace(current_word,matched_word[0]);
-            alert(newstr);
-          }
-//alert(JSON.stringify(tab_complete_source));
           return;
-          //return;
-          // Implement tab suggest.
         } else if (e.keyCode == 13) { // enter
           // Save shell history.
           if (this.value) {
@@ -389,7 +394,10 @@
           outputTable(ret.table);
         }
         if (ret.hints){
-          input_auto_complete_source = ret.hints;
+          Array.prototype.clone = function() {
+	          return this.slice(0);
+          };
+          input_auto_complete_source = ret.hints.clone();
         }
         if (ret.options) {
           outputOptions(ret.options.rows);
@@ -477,6 +485,7 @@
       <div class="prompt"></div>
       <div>
         <input size=100 class="cmdline" autofocus />
+        <span id="ending" style="color: gray" ></span>
       </div>
     </div>
   </div>
@@ -501,11 +510,11 @@
         </div>
       </div>
     </form>
-    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
+    <!-- <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
       @csrf
       <input type="file" class="form-control" id="file-select-input" name="file">
       <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
+    </form> -->
 
     <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv' target="upload_csv_form">
       @csrf
