@@ -29,6 +29,18 @@
 <h3>GrepAwk 2.0</h3>
 <p>
 GrepAwk.net is a web service that generalizes several storage methods on a filesystem-style interface.
+</p>
+<p>
+Live development stream:
+<iframe
+    src="https://player.twitch.tv/?channel=ragnus_the_orc"
+    height="320"
+    width="640"
+    frameborder="1"
+    scrolling="yes"
+    allowfullscreen="no">
+</iframe>
+</p>
 <p>
 You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the email 'guest@grepawk.net' and password 'welcome'.
 </p>
