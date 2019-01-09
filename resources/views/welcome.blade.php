@@ -31,7 +31,8 @@
 GrepAwk.net is a web service that generalizes several storage methods on a filesystem-style interface.
 </p>
 <p>
-Live development stream:
+<h4>Live development stream:</h4>
+<br>
 <iframe
     src="https://player.twitch.tv/?channel=ragnus_the_orc"
     height="320"
@@ -46,8 +47,6 @@ You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the 
 </p>
 
 <p>Start using the product as a guest <a href='/home'>here</a></p>
-
-<iframe src="https://www.facebook.com/plugins/video.php?href=https%3A%2F%2Fwww.facebook.com%2Fyishengjiang78%2Fvideos%2F10108893670719393%2F&show_text=0&width=560" width="560" height="350" style="border:none;overflow:hidden" scrolling="no" frameborder="0" allowTransparency="true" allowFullScreen="true"></iframe>
 
 <h3>Recent Changes</h3>
 <div>
