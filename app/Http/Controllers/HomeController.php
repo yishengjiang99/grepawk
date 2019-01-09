@@ -54,6 +54,8 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
+        $vfs = FileSystem::init_vfs();
+        return response()->json($vfs);
         Log::debug("stdin: ".$request->fullUrl());
         $this->username="guest";
         $msg =$request->input("msg");
