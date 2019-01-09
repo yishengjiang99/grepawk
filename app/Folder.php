@@ -25,7 +25,8 @@ class Folder extends Model
     public $dirty=false;
     public $mimeType = 'folder';
     public $vfs = []; // Associative Array
-    public $content=null;
+    public $content;
+    public $full_table_name;
     public function __construct($path, $storage_type, Array $vfs=null){
         $this->path=$path;
         $this->name = basename($this->path);
@@ -42,7 +43,11 @@ class Folder extends Model
         return $path;
     }
     public function get_db_ns(){
-        return str_replace("/", "_", $this->path);
+        if($this->storage_type=='psql_table'){
+            return str_replace("/", "_", dirname($this->path))."_f_".basename($this->path);
+        }else{
+            return str_replace("/", "_", $this->path)."_f_";
+        }
     }
     public function set_fs($fs){
         $this->fs=$fs;
@@ -74,7 +79,6 @@ class Folder extends Model
 
     }
     public function ls_children(){
-
         switch($this->storage_type){
             case 'vfs':
             case 'filesystem':
@@ -90,19 +94,19 @@ class Folder extends Model
                     $this->addChild('file', $this->path."/".$filename);
                 }
                 $table_ns = $this->get_db_ns();
-               // $table_ns = "";
 
                 $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
+            
                 $tables = DB::connection('pgsql') -> select($sql);
            
                 foreach($tables as $table){
-                    $child_path =str_replace($table_ns."_","",$table->table_name);
-                    $this->addChild('psql_table', $this->fs_path()."/".$child_path);
+                    $child_path =str_replace($table_ns,"",$table->table_name);
+                   // echo 'adding table to '.$this->path."/".$child_path;
+                    $this->addChild('psql_table', $this->path."/".$child_path);
                 }
                 break;
             case 'psql_table':
                 $table_ns = $this->get_db_ns();
-                
                 $rows = DB::table($table_ns)->paginate(15);
                 foreach($rows as $row){
                     $childPath = $this->path."/".$row->id;
@@ -137,7 +141,6 @@ class Folder extends Model
             //throw new FolderException("Folder $path already exists");
         }
         if(!$this->children) $this->children=[];
-      //  echo "<br> addoing children at $leaf_path for ".$this->path;
         $newChild = new Folder($path,$type);
         $newChild->parent=$this;
         $newChild->content=$content;
@@ -146,7 +149,11 @@ class Folder extends Model
         return $this->children[$leaf_path];
     }
     public function toString(){
-        $string=""; $this->path;
+        $string="Folder Type: ".$this->storage_type;
+        if($this->storage_type=='psql_table'){
+            $string.="Table name: ".$this->get_db_ns();
+            $cnt = DB::table($this->get_db_ns());
+        }
         foreach((Array)$this->content as $k=>$v){
             if(!$v) continue;
             $string.="<br>$k: $v,";
@@ -164,6 +171,7 @@ class Folder extends Model
         if($folderName == "..") return $this->parent ? $this->parent : $this;
 
         if($this->hasChild($folderName)==false){
+            var_dump(array_keys($this->children));
             throw new FolderException("$folderName does not exist on ".$this->path);
         }
         if($this->children[$folderName]->mimeType !=='folder'){

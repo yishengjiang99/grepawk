@@ -231,7 +231,7 @@
               })
               var fullcmd = cmd + " " + args.join(" ");
 
-              output("Calling api with msg: "+fullcmd+".<br>cmd_str is "+cmd_str);
+              output("Calling api with msg: "+fullcmd)
               $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
                 _parse_api_response(ret);
                 $('html, body').animate({
@@ -287,7 +287,8 @@
       function outputOptions(options) {
           var html="";
           $.each(options, function(i, option) {
-            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+option.cmd+"</button>";
+            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class=''onclick_cmd>"+option.cmd+"</a>";
+            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+onclick_cmd+"</button>";
           })
           outputHtml(html);
 
@@ -342,7 +343,6 @@
             var val = row[header] || "";
             if (header === 'link') {
               if (val.indexOf("onclick:") === 0) {
-                debugger;
                 var cmd_str = val.replace("onclick:", "");
                 var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
                 val = "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
@@ -392,7 +392,8 @@
         //parse api ret
       function _parse_api_response(ret) {
 
-        output("parsing api response");
+        output("parsing api response: ");
+        //+JSON.stringify(ret));
 
         if (ret.output) {
           output(ret.output);

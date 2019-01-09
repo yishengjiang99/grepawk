@@ -146,14 +146,16 @@ class HomeController extends Controller
                     break;
                 case "ls":
                     $output = "File list of the ".$fs->getPWD()." folder";
+                    $output .="<br>".$fs->current_node->toString();
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
-                   // $options=$fs->ls('-o');
+                    $options=$fs->ls('-o');
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
+                    $output .="<br>".$fs->current_node->toString();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
@@ -235,6 +237,7 @@ class HomeController extends Controller
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     break;
+
                 case 'upload':
                     break;
                 case 'wget':
@@ -258,7 +261,7 @@ class HomeController extends Controller
                     }
                     break;
                 default:
-                    $err=$cmd." known";
+                    $error=$cmd." known";
                     $table = $fs->ls("-t");
                     break;
             }  

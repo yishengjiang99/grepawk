@@ -121,43 +121,43 @@ class FileSystem extends Model {
             if($this->current_node->parent !==null ){
                 $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
             }
-            $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:ls"];
-            $options[] = ['cmd' => 'upload', 'display' => 'List Files', 'link' => "onclick:upload"];
-            $options[] = ['cmd' => 'upload csv', 
-                          'display' => "Import an Excel spread sheet and save it to db",
-                          'link' => "onclick:upload csv"];
+            $options[] = ['cmd' => 'ls', 'display' => 'List Files'];
+            $options[] = ['cmd' => 'upload', 'display' => 'List Files'];
 
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
-                    $options[] = ['cmd' => 'new', 'display' => 'Create a new text file', 'link' => "onclick:new"];
+                    $options[] = ['cmd' => 'new', 'display' => 'Create a new text file'];
+                    $options[] = ['cmd' => 'upload csv', 
+                    'display' => "Import an Excel spread sheet and save it to db",
+                    ];
                     break;
                 case 'search':
-                    $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}', 'link' => "onclick:msg=seach <prompt>"];
+                    $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}'];
+                    $options[] = ['cmd' => 'upload csv', 
+                        'display' => "Import an Excel spread sheet and save it to db",
+                    ];
                     break;
                 case 'psql':
-                    $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table', 'link'=>'onclick:createtable {tablename}'];
+                    $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table'];
+                    $options[] = ['cmd' => 'upload csv', 
+                    'display' => "Import an Excel spread sheet and save it to db",
+                    ]; 
                     break;
                 case 'psql_table':
-                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row','link'=>'onclick:newdata'];
+                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row'];
+                    $options[] = ['cmd' => 'select {column} from ', 'display' => 'Select tatemenbt'];
                     break;
                 default:
                     break;
             }
-            foreach($options as &$option){
-                if(isset($option['link'])){
-                    $cmd=$option['cmd'];
-                    $option['cmd']="<a href='#' cmd='$cmd' class='onclick_cmd'>$cmd</a>";
-                    unset($option['link']);
-                }
-            }
-
-            return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
+            
+            return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $options];
         }
         if (in_array("-t", $_options) || in_array("-j", $_options)) {
             $rows=[];
             $headers=[];
             $second_arg=[];
-            if($this->current_node->storage_type==='psql_table'){
+            if(in_array("-t", $_options) && $this->current_node->storage_type==='psql_table'){
                 foreach($list as $child) {
                     if($child->content===null) continue;
                     $content = $child->content;
@@ -205,7 +205,7 @@ class FileSystem extends Model {
                 return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
             }
         }
-        return ['xpath' =>$this->getPWD(), 'list' => $list];
+        //return ['xpath' =>$this->getPWD(), 'list' => $list];
     }
     public function cat_1_11($filename){
          
@@ -238,7 +238,7 @@ class FileSystem extends Model {
     }
     public function create_db_table($tablename,$columns){
         $db_ns = $this->current_node->get_db_ns();
-        $tablename=$db_ns."_".$tablename;
+        $tablename=$db_ns."|".$tablename;
         if(Schema::hasTable($tablename)){
             return $tablename;
         }
@@ -290,8 +290,11 @@ class FileSystem extends Model {
             $todir="root".$todir;
             $this->setPWD($todir); 
         }else{
+            // echo $this->getPWD()."/".$todir;
+            // exit;
             $this->setPWD($this->getPWD()."/".$todir);
         }
-        return $this->getPWD();
+        $pwd= $this->getPWD();
+        return $pwd;
     }
 }
