@@ -84,7 +84,6 @@ class HomeController extends Controller
                     $output="type 'ls' to get started";
                     $options=$fs->ls('-o');
                     $hints = $fs->ls("-j"); 
-                    exit;
                     break;
                 case 'checkin':
                     $output="...";

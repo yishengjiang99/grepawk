@@ -160,12 +160,13 @@
             var newstr=this.value.replace(current_word,matched_words[0]);
             this.value=newstr+ " ";
           }else{
-            var suggested_str=this.value.replace(current_word,closest_substring);
+            output(matched_words.join("&emsp;"));
+            return;
+            var suggested_str=this.value.replace(current_word, closest_substring);
             if($(this).parent().find(".ending").length>0){
               $(this).parent().find(".ending")[0].html(suggested_str);
             }else{
               $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
-
             }
             //$("#ending").last().html(suggested_str)
           }
@@ -295,17 +296,17 @@
         //
       function outputHtml(html) {
         output_.insertAdjacentHTML('beforeEnd', html);
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
 
       function output(html) {
         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
 
