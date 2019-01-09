@@ -157,18 +157,26 @@ class FileSystem extends Model {
             $rows=[];
             $headers=[];
             $second_arg=[];
-            if(in_array("-t", $_options) && $this->current_node->storage_type==='psql_table'){
+            if($this->current_node->storage_type==='psql_table'){
+                $second_arg[]=$this->current_node->get_db_ns();
+                $second_arg[]="from";
                 foreach($list as $child) {
                     if($child->content===null) continue;
                     $content = $child->content;
                     foreach((Array)$child->content as $header=>$val){
                         if(!isset($headers[$header])){
+                            $second_arg[]=$header;
                             $headers[$header]=1;
                         }
                     }
                     $rows[]=$child->content;
                 }
-                return ['headers' => array_keys($headers), 'rows' => $rows];
+                if(in_array("-t", $_options)){
+                    return ['headers' => array_keys($headers), 'rows' => $rows];
+                }                
+                if (in_array("-j", $_options)) {
+                    return $second_arg;
+                  }
             }else{
                 foreach($list as $child) {
                     $mimeType = $child->get_mime_type();
@@ -210,35 +218,42 @@ class FileSystem extends Model {
     public function cat_1_11($filename){
          
     }
+    public function get_mime_type($filename){
+        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        return 'vfs/'.$ext;
+    }
     public function cat($filename) {
         if (substr($filename, 0, 1) == '/') {
             $filepath = $filename;
         } else {
-            $filepath = $this -> get_fs_path().
-            "/".$filename;
+            $filepath = $this -> get_fs_path()."/".$filename;
         }
 
         if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
-        $mimetype = Storage::mimeType($filepath);
+        $mimetype = $this->get_mime_type($filename);
 
-        $geturl = url("stdin")."?msg=".urlencode("get $filepath");
+        if($filepath)
+            $geturl = url("stdin")."?msg=".urlencode("get $filepath");
+        
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
         } else if ($mimetype === "text/html") {
             return ['text_output' => "Displaying $filename in preview iframe.", 'iframe_link' => $geturl];
-        } else if (strpos($mimetype, "text") !== false) {
+        }else if (strpos($mimetype, "csv") !== false || strpos($mimetype, "text") !== false){
+            $content = Storage::get($filepath);
+            $content = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $content);
+            $content = str_replace("\n","<br>",$content);
             $output = "<b>$filename</b>";
-            $output .= "<br><br>";
-            $output .= "<p>".Storage::get($filepath)."</p>";
+            $output .= "<br>".$content;
             return ['text_output' => $output];
-        } else {
+        }else {
             return ['text_output' => "Downloading $filename", 'download_link' => $geturl];
         }
     }
     public function create_db_table($tablename,$columns){
         $db_ns = $this->current_node->get_db_ns();
-        $tablename=$db_ns."|".$tablename;
+        $tablename=$db_ns.$tablename;
         if(Schema::hasTable($tablename)){
             return $tablename;
         }
