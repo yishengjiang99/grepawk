@@ -83,6 +83,8 @@ class HomeController extends Controller
                 case "help":
                     $output="type 'ls' to get started";
                     $options=$fs->ls('-o');
+                    $hints = $fs->ls("-j"); 
+                    exit;
                     break;
                 case 'checkin':
                     $output="...";
@@ -274,7 +276,7 @@ class HomeController extends Controller
         return response()->json([
             "cd"=>basename($fs->getPWD()),
             "pwd"=>$fs->getPWD(),
-            "hints"=>$hints,
+            "hints"=>$fs->ls('-j'),
             "output"=>$output,
             'options'=>$options,
             "error"=>$error,

@@ -102,9 +102,9 @@ class FileSystem extends Model {
         }
         return $meta;
     }
-    public function _ls($path, $options){  
+    public function _ls($path, $_options){  
         $list = $this->current_node->ls_children();
-        if (in_array("-h", $options)) {
+        if (in_array("-h", $_options)) {
             $output = "";
             foreach($list as $name => $attr) {
                 if (substr($name, 0, 1) === '_') continue;
@@ -116,7 +116,7 @@ class FileSystem extends Model {
             return $output;
         }
 
-        if (in_array("-o", $options)) {
+        if (in_array("-o", $_options)) {
             $options = [];        
             if($this->current_node->parent !==null ){
                 $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
@@ -153,9 +153,10 @@ class FileSystem extends Model {
 
             return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
         }
-        if (in_array("-t", $options)) {
+        if (in_array("-t", $_options) || in_array("-j", $_options)) {
             $rows=[];
             $headers=[];
+            $second_arg=[];
             if($this->current_node->storage_type==='psql_table'){
                 foreach($list as $child) {
                     if($child->content===null) continue;
@@ -175,6 +176,7 @@ class FileSystem extends Model {
                     $is_row = strpos($mimeType,"_row") !==false;
                     if($is_row) continue;
                     $name = basename($child->path);
+                    $second_arg[]=$name;
                     if ($is_folder) {
                         $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
                     } else {
@@ -197,16 +199,11 @@ class FileSystem extends Model {
                         }
                     }
                 }
+                if (in_array("-j", $_options)) {
+                  return $second_arg;
+                }
                 return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
             }
-        }
-        if (in_array("-j", $options)) {
-            $hints = [];
-            foreach($list as $name => $attr) {
-                if (substr($name, 0, 1) === '_') continue;
-                $hints[] = $name;
-            }
-            return $hints;
         }
         return ['xpath' =>$this->getPWD(), 'list' => $list];
     }

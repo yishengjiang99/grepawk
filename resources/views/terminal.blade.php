@@ -155,13 +155,19 @@
 
           })
           if(matched_words.length==0){
-            outputError("No matched file/folder name");
+            //outputError("No matched file/folder name");
           }else if(matched_words.length==1){
             var newstr=this.value.replace(current_word,matched_words[0]);
             this.value=newstr+ " ";
           }else{
             var suggested_str=this.value.replace(current_word,closest_substring);
-            $("#ending").find().last().html(suggested_str)
+            if($(this).parent().find(".ending").length>0){
+              $(this).parent().find(".ending")[0].html(suggested_str);
+            }else{
+              $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
+
+            }
+            //$("#ending").last().html(suggested_str)
           }
           return;
         } else if (e.keyCode == 13) { // enter
@@ -485,7 +491,6 @@
       <div class="prompt"></div>
       <div>
         <input size=100 class="cmdline" autofocus />
-        <span id="ending" style="color: gray" ></span>
       </div>
     </div>
   </div>
