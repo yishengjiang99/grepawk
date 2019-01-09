@@ -15,6 +15,7 @@
         if(typeof msg ==='string'){
           ret = $.parseJSON(msg);
         }else{
+          debugger;
           ret=msg;
         }
         window.terminal.parse_api_response(ret);
@@ -36,34 +37,10 @@
       var cmdLine_ = document.querySelector(cmdLineContainer),
         $cmdLine_ = $(cmdLineContainer);
 
-      $cmdLine_.autocomplete({
-        autoFocus: true,
-        source: input_auto_complete_source,
-        minLength: 3,
-        position:{collision: "flip"},
-        select: function(event, ui) {
-          //var _val = ui.item && ui.item.cmd || this.value;
-          $cmdLine_.val(ui.item && ui.item.cmd || this.value);
-          if (event.keyCode == 7) { //tab
-            event.preventDefault();
-            $(this).focus();
-          }
-          if (event.keyCode == 9) { //tab
-            event.preventDefault();
-            $(this).focus();
-          }
-          //event.preventDefault();
-        }
-      }).autocomplete("instance")._renderItem = function(ul, item) {
-        return $("<li>")
-          .append("<div>" + item.cmd + "<br>" + item.display + "</div>")
-          .appendTo(ul);
-      };
-
       var output_ = document.querySelector(outputContainer);
 
       var CMDS_ = [
-        'ls', 'select', 'cat', 'new','upload', 'upload csv','help','get'
+        'ls', 'select', 'cat', 'new','upload', 'upload csv','help','select'
       ];
 
       var fs_ = null;
@@ -87,7 +64,7 @@
       var prompt_string = "";
 
        window.addEventListener('click', function(e) {
-         $(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
+         //$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
        }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
@@ -132,17 +109,17 @@
       function processNewCommand_(e) {
         if (e.keyCode == 9) { // tab
           e.preventDefault();
-          var t = this.value.split(" ");
-          if(t.length==0) return;
+          var word_parts = this.value.split(" ");
+          if(word_parts.length==0) return;
         
           var tab_complete_source;
-          if(t.length==1){
+          if(word_parts.length==1){
             tab_complete_source = CMDS_;
           }else{
             tab_complete_source = input_auto_complete_source
           }
 
-          var current_word = t[t.length-1];
+          var current_word = word_parts[word_parts.length-1];
           var matched_words=[];
           var matched_length=[];
           var max_distance=current_word.length;
@@ -155,13 +132,21 @@
 
           })
           if(matched_words.length==0){
-            outputError("No matched file/folder name");
+            //outputError("No matched file/folder name");
           }else if(matched_words.length==1){
-            var newstr=this.value.replace(current_word,matched_words[0]);
+            word_parts[word_parts.length-1]=matched_words[0];
+            var newstr=word_parts.join(" ");
             this.value=newstr+ " ";
           }else{
-            var suggested_str=this.value.replace(current_word,closest_substring);
-            $("#ending").find().last().html(suggested_str)
+            output(matched_words.join("&emsp;"));
+            return;
+            var suggested_str=this.value.replace(current_word, closest_substring);
+            if($(this).parent().find(".ending").length>0){
+              $(this).parent().find(".ending")[0].html(suggested_str);
+            }else{
+              $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
+            }
+            //$("#ending").last().html(suggested_str)
           }
           return;
         } else if (e.keyCode == 13) { // enter
@@ -224,7 +209,7 @@
               })
               var fullcmd = cmd + " " + args.join(" ");
 
-              output("Calling api with msg: "+fullcmd+".<br>cmd_str is "+cmd_str);
+              output("Calling api with msg: "+fullcmd)
               $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
                 _parse_api_response(ret);
                 $('html, body').animate({
@@ -280,26 +265,27 @@
       function outputOptions(options) {
           var html="";
           $.each(options, function(i, option) {
-            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+option.cmd+"</button>";
+            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class=''onclick_cmd>"+option.cmd+"</a>";
+            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+onclick_cmd+"</button>";
           })
           outputHtml(html);
 
-          //c$("#hud-options").html(html);
+          $("#hud-options").html(html);
         }
         //
       function outputHtml(html) {
         output_.insertAdjacentHTML('beforeEnd', html);
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
 
       function output(html) {
         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
 
@@ -335,7 +321,6 @@
             var val = row[header] || "";
             if (header === 'link') {
               if (val.indexOf("onclick:") === 0) {
-                debugger;
                 var cmd_str = val.replace("onclick:", "");
                 var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
                 val = "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
@@ -385,7 +370,8 @@
         //parse api ret
       function _parse_api_response(ret) {
 
-        output("parsing api response");
+        output("parsing api response: ");
+        //+JSON.stringify(ret));
 
         if (ret.output) {
           output(ret.output);
@@ -485,7 +471,6 @@
       <div class="prompt"></div>
       <div>
         <input size=100 class="cmdline" autofocus />
-        <span id="ending" style="color: gray" ></span>
       </div>
     </div>
   </div>
@@ -510,11 +495,11 @@
         </div>
       </div>
     </form>
-    <!-- <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
+    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
       @csrf
       <input type="file" class="form-control" id="file-select-input" name="file">
       <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form> -->
+    </form> 
 
     <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv' target="upload_csv_form">
       @csrf

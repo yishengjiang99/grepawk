@@ -16,44 +16,42 @@ class FileController extends Controller
         header( 'Content-type: text/html; charset=utf-8' );
         ob_start();
 
-
         $output="";
         $error="";
         $hints=[];
         $filetype = $request->input("type");
-
-        
+        $table=[];
         $options=[];
         $file=$request->file("file");
         try{
             $cbstr=json_encode([
-                'output'=>'Upload initiating.<br><br><br><br>',
+                'output'=>'Upload initiating.',
             ]);
             echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
             flush();
             ob_flush();   
-
-            $filePath =$file->storeAs($fs->getPWD(),$file->getClientOriginalName());
-            Log::critical("upload1 saving file as $filePath");
-
+            $filePath =$file->storeAs($fs->getPWD(),
+                $file->getClientOriginalName()
+            );
+            Log::critical("upload 1 saving file as $filePath");
             $output="$filePath is uploaded";
             $table=$fs->ls("-t");
             $options=$fs->ls("-o");
-
-           // $hints= $fs->ls("-h");
+            $hints= $fs->ls("-j");
         }catch(\Exception $e){
             $error=$e->getMessage();
         }
 
         $cbstr=json_encode([
-           // "hints"=>$hints,
+            "table"=>$table,
+            "hints"=>$hints,
             "output"=>$output,
-            //'options'=>$options,
+            'options'=>$options,
             "error"=>$error,
         ]);
         Log::critical("Cb: $cbstr");
 
-        echo "<script>parent.iframe_interface('$cbstr')</script>";
+        echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
         flush();
         ob_flush();   
         exit;

@@ -102,9 +102,9 @@ class FileSystem extends Model {
         }
         return $meta;
     }
-    public function _ls($path, $options){  
+    public function _ls($path, $_options){  
         $list = $this->current_node->ls_children();
-        if (in_array("-h", $options)) {
+        if (in_array("-h", $_options)) {
             $output = "";
             foreach($list as $name => $attr) {
                 if (substr($name, 0, 1) === '_') continue;
@@ -116,58 +116,67 @@ class FileSystem extends Model {
             return $output;
         }
 
-        if (in_array("-o", $options)) {
+        if (in_array("-o", $_options)) {
             $options = [];        
             if($this->current_node->parent !==null ){
                 $options[]= ['cmd'=>'cd ..', 'display'=>'Go to parent folder'];
             }
-            $options[] = ['cmd' => 'ls', 'display' => 'List Files', 'link' => "onclick:ls"];
-            $options[] = ['cmd' => 'upload', 'display' => 'List Files', 'link' => "onclick:upload"];
-            $options[] = ['cmd' => 'upload csv', 
-                          'display' => "Import an Excel spread sheet and save it to db",
-                          'link' => "onclick:upload csv"];
+            $options[] = ['cmd' => 'ls', 'display' => 'List Files'];
+            $options[] = ['cmd' => 'upload', 'display' => 'List Files'];
 
             switch ($this->current_node->storage_type) {
                 case 'filesystem':
-                    $options[] = ['cmd' => 'new', 'display' => 'Create a new text file', 'link' => "onclick:new"];
+                    $options[] = ['cmd' => 'new', 'display' => 'Create a new text file'];
+                    $options[] = ['cmd' => 'upload csv', 
+                    'display' => "Import an Excel spread sheet and save it to db",
+                    ];
                     break;
                 case 'search':
-                    $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}', 'link' => "onclick:msg=seach <prompt>"];
+                    $options[] = ['cmd' => 'search {term}', 'display' => 'search {term}'];
+                    $options[] = ['cmd' => 'upload csv', 
+                        'display' => "Import an Excel spread sheet and save it to db",
+                    ];
                     break;
                 case 'psql':
-                    $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table', 'link'=>'onclick:createtable {tablename}'];
+                    $options[] = ['cmd' => 'createtable {tablename}', 'display' => 'create a new table'];
+                    $options[] = ['cmd' => 'upload csv', 
+                    'display' => "Import an Excel spread sheet and save it to db",
+                    ]; 
                     break;
                 case 'psql_table':
-                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row','link'=>'onclick:newdata'];
+                    $options[] = ['cmd' => 'newdata', 'display' => 'Insert a row'];
+                    $options[] = ['cmd' => 'select {column} from ', 'display' => 'Select tatemenbt'];
                     break;
                 default:
                     break;
             }
-            foreach($options as &$option){
-                if(isset($option['link'])){
-                    $cmd=$option['cmd'];
-                    $option['cmd']="<a href='#' cmd='$cmd' class='onclick_cmd'>$cmd</a>";
-                    unset($option['link']);
-                }
-            }
-
-            return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $options];
+            
+            return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $options];
         }
-        if (in_array("-t", $options)) {
+        if (in_array("-t", $_options) || in_array("-j", $_options)) {
             $rows=[];
             $headers=[];
+            $second_arg=[];
             if($this->current_node->storage_type==='psql_table'){
+                $second_arg[]=$this->current_node->get_db_ns();
+                $second_arg[]="from";
                 foreach($list as $child) {
                     if($child->content===null) continue;
                     $content = $child->content;
                     foreach((Array)$child->content as $header=>$val){
                         if(!isset($headers[$header])){
+                            $second_arg[]=$header;
                             $headers[$header]=1;
                         }
                     }
                     $rows[]=$child->content;
                 }
-                return ['headers' => array_keys($headers), 'rows' => $rows];
+                if(in_array("-t", $_options)){
+                    return ['headers' => array_keys($headers), 'rows' => $rows];
+                }                
+                if (in_array("-j", $_options)) {
+                    return $second_arg;
+                  }
             }else{
                 foreach($list as $child) {
                     $mimeType = $child->get_mime_type();
@@ -175,6 +184,7 @@ class FileSystem extends Model {
                     $is_row = strpos($mimeType,"_row") !==false;
                     if($is_row) continue;
                     $name = basename($child->path);
+                    $second_arg[]=$name;
                     if ($is_folder) {
                         $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
                     } else {
@@ -197,51 +207,53 @@ class FileSystem extends Model {
                         }
                     }
                 }
+                if (in_array("-j", $_options)) {
+                  return $second_arg;
+                }
                 return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
             }
         }
-        if (in_array("-j", $options)) {
-            $hints = [];
-            foreach($list as $name => $attr) {
-                if (substr($name, 0, 1) === '_') continue;
-                $hints[] = $name;
-            }
-            return $hints;
-        }
-        return ['xpath' =>$this->getPWD(), 'list' => $list];
+        //return ['xpath' =>$this->getPWD(), 'list' => $list];
     }
     public function cat_1_11($filename){
          
+    }
+    public function get_mime_type($filename){
+        $ext = pathinfo($filename, PATHINFO_EXTENSION);
+        return 'vfs/'.$ext;
     }
     public function cat($filename) {
         if (substr($filename, 0, 1) == '/') {
             $filepath = $filename;
         } else {
-            $filepath = $this -> get_fs_path().
-            "/".$filename;
+            $filepath = $this -> get_fs_path()."/".$filename;
         }
 
         if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
-        $mimetype = Storage::mimeType($filepath);
+        $mimetype = $this->get_mime_type($filename);
 
-        $geturl = url("stdin")."?msg=".urlencode("get $filepath");
+        if($filepath)
+            $geturl = url("stdin")."?msg=".urlencode("get $filepath");
+        
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
         } else if ($mimetype === "text/html") {
             return ['text_output' => "Displaying $filename in preview iframe.", 'iframe_link' => $geturl];
-        } else if (strpos($mimetype, "text") !== false) {
+        }else if (strpos($mimetype, "csv") !== false || strpos($mimetype, "text") !== false){
+            $content = Storage::get($filepath);
+            $content = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $content);
+            $content = str_replace("\n","<br>",$content);
             $output = "<b>$filename</b>";
-            $output .= "<br><br>";
-            $output .= "<p>".Storage::get($filepath)."</p>";
+            $output .= "<br>".$content;
             return ['text_output' => $output];
-        } else {
+        }else {
             return ['text_output' => "Downloading $filename", 'download_link' => $geturl];
         }
     }
     public function create_db_table($tablename,$columns){
         $db_ns = $this->current_node->get_db_ns();
-        $tablename=$db_ns."_".$tablename;
+        $tablename=$db_ns.$tablename;
         if(Schema::hasTable($tablename)){
             return $tablename;
         }
@@ -293,8 +305,11 @@ class FileSystem extends Model {
             $todir="root".$todir;
             $this->setPWD($todir); 
         }else{
+            // echo $this->getPWD()."/".$todir;
+            // exit;
             $this->setPWD($this->getPWD()."/".$todir);
         }
-        return $this->getPWD();
+        $pwd= $this->getPWD();
+        return $pwd;
     }
 }

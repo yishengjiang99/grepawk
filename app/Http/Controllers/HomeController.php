@@ -58,7 +58,6 @@ class HomeController extends Controller
         $this->username="guest";
         $msg =$request->input("msg");
         $msg =urldecode($msg);
-  
         $data = $request->input('data');
         $data = json_decode($data);
         if(!$msg) die("");
@@ -83,6 +82,7 @@ class HomeController extends Controller
                 case "help":
                     $output="type 'ls' to get started";
                     $options=$fs->ls('-o');
+                    $hints = $fs->ls("-j"); 
                     break;
                 case 'checkin':
                     $output="...";
@@ -93,34 +93,36 @@ class HomeController extends Controller
                     $tablename = $argv2;
                     $path = $fs->get_system_path($argv1);
                     exec("cat $path|grep -v '^$'",$ob);
-        
                     $headers=null;
                     $rows = [];
                     $coltypes=[];
                     foreach($ob as $i=>$line){
                         if($i==0) {
                             $headercsv = str_getcsv($line);
-                            foreach($headercsv as $head){
-                                $headers[] = strtolower(str_replace(" ","_",$head));
+                            foreach($headercsv as $i=>$header){
+                                if($header=="") continue;
+                                $headers[$i] = strtolower(str_replace(" ","_",$header));
                             }
+                            continue;
 
                         }else if($i==1){
                             $cols = str_getcsv($line);
-                            foreach($cols as $c){
-                                $coltypes[] = is_numeric($c) ? 'decimal' : 'string';
+                            foreach($cols as $i=>$c){
+                                $coltypes[$i] = is_numeric($c) ? 'decimal' : 'string';
                             }
                         }
-                        else{
-                            if(count($headers)!=count(str_getcsv($line))) continue;
-                            $rows[] =array_combine($headers,str_getcsv($line));
-                        }      
+                        $rowobj=[];
+                        $lineparts=str_getcsv($line);
+                        foreach($headers as $i=>$header){
+                            $rowobj[$header]=$lineparts[$i];
+                        }
+                        $rows[]=$rowobj;    
                     }
 
                     $header_list=[];
                     foreach($headers as $i=>$header){
                         $header_list[]=$header." ".$coltypes[$i];
                     }
-
                     $full_table_name=$fs->create_db_table($tablename,$header_list);
                     $row_inserted=0;
                     foreach($rows as $row){
@@ -145,14 +147,16 @@ class HomeController extends Controller
                     break;
                 case "ls":
                     $output = "File list of the ".$fs->getPWD()." folder";
+                    $output .="<br>".$fs->current_node->toString();
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
-                   // $options=$fs->ls('-o');
+                    $options=$fs->ls('-o');
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
+                    $output .="<br>".$fs->current_node->toString();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
@@ -184,6 +188,30 @@ class HomeController extends Controller
                         $fs->create_db_table($tablename,$data);
                         $output="$tablename created!";
                     }
+                    break;
+                case 'select':
+                    $tablename = $fs->current_node->get_db_ns();
+                    $sql=$msg;
+                    if(stripos($sql," $tablename")===false){
+                        $error="Must query tablename ".$tablename;
+                        break;
+                    }else{
+                        try{
+                            $output="Trying SQL statement: $sql";
+                            $rows=DB::connection('pgsql')->select($sql);
+                            $table_list=[];
+                            $table_headers=[];
+                            foreach($rows as $i=>$row) {
+                                foreach($row as $k=>$val){
+                                    if($i==0) $table_headers[]=$k;
+                                }
+                                $table_list[]=$row;
+                            }
+                            $table=['headers'=>$table_headers,'rows'=>$table_list];  
+                        }catch(\Exception $e){
+                            $error=$e->getMessage();
+                        }
+                    }           
                     break;
                 case 'nd':
                 case 'newdata':
@@ -234,6 +262,7 @@ class HomeController extends Controller
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     break;
+
                 case 'upload':
                     break;
                 case 'wget':
@@ -257,7 +286,7 @@ class HomeController extends Controller
                     }
                     break;
                 default:
-                    $err=$cmd." known";
+                    $error=$cmd." known";
                     $table = $fs->ls("-t");
                     break;
             }  
@@ -274,7 +303,7 @@ class HomeController extends Controller
         return response()->json([
             "cd"=>basename($fs->getPWD()),
             "pwd"=>$fs->getPWD(),
-            "hints"=>$hints,
+            "hints"=>$fs->ls('-j'),
             "output"=>$output,
             'options'=>$options,
             "error"=>$error,
