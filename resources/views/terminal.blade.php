@@ -61,8 +61,8 @@
 
       var output_ = document.querySelector(outputContainer);
 
-      const CMDS_ = [
-        'ls', 'cat', 'search', 'shout', 'say'
+      var CMDS_ = [
+        'ls', 'select', 'cat', 'new','upload', 'upload csv','help','get'
       ];
 
       var fs_ = null;
@@ -74,7 +74,7 @@
       var histtemp_ = 0;
       var username_ = "guest";
       var cd_ = "/public";
-      var input_auto_complete_source = ['help'];
+      var input_auto_complete_source = ['help','ls'];
       var option_select = [];
       var activePrompt = null;
       var prompt_select = [];
@@ -85,9 +85,9 @@
       var prompt_context = "";
       var prompt_string = "";
 
-      // window.addEventListener('click', function(e) {
-      //   $(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
-      // }, false);
+       window.addEventListener('click', function(e) {
+         $(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
+       }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
       cmdLine_.addEventListener('keydown', historyHandler_, false);
@@ -131,7 +131,32 @@
       function processNewCommand_(e) {
         if (e.keyCode == 9) { // tab
           e.preventDefault();
+          var t = this.value.split(" ");
+          if(t.length==0) return;
+        
+          var tab_complete_source;
+          if(t.length==1){
+            tab_complete_source = CMDS_;
+          }else{
+            tab_complete_source = input_auto_complete_source
+          }
+          var current_word = t[t.length-1];
+          var matched_word=[];
+          tab_complete_source.map(function(word){
+            if(word.startsWith(current_word)){
+              matched_word.push(word);
+            }
+          })
 
+          if(!matched_word.length){
+            outputError("No matched file/folder name");
+          }
+          if(matched_word.length==1){
+            var newstr=this.value.replace(current_word,matched_word[0]);
+            alert(newstr);
+          }
+//alert(JSON.stringify(tab_complete_source));
+          return;
           //return;
           // Implement tab suggest.
         } else if (e.keyCode == 13) { // enter
@@ -363,17 +388,14 @@
         if (ret.table) {
           outputTable(ret.table);
         }
+        if (ret.hints){
+          input_auto_complete_source = ret.hints;
+        }
         if (ret.options) {
           outputOptions(ret.options.rows);
           option_select = ret.options;
-          if (ret.options.rows) {
-            input_auto_complete_source = ret.options.rows.map(function(elem, i) {
-              elem.value = elem.cmd;
-              return elem;
-            });
-          }
-          $cmdLine_.autocomplete("option", "source", input_auto_complete_source);
         }
+
         ret.meta = ret.meta || {};
         if (ret.meta.prompt_loop) {
           prompt_string = ret.meta.prompt_loop;
