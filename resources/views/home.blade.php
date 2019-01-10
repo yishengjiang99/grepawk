@@ -1,9 +1,12 @@
 @extends('layouts.app')
 @section('content')
 
-<div class='container'>
-   <div><iframe id='tty1' src="{{ url('/terminal') }}" height='640px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
-   <div id='hud-options' class='container bg-light' style='height:32px'></div>
+<div class='container' style='margin-top:73px;margin-bottom:100px'>
+   <div class='row'>
+   <div class='col-md-3' id='hud-1'></div>
+   <div class='col-md-9'><iframe id='tty1' src="{{ url('/terminal') }}" height='450px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
+   </div>
+   <div id='hud-options' class='row' style='height:64px'></div>
 </div>
 
 
@@ -49,6 +52,9 @@
     }
     if(cmd=="update_options"){
        $("#hud-options").html(args);
+    }
+    if(cmd=='update_html'){
+      $("#"+args[0]).html(args[1]);
     }
     if(cmd=='debug'){
        $("#debugger").append("<p>"+args+"<p>");

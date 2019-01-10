@@ -270,11 +270,11 @@
           var html="";
           $.each(options, function(i, option) {
             var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class=''onclick_cmd>"+option.cmd+"</a>";
-            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+onclick_cmd+"</button>";
+            html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
-          outputHtml(html);
-
-          $("#hud-options").html(html);
+          parent.iframe_interface("update_html",["hud-1",html]);
+//           outputHtml(html);
+          
         }
         //
       function outputHtml(html) {

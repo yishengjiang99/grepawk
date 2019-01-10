@@ -315,7 +315,7 @@ class HomeController extends Controller
             "pwd"=>$fs->getPWD(),
             "hints"=>$fs->ls('-j'),
             "output"=>$output,
-           // 'options'=>$options,
+            'options'=>$options,
             "error"=>$error,
             'meta'=>$meta,
             'table'=>$table
