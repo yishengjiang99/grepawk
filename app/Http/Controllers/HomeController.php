@@ -185,7 +185,6 @@ class HomeController extends Controller
                         $error="Usage: createable {tablename}";
                         break;
                     }
-                    $data=['sss int'];
                     if(!$data){
                         $output="Enter Create Table Prompt mode";
                         $output.="<br>Add column with the format {name} {type}";

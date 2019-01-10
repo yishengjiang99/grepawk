@@ -31,8 +31,8 @@ class FileSystem extends Model {
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'psql',
-            'children'=>       ['json','csv','html','queries','database','live', 'intro'],
-            'children_storage' =>['json','csv','html','json', 'psql','stream','html'],
+            'children'=>       ['queries','live', 'intro'],
+            'children_storage' =>['psql','stream','html'],
             'path'=>'{storage_path}/root/data'
         ],
         'files'=>[
@@ -119,7 +119,6 @@ class FileSystem extends Model {
         $error="";
 
         if(!isset(self::$ls_cache[$_pwd])){
-
             //self::$ls_cache[$this->pwd]=[];
             $nodes=[];
             $node_types=[];
@@ -129,7 +128,10 @@ class FileSystem extends Model {
             if(!isset($this->xpath_map[$_pwd])){
                 list($parent_index,$parent_mimetype,$parent_meta)=$this->xpath_map[$parent_path];                
                 $my_mimetype="filesystem";
+                if($parent_mimetype=='psql') $my_mimetype='psql_table';
+
                 $my_meta=['os_path'=>$parent_meta['os_path']."/".basename($_pwd)];
+                $my_meta=array_merge($my_meta,$parent_meta);
                 $this->xpath_map[$_pwd]=[$parent_index,$my_mimetype,$my_meta];  
             }else{
                 list($my_index,$my_mimetype,$my_meta)=$this->xpath_map[$_pwd];
@@ -144,11 +146,7 @@ class FileSystem extends Model {
                 }
             }
 
-            $storage = $my_mimetype;
-            $os_path = $my_meta['os_path'];
-            if(!$os_path && isset($my_meta['path'])){
-                $os_path = $my_meta['path'];
-            }
+
 
             foreach($this->vfs[0] as $index=>$path){
                 $rank = count(explode("/",$path));
@@ -163,6 +161,11 @@ class FileSystem extends Model {
                 $nodes[]=basename($path);
                 $node_types[]=$mimetype;
             }
+            $storage = $my_mimetype;
+            $os_path = isset($my_meta['os_path']) ? $my_meta['os_path'] : "none";
+            if(!$os_path && isset($my_meta['path'])){
+                $os_path = $my_meta['path'];
+            }
    
             switch($storage){
                 case 'vfs/root':
@@ -175,9 +178,9 @@ class FileSystem extends Model {
                     $file_filter="|grep $storage";
                 case 'data':
                 case 'filesystem':
+                    if($os_path=='none') break;
                     $file_filter="";
                     $folders=[];
-                    if(!$os_path) continue;
                     $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
                     Log::debug($os_query);
                     $os_info=[];
@@ -196,9 +199,28 @@ class FileSystem extends Model {
                         $node_types[]=trim($_mimetype);
                     }
                     break;
+                case 'psql':
+                    $parent_path=$_pwd;
+                    $table_ns=str_replace("/", "_", $parent_path)."_f_";
+                    $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
+                    $tables = DB::connection('pgsql') -> select($sql);
+                    foreach($tables as $table){
+                        $child_path =str_replace($table_ns,"",$table->table_name);
+                        $full_path = $parent_path."/".$child_path;
+                        $_meta=['db_name'=>$table->table_name];
+                        $this->xpath_map[$full_path]=[0,'psql_table',$_meta];
+                        $nodes[]=basename($full_path);
+                        $node_types[]='psql_table';
+                    }
+           
+                    break;
+                case 'psql_table':
+                    $tablename=str_replace("/", "_", dirname($_pwd))."_f_".basename($_pwd);
+                    $nodes[]=$tablename;
+                    $node_types[]='psql_row';
+                    break;
                 default:
                     break;
-
                 }
 
               
@@ -304,19 +326,28 @@ class FileSystem extends Model {
         return $meta;
     }
     public static function ls_table($storage_type,$nodes,$node_types){
-        $rows=[];
 
         if($storage_type=='psql_table'){
-            return ['headers'=>[],'rows'=>[]];
+            $rows=[];
+
+            if(isset($nodes[0])){
+                $table_ns=$nodes[0];
+            }
+            $dbrows = DB::table($table_ns)->paginate(15);
+            $headers=[];
+            foreach($dbrows as $i=>$row){
+                if($i==0) $headers=array_keys((Array)$row);
+                $rows[]=(Array)$row;
+            }
+            return ['headers'=>$headers,'rows'=>$rows];
         }elseif($storage_type=='psql'){
             $rows=[];
             foreach($nodes as $i=>$node_path){
                 $mimeType = $node_types[$i];
                 $name = basename($node_path);
-                $rows[] = ['cmd' => "cd $name", "mimetype"=>"psql_table", 'display' => "Query db table"];
-                return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
+                $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'display' => "Query db table"];
             }
-           
+            return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
         }else{
             foreach($nodes as $i=>$node_path) {
                 $mimeType = $node_types[$i];
@@ -590,7 +621,21 @@ class FileSystem extends Model {
         }
         $new_path=implode("/",$path_parts);
         
-
+        $popped_stack=[];
+        while(true){
+            if(!isset($this->xpath_map[$new_path])){
+                $popped_stack[]=basename($new_path);
+                $new_path=dirname($new_path);
+                $this->ls("",$new_path);
+                
+            }else{
+                if(count($popped_stack)){
+                    $new_path=$new_path."/".array_pop($popped_stack);
+                }else{
+                    break;
+                }
+            }
+        }
         if(!isset($this->xpath_map[$new_path])){
             $this->ls("",$new_path);
             if(!isset($this->xpath_map[$new_path])){
