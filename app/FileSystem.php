@@ -24,8 +24,8 @@ class FileSystem extends Model {
             '_storage' => 'symlink',
             'children'=>['private','public','index_page','queries','tools'],
             'children_storage' =>['dropbox','dropbox','html','queries','bin'],
-            'ln_target'=>'~/Dropbox/grepawk',
-            'path'=>'{ln_target}/dropbox'
+            'ln_target'=>'/home/ubuntu/Dropbox/grepawk',
+            'path'=>'{ln_target}'
         ],
         'controllers' => [
             '_storage' => 'filesystem',
@@ -108,10 +108,6 @@ class FileSystem extends Model {
             switch($storage){
                 case 'symlink':
                     $os_path = str_replace('{ln_target}',$meta['ln_target'],$os_path);
-                case 'html':
-                case 'csv':
-                case 'json':
-                case 'image':
                     $file_filter="|grep $storage";
                 case 'filesystem':
                     $file_filter="";
