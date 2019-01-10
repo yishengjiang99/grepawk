@@ -84,7 +84,7 @@ class HomeController extends Controller
             switch($cmd){
                 case "help":
                     $output="type 'ls' to get started";
-                    $options=$fs->ls('-o');
+                    //$options=$fs->ls('-o');
                     $hints = $fs->ls("-j"); 
                     break;
                 case 'checkin':
@@ -293,8 +293,9 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
+            throw $e;
             $error=$e->getMessage();
-            $table = $fs->ls("-t");
+           // $table = $fs->ls("-t");
         }
         if($oformat=='debug'){
             echo 'end of debug';

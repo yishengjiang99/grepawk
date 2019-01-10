@@ -209,7 +209,7 @@
               })
               var fullcmd = cmd + " " + args.join(" ");
 
-              output("Calling api with msg: "+fullcmd)
+              //output("Calling api with msg: "+fullcmd)
               $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
                 _parse_api_response(ret);
                 $('html, body').animate({
@@ -370,7 +370,7 @@
         //parse api ret
       function _parse_api_response(ret) {
 
-        output("parsing api response: ");
+        //output("parsing api response: ");
         //+JSON.stringify(ret));
 
         if (ret.output) {
