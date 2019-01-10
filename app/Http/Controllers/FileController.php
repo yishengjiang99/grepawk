@@ -15,7 +15,6 @@ class FileController extends Controller
 
         header( 'Content-type: text/html; charset=utf-8' );
         ob_start();
-
         $output="";
         $error="";
         $hints=[];
@@ -50,7 +49,6 @@ class FileController extends Controller
             "error"=>$error,
         ]);
         Log::critical("Cb: $cbstr");
-
         echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
         flush();
         ob_flush();   

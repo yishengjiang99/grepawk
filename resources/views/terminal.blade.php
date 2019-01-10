@@ -5,7 +5,12 @@
   <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
   <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-
+  <style>
+  pre{
+    background-color:black;
+    color:white;
+  }
+  </style>
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
@@ -15,7 +20,6 @@
         if(typeof msg ==='string'){
           ret = $.parseJSON(msg);
         }else{
-          debugger;
           ret=msg;
         }
         window.terminal.parse_api_response(ret);
@@ -266,11 +270,11 @@
           var html="";
           $.each(options, function(i, option) {
             var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class=''onclick_cmd>"+option.cmd+"</a>";
-            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+onclick_cmd+"</button>";
+            html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
-          outputHtml(html);
-
-          $("#hud-options").html(html);
+          parent.iframe_interface("update_html",["hud-1",html]);
+//           outputHtml(html);
+          
         }
         //
       function outputHtml(html) {
@@ -449,7 +453,7 @@
       term.setUsername("{{$username}}@grepawk");
       term.setCd("{{$pwd}}");
       term.init();
-      term.cmd_string("help");
+      term.cmd_string("checkin");
       $("body").on('click', '.cmd_btn', function(e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
