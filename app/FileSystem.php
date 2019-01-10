@@ -123,6 +123,7 @@ class FileSystem extends Model {
             //self::$ls_cache[$this->pwd]=[];
             $nodes=[];
             $node_types=[];
+     
             $myrank = count(explode("/",$_pwd));
             $parent_path = dirname($_pwd);
             if(!isset($this->xpath_map[$_pwd])){
@@ -151,25 +152,28 @@ class FileSystem extends Model {
 
             foreach($this->vfs[0] as $index=>$path){
                 $rank = count(explode("/",$path));
+                
                 if($rank!== $myrank+1) continue;
-                if(dirname($path)!==$this->pwd) {
+                if(dirname($path)!==$_pwd) {
                     continue;
                 }
+
                 $mimetype = $this->vfs[1][$index];
                 $meta =$this->vfs[2][$index];
                 $nodes[]=basename($path);
                 $node_types[]=$mimetype;
             }
+   
             switch($storage){
                 case 'vfs/root':
                     break; // 
                 case 'symlink':
-                  //  $os_path = str_replace('{ln_target}',$meta['ln_target'], $os_path);
                 case 'html':
                 case 'csv':
                 case 'json':
                 case 'image':
                     $file_filter="|grep $storage";
+                case 'data':
                 case 'filesystem':
                     $file_filter="";
                     $folders=[];
@@ -192,7 +196,11 @@ class FileSystem extends Model {
                         $node_types[]=trim($_mimetype);
                     }
                     break;
+                default:
+                    break;
+
                 }
+
               
             self::$ls_cache[$_pwd]=[
                 'nodes'=>$nodes,
@@ -277,7 +285,6 @@ class FileSystem extends Model {
 
     
   
- 
     public function pwd_meta(){
         $meta=[];
         switch ($this->current_node->storage_type) {
