@@ -102,10 +102,10 @@ class FileSystem extends Model {
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
 
             }else{
-                $os_path=null;
+                $os_path="";
             }
 
-            if($os_path) switch($storage){
+            switch($storage){
                 case 'symlink':
                     $os_path = str_replace('{ln_target}',$meta['ln_target'],$os_path);
                 case 'html':
@@ -116,6 +116,7 @@ class FileSystem extends Model {
                 case 'filesystem':
                     $file_filter="";
                     $folders=[];
+                    if(!$os_path) continue;
                     $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
                     Log::debug($os_query);
                    // echo $os_query;
@@ -135,6 +136,22 @@ class FileSystem extends Model {
                     }
                     break;
                 case 'psql':
+                    $table_ns=str_replace("/", "_", $parent_path)."_f_"; 
+      
+                    $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
+
+                    $tables = DB::connection('pgsql') -> select($sql);
+                    foreach($tables as $table){
+                        $child_path =str_replace($table_ns,"",$table->table_name);
+                        $full_path = $parent_path."/".$child_path;
+                        //echo "<br> adding $full_path";
+                        $xpaths[]=$full_path;
+                        $mimetypes[]="psql_table";
+                        $meta_list[]=[
+                            'table_name'=>$table->table_name
+                        ];
+                    }    
+
                     break;
                 case 'psql-table':
                     break;  
@@ -217,10 +234,12 @@ class FileSystem extends Model {
                 //echo "<br>rank of $path is $rank";
                 if($rank!== $myrank+1) continue;
                 if(dirname($path)!==$this->pwd) {
+                    //echo "skip $path";
                     continue;
                 }
                 $mimetype = $this->vfs[1][$index];
                 $meta =$this->vfs[2][$index];
+                //echo "adding nodes ".basename($path);
                 $nodes[]=basename($path);
                 $node_types[]=$mimetype;
             }
@@ -265,10 +284,20 @@ class FileSystem extends Model {
         return $meta;
     }
     public static function ls_table($storage_type,$nodes,$node_types){
+        $rows=[];
+
         if($storage_type=='psql_table'){
             return ['headers'=>[],'rows'=>[]];
-        }else{
+        }elseif($storage_type=='psql'){
             $rows=[];
+            foreach($nodes as $i=>$node_path){
+                $mimeType = $node_types[$i];
+                $name = basename($node_path);
+                $rows[] = ['cmd' => "cd $name", "mimetype"=>"psql_table", 'display' => "Query db table"];
+                return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
+            }
+           
+        }else{
             foreach($nodes as $i=>$node_path) {
                 $mimeType = $node_types[$i];
                 $is_file= stripos($mimeType,'ls-')===0 && stripos($mimeType,'/directory')===false;
@@ -481,7 +510,8 @@ class FileSystem extends Model {
         }
     }
     public function create_db_table($tablename,$columns){
-        $db_ns = $this->current_node->get_db_ns();
+        $db_ns = str_replace("/","_",$this->getPWD())."_f_";
+
         $tablename=$db_ns.$tablename;
         if(Schema::hasTable($tablename)){
             return $tablename;
