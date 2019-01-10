@@ -25,7 +25,7 @@ class FileSystem extends Model {
             'children'=>['private','public','index_page','queries','tools'],
             'children_storage' =>['dropbox','dropbox','html','queries','bin'],
             'ln_target'=>'~/Dropbox/grepawk',
-            'path'=>'{ln_target}/dropbox'
+            'path'=>'{ln_target}'
         ],
         'controllers' => [
             '_storage' => 'filesystem',
@@ -535,7 +535,8 @@ class FileSystem extends Model {
     }
 
     public function put($filename, $content) {
-        $filePath = $this -> get_fs_path()."/".$filename;
+
+        $filePath = $this->getPWD()."/".$filename;
         return Storage::put($filePath, $content);
     }
     public function getPWD() {
