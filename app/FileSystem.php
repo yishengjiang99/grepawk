@@ -72,7 +72,9 @@ class FileSystem extends Model {
         $base_path="/root";
         $xpaths[]='/root';
         $mimetypes[]='vfs/root';
-        $meta_list[]=[];
+        $meta_list=[];
+        $meta_list[]=['os_path'=>storage_path()."/app/root"];
+
         $max_ls_depth=5;
         $list_index=0;
         foreach(self::$virtual_fs as $name=>$attributes){
@@ -87,10 +89,10 @@ class FileSystem extends Model {
                 if($attributes['_storage']==='symlink'){
                     $os_path = str_replace('{ln_target}',$newmeta['ln_target'], $os_path);
                 }
-                $meta['os_path']=$os_path;
+                $newmeta['os_path']=$os_path;
            
             }else{
-                $meta['os_path']="";
+                $newmeta['os_path']="";
             }
             $meta_list[]=$newmeta;
             if(isset($attributes['children'])){
@@ -104,20 +106,39 @@ class FileSystem extends Model {
         }
         self::$full_vfs_map=[$xpaths,$mimetypes,$meta_list];
       }
+     // var_dump(self::$full_vfs_map[1]);
+
       return self::$full_vfs_map;
     }
 
 
+
     public function ls($args){
-        if(true){
+        $xpath_map = $this->xpath_map;
+        $path_index = $xpath_map[$this->pwd];
+        if(!self::$ls_cache) $ls_cache=[];
+
+        if(!isset(self::$ls_cache[$this->pwd])){
+            self::$ls_cache[$this->pwd]=[];
             $nodes=[];
             $node_types=[];
             $myrank = count(explode("/",$this->pwd));
-            $xpath_map = $this->xpath_map;
-            $path_index = $xpath_map[$this->pwd];
-            $my_mimetype=$this->vfs[1][$path_index];
-            $my_meta = $this->vfs[2][$path_index];
-            $storage = $my_meta['_storage'];
+
+            $my_mimetype=self::$full_vfs_map[1][$path_index];
+            $my_meta = self::$full_vfs_map[2][$path_index];
+            $parent_path = dirname($this->pwd);
+
+            while(true){
+                if(isset($my_meta['ref:'])){
+                    $meta_ref=intval($my_meta['ref:']);
+                    $my_meta = $this->full_vfs_map[2][$meta_ref];
+                    ($my_meta);
+                }else{
+                    break;
+                }
+            }
+
+            $storage = $my_mimetype;
             $os_path = $my_meta['os_path'];
 
 
@@ -132,6 +153,7 @@ class FileSystem extends Model {
                 $nodes[]=basename($path);
                 $node_types[]=$mimetype;
             }
+
             if(isset($my_meta['path'])){
                 $os_path = $my_meta['os_path'];
             }
@@ -143,6 +165,7 @@ class FileSystem extends Model {
                 case 'json':
                 case 'image':
                     $file_filter="|grep $storage";
+                case 'vfs/root':
                 case 'filesystem':
                     $file_filter="";
                     $folders=[];
@@ -151,19 +174,21 @@ class FileSystem extends Model {
                     Log::debug($os_query);
                     $os_info=[];
                     exec($os_query,$os_info);
+       
                     foreach($os_info as $os_info_item){
                         if(strpos($os_info_item,": ")===false) continue;
                         list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
                         $_mimetype="ls-".$_mimetype;
-                        $xpaths[]=$parent_path."/".trim($filename);
-                        $mimetypes[]=trim($_mimetype);
-                        $meta_list[]=[
-                            'os_path'=>$os_path."/".trim($filename),
-                        ];
+                        $node_path=$parent_path.trim($filename);
+                        if(in_array($node_path,$nodes)) continue;
+                        $nodes[]=$node_path;
+                        $node_types[]=trim($_mimetype);
+        
                     }
                     break;
                 }
-            self::$ls_cache=[
+              
+            self::$ls_cache[$this->pwd]=[
                 'nodes'=>$nodes,
                 'node_types'=>$node_types,
                 'output'=>implode("\t",$nodes),
@@ -174,53 +199,10 @@ class FileSystem extends Model {
             ];
         }
 
-        if($args=='') return self::$ls_cache['output'];
-        if($args=='-t') return self::$ls_cache['table'];
-        if($args=='-o') return self::$ls_cache['options'];
-        if($args=='-j') return self::$ls_cache['hints'];
-            switch($storage){
-                case 'symlink':
-                    $os_path = str_replace('{ln_target}',$meta['ln_target'],$os_path);
-                    $file_filter="|grep $storage";
-                case 'filesystem':
-                    $file_filter="";
-                    $folders=[];
-                    if(!$os_path) continue;
-                    $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
-                    Log::debug($os_query);
-                   // echo $os_query;
-                   // echo "<br>";
-                    //exit;
-                    $os_info=[];
-                    exec($os_query,$os_info);
-                    foreach($os_info as $os_info_item){
-                        if(strpos($os_info_item,": ")===false) continue;
-                        list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
-                        $_mimetype="ls-".$_mimetype;
-                        $xpaths[]=$parent_path."/".trim($filename);
-                        $mimetypes[]=trim($_mimetype);
-                        $meta_list[]=[
-                            'os_path'=>$os_path."/".trim($filename),
-                        ];
-                    }
-                    break;
-                case 'psql':
-                    $table_ns=str_replace("/", "_", $parent_path)."_f_"; 
-      
-                    $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
-
-                    $tables = DB::connection('pgsql') -> select($sql);
-                    foreach($tables as $table){
-                        $child_path =str_replace($table_ns,"",$table->table_name);
-                        $full_path = $parent_path."/".$child_path;
-                        //echo "<br> adding $full_path";
-                        $xpaths[]=$full_path;
-                        $mimetypes[]="psql_table";
-                        $meta_list[]=[
-                            'table_name'=>$table->table_name
-                        ];
-                    }    
-          }
+        if($args=='') return self::$ls_cache[$this->pwd]['output'];
+        if($args=='-t') return self::$ls_cache[$this->pwd]['table'];
+        if($args=='-o') return self::$ls_cache[$this->pwd]['options'];
+        if($args=='-j') return self::$ls_cache[$this->pwd]['hints'];
         return $ret;
     }
 
