@@ -26,9 +26,11 @@
             @endif
 
             <div class="content">
-<h3>GrepAwk 2.0</h3>
 <p>
-GrepAwk.net is a web service that generalizes several storage methods on a filesystem-style interface.
+GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.
+</p>
+<p>
+You can use the product as a guest <a href=/home>Here</a>.
 </p>
 <p>
 <h4>Live development stream:</h4>
@@ -42,23 +44,6 @@ GrepAwk.net is a web service that generalizes several storage methods on a files
     allowfullscreen="no">
 </iframe>
 </p>
-<p>
-You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the email 'guest@grepawk.net' and password 'welcome'.
-</p>
-
-<p>Start using the product as a guest <a href='/home'>here</a></p>
-
-<h3>Recent Changes</h3>
-<div>
-<textarea cols=80 rows=30>
-@include("gitlog");
-</textarea>
-<br>
-<a target=_blank href='https://github.com/yishengjiang99/grepawk/commits/master'>
-https://github.com/yishengjiang99/grepawk/commits/master
-</a>
-</div>
-            </div>
         </div>
     </body>
 <script>

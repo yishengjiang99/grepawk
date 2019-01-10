@@ -100,8 +100,8 @@ class HomeController extends Controller
                     break;
                 case 'checkin':
                     event(new ServerEvent(["output"=>"User ".$this->username." joined"]));
-                    $output="type 'ls' to get started";
-                    $output="...";
+                    $output.="<p>GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.</p>";
+                    $output.="<p>Type ls to get started</p>";
                     $options=$fs->ls('-t');
                     break;
                 case 'convert':
