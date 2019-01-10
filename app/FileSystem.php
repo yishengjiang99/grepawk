@@ -41,7 +41,9 @@ class FileSystem extends Model {
         ],
         'dropbox' => [
             '_storage' => 'symlink',
-            'ln_target'=>'~/Dropbox/grepawk',
+            'children'=>['private','public','index_page','queries','tools'],
+            'children_storage' =>['dropbox','dropbox','html','queries','bin'],
+            'ln_target'=>'/home/ubuntu/Dropbox/grepawk',
             'path'=>'{ln_target}'
         ],
         'controllers' => [
@@ -180,7 +182,49 @@ class FileSystem extends Model {
         if($args=='-t') return self::$ls_cache['table'];
         if($args=='-o') return self::$ls_cache['options'];
         if($args=='-j') return self::$ls_cache['hints'];
+            switch($storage){
+                case 'symlink':
+                    $os_path = str_replace('{ln_target}',$meta['ln_target'],$os_path);
+                    $file_filter="|grep $storage";
+                case 'filesystem':
+                    $file_filter="";
+                    $folders=[];
+                    if(!$os_path) continue;
+                    $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
+                    Log::debug($os_query);
+                   // echo $os_query;
+                   // echo "<br>";
+                    //exit;
+                    $os_info=[];
+                    exec($os_query,$os_info);
+                    foreach($os_info as $os_info_item){
+                        if(strpos($os_info_item,": ")===false) continue;
+                        list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
+                        $_mimetype="ls-".$_mimetype;
+                        $xpaths[]=$parent_path."/".trim($filename);
+                        $mimetypes[]=trim($_mimetype);
+                        $meta_list[]=[
+                            'os_path'=>$os_path."/".trim($filename),
+                        ];
+                    }
+                    break;
+                case 'psql':
+                    $table_ns=str_replace("/", "_", $parent_path)."_f_"; 
+      
+                    $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
 
+                    $tables = DB::connection('pgsql') -> select($sql);
+                    foreach($tables as $table){
+                        $child_path =str_replace($table_ns,"",$table->table_name);
+                        $full_path = $parent_path."/".$child_path;
+                        //echo "<br> adding $full_path";
+                        $xpaths[]=$full_path;
+                        $mimetypes[]="psql_table";
+                        $meta_list[]=[
+                            'table_name'=>$table->table_name
+                        ];
+                    }    
+          }
         return $ret;
     }
 
