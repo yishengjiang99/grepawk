@@ -63,6 +63,12 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
+        if(Auth::user()){
+            $this->username=Auth::user()->name;
+        }else{
+            $this->username="guest@".$_SERVER['REMOTE_ADDR'];
+        }
+      
         $msg =$request->input("msg");
         $msg =urldecode($msg);
         $data = $request->input('data');
