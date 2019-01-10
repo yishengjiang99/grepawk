@@ -11,6 +11,8 @@ use Log;
 use DB;
 use App\FileSystem;
 use App\VFile;
+use App\Events\ServerEvent;
+
 class HomeController extends Controller
 {
 
@@ -21,7 +23,13 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-//        $this->middleware('auth');
+        $this->middleware('auth');
+
+        if(Auth::user()){
+            $this->username=Auth::user()->name;
+        }else{
+            $this->username="guest_".$_SERVER['REMOTE_ADDR'];
+        }
     }
    
     /**
@@ -47,6 +55,7 @@ class HomeController extends Controller
         if(!File::exists($this->private_dir)){
             Storage::makeDirectory($this->private_dir);
         }       
+        
         return view('terminal',['username'=>$this->username, 
                                 'pwd'=>$fs->getPWD(),
                                 ]);
@@ -54,10 +63,6 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
-      //  $vfs = FileSystem::init_vfs();
-
-        Log::debug("stdin: ".$request->fullUrl());
-        $this->username="guest";
         $msg =$request->input("msg");
         $msg =urldecode($msg);
         $data = $request->input('data');
@@ -88,6 +93,8 @@ class HomeController extends Controller
                     $hints = $fs->ls("-j"); 
                     break;
                 case 'checkin':
+                    event(new ServerEvent(["output"=>"User ".$this->username." joined"]));
+                    $output="type 'ls' to get started";
                     $output="...";
                     $options=$fs->ls('-t');
                     break;
@@ -264,8 +271,8 @@ class HomeController extends Controller
                     $output ="Created new file $filename";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
+                    event(new ServerEvent(['output'=>$this->username.' make a new file at '.$fs->current_node->fs_path()."/".$filename]));
                     break;
-
                 case 'upload':
                     break;
                 case 'wget':
@@ -289,8 +296,7 @@ class HomeController extends Controller
                     }
                     break;
                 default:
-                    $error=$cmd." known";
-                    $table = $fs->ls("-t");
+                    event(new ServerEvent(['output'=>$this->username.' says: '.$msg]));
                     break;
             }  
         }catch(\Exception $e){
@@ -309,7 +315,7 @@ class HomeController extends Controller
             "pwd"=>$fs->getPWD(),
             "hints"=>$fs->ls('-j'),
             "output"=>$output,
-            'options'=>$options,
+           // 'options'=>$options,
             "error"=>$error,
             'meta'=>$meta,
             'table'=>$table

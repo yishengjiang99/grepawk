@@ -20,7 +20,6 @@
         if(typeof msg ==='string'){
           ret = $.parseJSON(msg);
         }else{
-          debugger;
           ret=msg;
         }
         window.terminal.parse_api_response(ret);
@@ -454,7 +453,7 @@
       term.setUsername("{{$username}}@grepawk");
       term.setCd("{{$pwd}}");
       term.init();
-      term.cmd_string("help");
+      term.cmd_string("checkin");
       $("body").on('click', '.cmd_btn', function(e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });

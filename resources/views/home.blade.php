@@ -36,11 +36,14 @@
     </div>
   </div>
 </div>
+    <iframe id="pusher_listener" src='/pusher' height="0" width="0" frameborder="0" scrolling="yes"></iframe>
 
 
 <script>
  function iframe_interface(cmd,args){
-    debugger;
+    if(typeof cmd==='object' && cmd.update){
+        tty1.contentWindow.iframe_interface(cmd.update);
+    }
     if(cmd=="new"){
         $("#new_file").show();
     }
@@ -53,15 +56,7 @@
  }
 
  $(document).ready(function(){
-   //  var tty1_stdin=null;
-   //  var tty1 = document.getElementById('tty1');
-   //  var iframeDoc = tty1.contentDocument || iframe.contentWindow.document;
-   //  $(iframeDoc).ready(function(e){
-   //    alert('iframe ready');
-   //    tty1_stdin=tty1.contentWindow.iframe_interface;
-   //    debugger;
-   //  })
-
+   window.tty1 = document.getElementById('tty1');
    $("#new-file-submit").click(function(e){
       var postdata=$("#new_file_form").serialize();
       $.post("/files/new",postdata,function(retObj){
