@@ -2,7 +2,6 @@
 @section('content')
 
 <div class='container'>
-   <div id='hud-top' class='bg-light' style='height:10px;top:63px'>sssss</div>
    <div><iframe id='tty1' src="{{ url('/terminal') }}" height='640px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
    <div id='hud-options' class='container bg-light' style='height:32px'></div>
 </div>

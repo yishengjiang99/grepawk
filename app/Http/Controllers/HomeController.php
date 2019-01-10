@@ -54,8 +54,8 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
-        $vfs = FileSystem::init_vfs();
-        return response()->json($vfs);
+      //  $vfs = FileSystem::init_vfs();
+
         Log::debug("stdin: ".$request->fullUrl());
         $this->username="guest";
         $msg =$request->input("msg");
@@ -70,6 +70,7 @@ class HomeController extends Controller
         $argv1= isset($msgt[1]) ? $msgt[1] : 0;
      
         $argv2= isset($msgt[2]) ? $msgt[2] : 0;
+       
 
         $output="";
         $error="";
@@ -148,8 +149,8 @@ class HomeController extends Controller
                     exit;
                     break;
                 case "ls":
-                    $output = "File list of the ".$fs->getPWD()." folder";
-                    $output .="<br>".$fs->current_node->toString();
+                    $output = "File list of the ".$fs->getPWD()." folder <br>";
+                    //$output.= $fs->ls();
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
@@ -158,7 +159,6 @@ class HomeController extends Controller
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
-                    $output .="<br>".$fs->current_node->toString();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
