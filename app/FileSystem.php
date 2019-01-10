@@ -161,6 +161,8 @@ class FileSystem extends Model {
                 $node_types[]=$mimetype;
             }
             switch($storage){
+                case 'vfs/root':
+                    break; // 
                 case 'symlink':
                   //  $os_path = str_replace('{ln_target}',$meta['ln_target'], $os_path);
                 case 'html':
@@ -168,7 +170,6 @@ class FileSystem extends Model {
                 case 'json':
                 case 'image':
                     $file_filter="|grep $storage";
-                case 'vfs/root':
                 case 'filesystem':
                     $file_filter="";
                     $folders=[];
