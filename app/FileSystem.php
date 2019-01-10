@@ -107,12 +107,8 @@ class FileSystem extends Model {
       return self::$full_vfs_map;
     }
 
-    public function ls($_options, $cd=""){
-        if($cd){
-            $pwd=$this->cd($cd);
-        }
-    }
-    public function ls_j($args){
+
+    public function ls($args){
         if(true){
             $nodes=[];
             $node_types=[];

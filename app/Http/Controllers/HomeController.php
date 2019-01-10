@@ -23,13 +23,6 @@ class HomeController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth');
-
-        if(Auth::user()){
-            $this->username=Auth::user()->name;
-        }else{
-            $this->username="guest_".$_SERVER['REMOTE_ADDR'];
-        }
     }
    
     /**
