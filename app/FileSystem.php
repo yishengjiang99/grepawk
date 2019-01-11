@@ -66,6 +66,14 @@ class FileSystem extends Model {
             '_storage' => 'filesystem',
             'path'=>'/etc/init.d/',
         ],
+        'logs' => [
+            '_storage' => 'filesystem',
+            'path'=>'/var/logs',
+        ],
+        'logs/apache2' => [
+            '_storage' => 'filesystem',
+            'path'=>'/var/logs/apache2',
+        ],
         'ui' => [
             '_storage' => 'filesystem',
             'path'=>'{app_path}/../resources/views',
@@ -591,13 +599,13 @@ class FileSystem extends Model {
         //if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
         //$mimetype = $this->get_mime_type($filename);
-        $geturl = url("stdin")."?msg=".urlencode("get $full_path");
+        $geturl = url("stdin")."?msg=".urlencode("get $os_path");
 
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
-        } else if ($mimetype === "text/html") {
+        }else if ($mimetype === "text/html") {
             return ['text_output' => "Displaying $filename in preview iframe.", 'iframe_link' => $geturl];
-        }else if (strpos($mimetype, "csv") !== false || strpos($mimetype, "text") !== false){
+        }else if (strpos($mimetype, "csv") !== false || strpos($mimetype, "text") !== false || true){
             $cat_out_put=[];
             exec("cat $os_path", $cat_out_put);
             $content = implode("<br>",$cat_out_put);
