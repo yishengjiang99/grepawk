@@ -55,12 +55,12 @@ class FileSystem extends Model {
             'path'=>'{storage_path}/app/{USERNAME}'
         ],
         'dropbox' => [
-            'path' => 'filesystem',
+            '_storage' => 'filesystem',
             'ln_target'=>'/home/ubuntu/Dropbox/',
             'path'=>'/home/ubuntu/Dropbox/grepawk'
         ],
         'dropbox/myfiles' => [
-            'path' => 'symlink',
+            '_storage' => 'filesystem',
             'ln_target'=>'/home/ubuntu/Dropbox/',
             'path'=>'/home/ubuntu/Dropbox/grepawk/{USERNAME}'
         ],
