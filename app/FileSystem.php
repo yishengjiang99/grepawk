@@ -234,7 +234,8 @@ class FileSystem extends Model {
                         $nodes[]=basename($node_path);
                         $node_types[]=trim($_mimetype);
                     }
-                    break;
+//                    break;
+//fallthrough
                 case 'psql':
                     $parent_path=$_pwd;
                     $table_ns=str_replace("/", "_", $parent_path)."_f_";
