@@ -152,8 +152,9 @@ class HomeController extends Controller
                     echo Storage::get($argv1);
                     exit;
                     break;
-                case "ls":
+                case "ls":               
                     $output = "File list of the ".$fs->getPWD()." folder <br>";
+                    $output.= "OS path is ".$fs->get_os_path($fs->getPWD());
                     //$output.= $fs->ls();
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
@@ -167,11 +168,18 @@ class HomeController extends Controller
                     $options=$fs->ls('-o');
                     break;
                 case 'cat':
-                    $ret = $fs->cat($argv1);
-                    if(isset($ret['text_output'])){
-                        $output = $ret['text_output'];
-                    }
-                    $meta = array_merge($meta, $ret);
+                    $ob=[];
+           
+                    $os_path=$fs->get_os_path()."/".$argv1;
+                    
+                    exec("cat ".$os_path,$ob);
+                    $output=implode("<br>",$ob);
+
+                    // $ret = $fs->cat($argv1);
+                    // if(isset($ret['text_output'])){
+                    //     $output = $ret['text_output'];
+                    // }
+                    // $meta = array_merge($meta, $ret);
                     break;
                 case 'pwd':
                     $output=$fs->getPWD();
@@ -292,6 +300,7 @@ class HomeController extends Controller
                     }
                     break;
                 default:
+                    $output="You say ".$msg;
                     event(new ServerEvent(['output'=>$this->username.' says: '.$msg]));
                     break;
             }  

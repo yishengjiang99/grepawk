@@ -45,8 +45,7 @@ class FileSystem extends Model {
         ],
         'bin' =>[
             '_storage'=>'filesystem',
-            
-
+            'path'=>'{base_path}/bin'
         ],
         'files'=>[
             '_storage'=>'filesystem',
@@ -72,10 +71,26 @@ class FileSystem extends Model {
             'path'=>'{app_path}/../resources/views',
         ],
     ];
-    public function get_os_path(){
-        $node=$this->xpath_map[$this->pwd];
-        var_dump($node);
-        exit;
+
+
+    public function get_os_path($pwd="",$append=""){
+
+        $pwd = $pwd ? $pwd : $this->getPWD();
+ 
+        
+
+        if(isset($this->xpath_map[$pwd]) &&
+            isset($this->xpath_map[$pwd][2]) &&
+               isset($this->xpath_map[$pwd][2]['os_path']))
+        {
+                return  $this->xpath_map[$pwd][2]['os_path'].$append;
+           
+        }  
+        else {
+            if(dirname($pwd)==="") throw new \Exception("vfs error");
+            $append = "/".basename($pwd).$append;
+            return $this->get_os_path(dirname($pwd),$append);
+        }
     }
 
     public static $full_vfs_map;
@@ -95,20 +110,17 @@ class FileSystem extends Model {
         $max_ls_depth=5;
         $list_index=0;
         foreach(self::$virtual_fs as $name=>$attributes){
-          //  var_dump($attributes);
-            if(!isset($attributes['_storage'])){
-                var_dump($attributes);
-                exit;
-
-            }
             $folder_path=$base_path."/".$name;
             $xpaths[]=$folder_path;
             $mimetypes[]=$attributes['_storage'];
             $newmeta=$attributes ? $attributes : [];
             if(isset($newmeta['path'])){
                 $os_path= $newmeta['path'];
+                $os_path = str_replace('{base_path}', base_path(), $os_path);
+
                 $os_path = str_replace('{app_path}', app_path(), $os_path);
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
+                
                 if($attributes['_storage']==='symlink'){
                     $os_path = str_replace('{ln_target}',$newmeta['ln_target'], $os_path);
                 }
@@ -373,6 +385,7 @@ class FileSystem extends Model {
             }
             return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
         }else{
+            $rows=[];
             foreach($nodes as $i=>$node_path) {
                 $mimeType = $node_types[$i];
                 $is_file= stripos($mimeType,'ls-')===0 && stripos($mimeType,'/directory')===false;
@@ -555,7 +568,9 @@ class FileSystem extends Model {
     }
     public function cat($filename) {
         //echo implode("<br>",$this->vfs[0]);
-        $full_path = $this->getPWD()."/".$filename;
+        $full_path = $this->get_os_path()."/".$filename;
+        echo $full_path;
+        exit;
         // echo $full_path;
         // exit;
         // echo $this->xpath_map[$full_path];
@@ -569,11 +584,17 @@ class FileSystem extends Model {
         list($full_path,$mimetype,$meta)=$this->xpath_map[$full_path];
 
         $os_path = isset($meta['os_path']) ? $meta['os_path'] : $full_path;
+echo $os_path;
+exit;
+        exec("file --mime-type ".$os_path."/".$filename."", $ob);
+        var_dump($ob);
+        exit;
+  
         //if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
         //$mimetype = $this->get_mime_type($filename);
         $geturl = url("stdin")."?msg=".urlencode("get $full_path");
-        
+
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
         } else if ($mimetype === "text/html") {
