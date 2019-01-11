@@ -36,33 +36,27 @@ class FileSystem extends Model {
         ],
         'data/timeseries' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/app/root/data/timeseries'
+            'path'=>'{base_path}/timeseries',
         ],
         'data/snapshots' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/app/root/data/snapshots',
+            'path'=>'{base_path}/snapshots',
         ],
-        'data/bin' =>[
+	'database'=>[
+            '_storage' => 'psql',
+	    'path'=>'none'
+	],
+        'bin' =>[
             '_storage'=>'filesystem',
-            'path'=>'{storage_path}/app/root/data/bin',
+            'path'=>'{base_path}/bin',
         ],
         'files'=>[
             '_storage'=>'filesystem',
             'path'=>'{storage_path}/app/public'
         ],
-        'files/myfiles'=>[
-            '_storage'=>'filesystem',
-            'path'=>'{storage_path}/app/{USERNAME}'
-        ],
         'dropbox' => [
             '_storage' => 'filesystem',
-            'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'/home/ubuntu/Dropbox/grepawk'
-        ],
-        'dropbox/myfiles' => [
-            '_storage' => 'filesystem',
-            'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'/home/ubuntu/Dropbox/grepawk/{USERNAME}'
+            'path'=>'/home/ubuntu/Dropbox/grepawk',
         ],
         'controllers' => [
             '_storage' => 'filesystem',
@@ -87,7 +81,7 @@ class FileSystem extends Model {
     ];
 
 
-
+    
     public function get_os_path($pwd="",$append=""){
 
         $pwd = $pwd ? $pwd : $this->getPWD();
