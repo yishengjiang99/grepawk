@@ -313,7 +313,6 @@ class HomeController extends Controller
             echo 'end of debug';
             exit;
         }
-       // var_dump($table);
 
         return response()->json([
             "cd"=>basename($fs->getPWD()),

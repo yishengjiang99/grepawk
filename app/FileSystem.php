@@ -399,6 +399,7 @@ class FileSystem extends Model {
                         $cmd="convert $name ".basename($name,".csv");
                         $rows[] = [
                             'cmd' =>$cmd,
+                            'mimetype'=>$mimeType,
                             'display' => "Convert $name into psql table ".basename($name,".csv"), 
                             'link' => "onclick:".$cmd
                         ];
@@ -406,7 +407,7 @@ class FileSystem extends Model {
                     }
                 }
             }
-            return ['headers' => ['cmd', 'display', 'mimetype'], 'rows' => $rows];
+            return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $rows];
         }
 
     
