@@ -213,12 +213,19 @@
               })
               var fullcmd = cmd + " " + args.join(" ");
 
-              //output("Calling api with msg: "+fullcmd)
-              $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
-                _parse_api_response(ret);
-                $('html, body').animate({
-                  scrollTop: $(document).height()
-                }, 'fast');
+              $.get("/stdin?msg=" + fullcmd, function(ret,status,xhr) {
+                var ct = xhr.getResponseHeader("content-type") || "";
+                if(ct.indexOf('image')>-1){
+                  var urlCreator = window.URL || window.webkitURL;
+                  var imageUrl = urlCreator.createObjectURL(new Blob(ret));
+                  outputImageLink(imageUrl);
+                }else{
+                  _parse_api_response(ret);
+                }
+
+                // $('html, body').animate({
+                //   scrollTop: $(document).height()
+                // }, 'fast');
                 window.scrollTo(0, getDocHeight_());
               });
             }
@@ -294,7 +301,8 @@
       }
 
       function outputImageLink(imageUrl) {
-        output_.insertAdjacentHTML('beforeEnd', '<p><img width=320 src="' + imageUrl + '"></p>');
+       
+        output_.insertAdjacentHTML('beforeEnd', '<p><a target=_blank href="'+imageUrl+'"><img width="90%" src="' + imageUrl + '"></a></p>');
       }
 
       function outputIframe(url) {
@@ -381,6 +389,7 @@
           $(".prompt").last().html(string);
         }
         //parse api ret
+
       function _parse_api_response(ret) {
 
         //output("parsing api response: ");
