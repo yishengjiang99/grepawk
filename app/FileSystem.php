@@ -68,11 +68,11 @@ class FileSystem extends Model {
         ],
         'logs' => [
             '_storage' => 'filesystem',
-            'path'=>'/var/logs',
+            'path'=>'/var/log',
         ],
         'logs/apache2' => [
             '_storage' => 'filesystem',
-            'path'=>'/var/logs/apache2',
+            'path'=>'/var/log/apache2',
         ],
         'ui' => [
             '_storage' => 'filesystem',
