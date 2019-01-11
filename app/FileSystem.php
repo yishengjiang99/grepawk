@@ -177,6 +177,8 @@ class FileSystem extends Model {
 
 
     public function ls($args,$todir=""){
+        ob_end_clean_all();
+        ob_start();
         if($todir!=="") $_pwd = $todir;
         else $_pwd = $this->pwd;
         if(!self::$ls_cache) $ls_cache=[];
@@ -184,14 +186,14 @@ class FileSystem extends Model {
         Log::debug("LS TO $_pwd");
 
         if(!isset(self::$ls_cache[$_pwd])){
-            echo "<br>LS querying for ls_cache for $_pwd";
-            echo "<br>LS called for $_pwd from ".debug_backtrace(2)[1]['function'];
+          //  echo "<br>LS querying for ls_cache for $_pwd";
+            //echo "<br>LS called for $_pwd from ".debug_backtrace(2)[1]['function'];
             $nodes=[];
             $node_types=[];
             $myrank = count(explode("/",$_pwd));
             $parent_path = dirname($this->getPwd());
             if(!isset($this->xpath_map[$_pwd])){
-                echo "<br>xpath map is not set for $_pwd";
+               // echo "<br>xpath map is not set for $_pwd";
                 $relative_path=[];
                 $ancestor_info = $this->get_parent_info($_pwd,$relative_path);
                 $os_path = $ancestor_info[2]['os_path'];
@@ -199,11 +201,9 @@ class FileSystem extends Model {
                     $os_path.="/$_path";
                 }
                 $parent_mimetype  =$ancestor_info[1];
-                echo "<br>parent_mimetype for $_pwd is set to $parent_mimetype";
                 
                 $my_mimetype="filesystem";
                 if($parent_mimetype=='psql') $my_mimetype='psql_table';
-                echo "<br> $_pwd mimetype is et to $my_mimetype";
                 $my_meta=['os_path'=>'$os_path','mime_type'=>$my_mimetype];
                 $this->xpath_map[$_pwd]=[$_pwd,$my_mimetype,$my_meta];  
             }else{
@@ -217,10 +217,9 @@ class FileSystem extends Model {
             }
             $storage = $my_mimetype;
             $os_path = isset($my_meta['os_path']) ? $my_meta['os_path'] : "none";
-            echo "<br>storage for $_pwd is $storage";
-            echo "<br>LS os_path is $os_path";
+            // echo "<br>storage for $_pwd is $storage";
+            // echo "<br>LS os_path is $os_path";
             try{            
-             echo '<br>try '.$storage;
              switch($storage){
                 case 'vfs/root':
                 case 'symlink':
@@ -231,12 +230,11 @@ class FileSystem extends Model {
                     $file_filter="|grep $storage";
                 case 'data':
                 case 'filesystem':
-    
+                case 'ls-inode/directory':
                     if($os_path!=='none'){
                         $file_filter="";
                         $folders=[];
                         $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
-                        echo "<br>issuing os query <br>$os_query";
                         Log::debug($os_query);
                         $os_info=[];
                         exec($os_query,$os_info);
@@ -284,10 +282,10 @@ class FileSystem extends Model {
                 }
             }catch(\Exception $e){
                 echo "EXCEPTION";
-               echo $e->getMessage();
+                echo $e->getMessage();
             }
 
-            echo "<br> saving ls_cache for [$_pwd].";
+            //echo "<br> saving ls_cache for [$_pwd].";
             self::$ls_cache[$_pwd]=[
                 'nodes'=>$nodes,
                 'node_types'=>$node_types,
@@ -305,7 +303,7 @@ class FileSystem extends Model {
         if($args=='-t') return self::$ls_cache[$_pwd]['table'];
         if($args=='-o') return self::$ls_cache[$_pwd]['options'];
         if($args=='-j') return self::$ls_cache[$_pwd]['hints'];
-        return $ret;
+        return self::$ls_cache[$_pwd];
     }
 
 
@@ -593,33 +591,12 @@ class FileSystem extends Model {
         return 'vfs/'.$ext;
     }
     public function cat($filename) {
-        //echo implode("<br>",$this->vfs[0]);
 
         $full_path = $this->getPWD()."/".$filename;
-
-        if(!isset($this->xpath_map[$full_path])){
-            $this->ls("",dirname($full_path));
-            if(!isset($this->xpath_map[dirname($full_path)])){
-                throw new \Exception("Cannot cat to $full_path");
-            }
-        }
-
-
-        list($full_path,$mimetype,$meta)=$this->xpath_map[$full_path];
-        
-
-        $os_path = isset($meta['os_path']) ? $meta['os_path'] : $full_path;
-
-        exec("file --mime-type $os_path", $ob);
-        $mimetype=explode(": ",$ob[0])[1];
-
-
-
-        //if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
-        
-        //$mimetype = $this->get_mime_type($filename);
-        $geturl = url("stdin")."?msg=".urlencode("get $os_path");
-
+        $os_path = $this->get_os_path($full_path);
+        exec("file --mime-type $os_path |awk '{print $2}'", $ob);
+        $mimetype = trim($ob[0]);
+        $geturl = url("stdin")."?msg=".urlencode("get $filename $mimetype");
         if (strpos($mimetype, "image") !== false) {
             return ['text_output' => "Displaying $filename as image.", 'image_link' => $geturl];
         }else if ($mimetype === "text/html") {
@@ -628,7 +605,6 @@ class FileSystem extends Model {
             $cat_out_put=[];
             exec("cat $os_path", $cat_out_put);
             $content = implode("<br>",$cat_out_put);
-            // $content = Storage::get($full_path);
             $content = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $content);
             $content = str_replace("\n","<br>",$content);
             $output = "<b>$filename</b>";

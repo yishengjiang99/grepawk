@@ -57,7 +57,7 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
-        ob_end_clean();
+        ob_end_clean_all();
         ob_start();
         echo 'started ob';
         $is_admin=false;
@@ -90,6 +90,9 @@ class HomeController extends Controller
         $options=null;
         $table=null;
         echo "<br>std msg: $msg";
+        ob_end_clean_all();
+        ob_start();
+
 
         try{
             switch($cmd){
@@ -154,18 +157,12 @@ class HomeController extends Controller
                     $table = $fs->ls("-t");
                     break;
                 case "get":
-          
-                    header("Content-Type: File/File");
-                    $ob=[];
-                    $download_file="grepawk_download_".basename($argv1);
-                    header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
-                    $path=$fs->get_os_path()."".$argv1;
-                    exec("cat $path",$ob);
-                
-                    echo implode("\n",$ob);
-                    exit;
-                   // exec("cat ".$fs->get_os_path($argv1)." - ");
-                    break;
+                    $mimetype = $argv2 ? $argv2 : 'File/File';
+                    header("Content-Type: $mimetype");
+                    $os_path=$fs->get_os_path()."/".$argv1;
+                    ob_end_clean_all();
+                    echo readFile($os_path);
+
                 case "ls":               
                     $output = "File list of the ".$fs->getPWD()." folder <br>";
                     $output.= "OS path is ".$fs->get_os_path($fs->getPWD());
@@ -186,6 +183,7 @@ class HomeController extends Controller
                     $ob=[];
                    
                     $ret = $fs->cat($argv1);
+
                     if(isset($ret['text_output'])){
                         $output = $ret['text_output'];
                     }
@@ -333,21 +331,21 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            //throw $e;
+            throw $e;
 
            // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
 
             $error.=$e->getMessage();
             $output.=ob_get_contents();
-            ob_end_clean();
-           // $table = $fs->ls("-t");
+            ob_end_clean_all();
+            // $table = $fs->ls("-t");
         }
         if($oformat=='debug'){
             echo 'end of debug';
             exit;
         }
         $debug=ob_get_contents();
-        ob_end_clean();
+        ob_end_clean_all();
 
         return response()->json([
             "cd"=>basename($fs->getPWD()),
