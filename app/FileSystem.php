@@ -30,7 +30,7 @@ class FileSystem extends Model {
 
     public static $virtual_fs = [
         'data' => [
-            '_storage' => 'psql',
+            '_storage' => 'filesystem',
             'path'=>'{storage_path}/root/data'
         ],
         'data/timeseries' => [
@@ -43,7 +43,7 @@ class FileSystem extends Model {
             'ln_target'=>'timeseries',
             'std_out' => '| tail -n 1',
         ],
-        'bin' =>[
+        'data/bin' =>[
             '_storage'=>'filesystem',
             'path'=>'{base_path}/bin'
         ],
@@ -153,8 +153,12 @@ class FileSystem extends Model {
         else $_pwd = $this->pwd;
         if(!self::$ls_cache) $ls_cache=[];
         $error="";
+        Log::debug("LS TO $_pwd");
 
-        if(!isset(self::$ls_cache[$_pwd])){
+
+        if(true && !isset(self::$ls_cache[$_pwd])){
+            Log::debug("NO cache for $_pwd");
+            Log::debug(json_encode(debug_backtrace(3)));
             //self::$ls_cache[$this->pwd]=[];
             $nodes=[];
             $node_types=[];
@@ -233,9 +237,8 @@ class FileSystem extends Model {
                         $this->xpath_map[$node_path]=[0,$_mimetype,['os_path'=>$os_path.'/'.$filename]];
                         $nodes[]=basename($node_path);
                         $node_types[]=trim($_mimetype);
-                    }
-//                    break;
-//fallthrough
+                    }              
+                    break;
                 case 'psql':
                     $parent_path=$_pwd;
                     $table_ns=str_replace("/", "_", $parent_path)."_f_";
@@ -564,25 +567,27 @@ class FileSystem extends Model {
     }
     public function cat($filename) {
         //echo implode("<br>",$this->vfs[0]);
-        $full_path = $this->get_os_path()."/".$filename;
 
-        // echo $full_path;
-        // exit;
-        // echo $this->xpath_map[$full_path];
-        // exit;
+        $full_path = $this->getPWD()."/".$filename;
+
         if(!isset($this->xpath_map[$full_path])){
-            $this->ls("",$full_path);
-            if(!isset($this->xpath_map[$full_path])){
+            $this->ls("",dirname($full_path));
+            if(!isset($this->xpath_map[dirname($full_path)])){
                 throw new \Exception("Cannot cat to $full_path");
             }
         }
+
+
         list($full_path,$mimetype,$meta)=$this->xpath_map[$full_path];
+        
 
         $os_path = isset($meta['os_path']) ? $meta['os_path'] : $full_path;
 
-        exec("file --mime-type ".$os_path."/".$filename."", $ob);
+        exec("file --mime-type $os_path", $ob);
+        $mimetype=explode(": ",$ob[0])[1];
 
-  
+
+
         //if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
         //$mimetype = $this->get_mime_type($filename);
@@ -597,8 +602,8 @@ class FileSystem extends Model {
             exec("cat $os_path", $cat_out_put);
             $content = implode("<br>",$cat_out_put);
             // $content = Storage::get($full_path);
-            // $content = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $content);
-            // $content = str_replace("\n","<br>",$content);
+            $content = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $content);
+            $content = str_replace("\n","<br>",$content);
             $output = "<b>$filename</b>";
             $output .= "<br><pre>".$content."</pre>";
             return ['text_output' => $output];
@@ -644,6 +649,7 @@ class FileSystem extends Model {
         session(["pwd" => $this->pwd]);
     }
     public function cd($todir,$dry=false) {
+
         if($todir=='root'){
             return $this->setPWD('/root');
         }
@@ -660,16 +666,21 @@ class FileSystem extends Model {
         $new_path=implode("/",$path_parts);
         
         $popped_stack=[];
-        while(true){
+        $i=0;
+        while($i++<60){
             if(!isset($this->xpath_map[$new_path])){
                 $popped_stack[]=basename($new_path);
                 $new_path=dirname($new_path);
-                if(!$new_path) new \Exception("Cannot cd to $todir");
+                if(!$new_path) {
+                  new \Exception("Cannot cd to $todir");
+                }
                 $this->ls("",$new_path);
                 
             }else{
                 if(count($popped_stack)){
                     $new_path=$new_path."/".array_pop($popped_stack);
+                }else{
+                    break;
                 }
             }
         }

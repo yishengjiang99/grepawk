@@ -147,15 +147,16 @@ class HomeController extends Controller
                     break;
                 case "get":
           
-                    //header("Content-Type: File/File");
+                    header("Content-Type: File/File");
+                    $ob=[];
                     $download_file="grepawk_download_".basename($argv1);
-                   // header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
-                    $path=$fs->get_os_path()."/".$argv1;
-                    exec('cat $path',$ob);
+                    header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
+                    $path=$fs->get_os_path()."".$argv1;
+                    exec("cat $path",$ob);
+                
                     echo implode("\n",$ob);
-
-                   // exec("cat ".$fs->get_os_path($argv1)." - ");
                     exit;
+                   // exec("cat ".$fs->get_os_path($argv1)." - ");
                     break;
                 case "ls":               
                     $output = "File list of the ".$fs->getPWD()." folder <br>";
@@ -169,26 +170,20 @@ class HomeController extends Controller
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
-                    $output.="OS path is ".$this->get_os_path();
+                    $output.="OS path is ".$fs->get_os_path();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
                 case 'cat':
                     $ob=[];
-           
-                    $os_path=$fs->cat($argv1);
-                    
-                    exec("cat ".$os_path,$ob);
-                    $output=implode("<br>",$ob);
-
-                    // $ret = $fs->cat($argv1);
-                    // if(isset($ret['text_output'])){
-                    //     $output = $ret['text_output'];
-                    // }
-                    // $meta = array_merge($meta, $ret);
+                    $ret = $fs->cat($argv1);
+                    if(isset($ret['text_output'])){
+                        $output = $ret['text_output'];
+                    }
+                    $meta = array_merge($meta, $ret);
                     break;
                 case 'pwd':
-                    $output=$fs->getPWD();
+                    $output=$fs->get_os_path();
                     break;
                 case 'ct':
                 case 'createtable':
@@ -314,6 +309,8 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
+            throw $e;
+
            // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
 
             $error=$e->getMessage();
