@@ -11,6 +11,7 @@ use Log;
 use DB;
 use App\FileSystem;
 use App\VFile;
+use Schema;
 use App\Events\ServerEvent;
 
 class HomeController extends Controller
@@ -143,13 +144,17 @@ class HomeController extends Controller
                     }
                     $output = "Inserted $row_inserted rows into table $full_table_name";
                     $table = $fs->ls("-t");
-
                     break;
                 case "get":
-                    header("Content-Type: File/File");
+          
+                    //header("Content-Type: File/File");
                     $download_file="grepawk_download_".basename($argv1);
-                    header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
-                    echo Storage::get($argv1);
+                   // header('Content-Disposition: attachment; filename="'.basename($download_file).'"');
+                    $path=$fs->get_os_path()."/".$argv1;
+                    exec('cat $path',$ob);
+                    echo implode("\n",$ob);
+
+                   // exec("cat ".$fs->get_os_path($argv1)." - ");
                     exit;
                     break;
                 case "ls":               
@@ -170,7 +175,7 @@ class HomeController extends Controller
                 case 'cat':
                     $ob=[];
            
-                    $os_path=$fs->get_os_path()."/".$argv1;
+                    $os_path=$fs->cat($argv1);
                     
                     exec("cat ".$os_path,$ob);
                     $output=implode("<br>",$ob);
@@ -229,12 +234,15 @@ class HomeController extends Controller
                     break;
                 case 'nd':
                 case 'newdata':
-                    $tablename = $fs->current_node->get_db_ns();
-                    $meta=$fs->pwd_meta();
-                    $columns =$meta['cols'];
+                    $table_ns = str_replace("/", "_", dirname($fs->getPWD()))."_f_".basename($fs->getPWD());
+                   // $table_ns = $fs->get_db_ns();
+                   // $meta=$fs->pwd_meta('psql_table');
+                    $columns = Schema::getColumnListing($table_ns);
+                    $meta=['cols'=> array_values(array_diff($columns,['id','created_at','updated_at']))];
 
+                    $columns =$meta['cols'];
                     if(!$data){
-                        $output="Enter rows for $tablename in csv format:";
+                        $output="Enter rows for $table_ns in csv format:";
 
                         $columns_format="";
                         foreach($columns as $col){
@@ -247,7 +255,7 @@ class HomeController extends Controller
                         $meta['prompt_loop']="insert $columns_format for new row or press 'q' to finish>";
                         $meta['prompt_context']="newdata";
                     }else{
-                        $output="Inserting rows into $tablename";
+                        $output="Inserting rows into $table_ns";
                         foreach($data as $dataline){
                             $columnvals = \str_getcsv($dataline);
                             if(count($columnvals) !== count($columns)){
@@ -260,7 +268,7 @@ class HomeController extends Controller
                             }
                             $colvalMap['created_at']=new \DateTime();
 
-                            $insertSuccessful=DB::table($tablename)->insert($colvalMap);
+                            $insertSuccessful=DB::table($table_ns)->insert($colvalMap);
                             if($insertSuccessful){
                                 $output.="<br>$dataline inserted";
                             }else{
@@ -305,7 +313,8 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            throw $e;
+           // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
+
             $error=$e->getMessage();
            // $table = $fs->ls("-t");
         }
