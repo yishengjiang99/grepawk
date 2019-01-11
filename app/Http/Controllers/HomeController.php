@@ -297,8 +297,7 @@ class HomeController extends Controller
                     break;
                 case 'touch':
                     $filename = $msgt[1];
-                    Storage::put($fs->current_node->fs_path()."/".$filename,"");
-                    $output ="Created new file $filename";
+		    touch($fs->get_os_path()."/".$filename);
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     event(new ServerEvent(['output'=>$this->username.' make a new file at '.$fs->current_node->fs_path()."/".$filename]));
@@ -331,7 +330,7 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            throw $e;
+            //throw $e;
 
            // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
 

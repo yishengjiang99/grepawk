@@ -90,9 +90,9 @@ class FileController extends Controller
         if(!$filename) $error="filename cannot be empty";
         try{
             $fs=FileSystem::getInstance();
-            $ret=$fs->put($filename,$filecontent);
-            if($ret){
-                $output="file $filename created";
+            $file_path=$fs->put($filename,$filecontent);
+            if($file_path){
+                $output="file $file_path created";
             }else{
                 $error="File not created";
             }
@@ -103,7 +103,8 @@ class FileController extends Controller
         return response()->json([
             "hints"=>$hints,
             "output"=>$output,
-            'options'=>$options,
+            "options"=>$fs->ls("-o"),
+	    "table"=>$fs->ls("-t"),
             "error"=>$error,
         ]);
     }

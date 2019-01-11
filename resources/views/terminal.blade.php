@@ -413,7 +413,7 @@
         }
 
         ret.meta = ret.meta || {};
-        if (ret.meta.prompt_loop) {
+        if (ret && ret.meta && ret.meta.prompt_loop) {
           prompt_string = ret.meta.prompt_loop;
           prompt_loop_mode = true;
           prompt_loop_answers = [];

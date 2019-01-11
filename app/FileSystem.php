@@ -177,15 +177,12 @@ class FileSystem extends Model {
 
 
     public function ls($args,$todir=""){
-        ob_end_clean_all();
-        ob_start();
         if($todir!=="") $_pwd = $todir;
         else $_pwd = $this->pwd;
         if(!self::$ls_cache) $ls_cache=[];
         $error="";
-        Log::debug("LS TO $_pwd");
 
-        if(!isset(self::$ls_cache[$_pwd])){
+        if(true || !isset(self::$ls_cache[$_pwd])){
           //  echo "<br>LS querying for ls_cache for $_pwd";
             //echo "<br>LS called for $_pwd from ".debug_backtrace(2)[1]['function'];
             $nodes=[];
@@ -252,7 +249,7 @@ class FileSystem extends Model {
                             $node_types[]=trim($_mimetype);
                         }   
                     }else{
-                        echo "skiping $_pwd os query because os_path is none";
+                        //echo "skiping $_pwd os query because os_path is none";
                     }
           
                     break;
@@ -277,12 +274,12 @@ class FileSystem extends Model {
                     $node_types[]='psql_row';
                     break;
                 default:
-                    echo "<br> default, mime = $storage os_query not performed";
+                    //echo "<br> default, mime = $storage os_query not performed";
                     break;
                 }
             }catch(\Exception $e){
-                echo "EXCEPTION";
-                echo $e->getMessage();
+                //echo "EXCEPTION";
+                throw $e;
             }
 
             //echo "<br> saving ls_cache for [$_pwd].";
@@ -338,7 +335,6 @@ class FileSystem extends Model {
         }
 
         if(session('pwd')) {
-            echo "<br>contructor sertting pwd to ".session('pwd');
            $this->setPWD(session("pwd"));
          }else{
             $this->setPWD("/root");
@@ -640,9 +636,9 @@ class FileSystem extends Model {
     }
 
     public function put($filename, $content) {
-
-        $filePath = $this->getPWD()."/".$filename;
-        return Storage::put($filePath, $content);
+        $filePath = $this->get_os_path()."/".$filename;
+        file_put_contents($filePath,$filename);
+	return $filePath;
     }
     public function getPWD() {
         return $this->pwd;
@@ -666,13 +662,13 @@ class FileSystem extends Model {
             else $path_parts[]=$part;
         }
         $new_path=implode("/",$path_parts);
-        echo "<br>cd to $todir <br> new path = $new_path";
+        //echo "<br>cd to $todir <br> new path = $new_path";
         $parent_info = $this->get_parent_info($new_path,$relative_path);
-        echo "<br>nearest ancestor info".json_encode($parent_info);
+        //echo "<br>nearest ancestor info".json_encode($parent_info);
         $parent_path=$parent_info[0];
         $current_path=$parent_path;
         if($current_path!==$todir){
-            echo "<br>cd-ing from $parent_path to $todir";
+            //echo "<br>cd-ing from $parent_path to $todir";
             $current_path=$parent_path;
             foreach((Array)$relative_path as $_path){
                 $current_path=$current_path."/".$_path;
