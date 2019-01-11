@@ -28,6 +28,7 @@ class FileSystem extends Model {
         '/root/cronjobs'=>    '',
     ];
 
+
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'filesystem',
@@ -49,14 +50,19 @@ class FileSystem extends Model {
             '_storage'=>'filesystem',
             'path'=>'{storage_path}/app/public'
         ],
-        'myfiles'=>[
+        'files/myfiles'=>[
             '_storage'=>'filesystem',
             'path'=>'{storage_path}/app/{USERNAME}'
         ],
         'dropbox' => [
-            '_storage' => 'symlink',
+            'path' => 'filesystem',
             'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'{ln_target}'
+            'path'=>'/home/ubuntu/Dropbox/grepawk'
+        ],
+        'dropbox/myfiles' => [
+            'path' => 'symlink',
+            'ln_target'=>'/home/ubuntu/Dropbox/',
+            'path'=>'/home/ubuntu/Dropbox/grepawk/{USERNAME}'
         ],
         'controllers' => [
             '_storage' => 'filesystem',
@@ -81,12 +87,12 @@ class FileSystem extends Model {
     ];
 
 
+
     public function get_os_path($pwd="",$append=""){
 
         $pwd = $pwd ? $pwd : $this->getPWD();
  
-        
-
+       
         if(isset($this->xpath_map[$pwd]) &&
             isset($this->xpath_map[$pwd][2]) &&
                isset($this->xpath_map[$pwd][2]['os_path']))
