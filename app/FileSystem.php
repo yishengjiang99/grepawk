@@ -31,31 +31,31 @@ class FileSystem extends Model {
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/root/data'
+            'path'=>'{storage_path}/root/data',
         ],
         'data/timeseries' => [
             '_storage' => 'filesystem',
-            'path'=>'{base_path}/timeseries'
+            'path'=>'{storage_path}/app/root/data/timeseries'
         ],
         'data/snapshots' => [
-            '_storage' => 'symlink',
-            'path'=>'{base_path}/{ln_target}',
-            'ln_target'=>'timeseries',
-            'std_out' => '| tail -n 1',
+            '_storage' => 'filesystem',
+            'path'=>'{storage_path}/app/root/data/snapshots',
         ],
         'data/bin' =>[
             '_storage'=>'filesystem',
-            'path'=>'{base_path}/bin'
+            'path'=>'{storage_path}/app/root/data/bin',
         ],
         'files'=>[
             '_storage'=>'filesystem',
-            'path'=>'{storage_path}/public'
+            'path'=>'{storage_path}/app/public'
+        ],
+        'myfiles'=>[
+            '_storage'=>'filesystem',
+            'path'=>'{storage_path}/app/{USERNAME}'
         ],
         'dropbox' => [
             '_storage' => 'symlink',
-            'children'=>['private','public','index_page','queries','tools'],
-            'children_storage' =>['dropbox','dropbox','html','queries','bin'],
-            'ln_target'=>'/home/ubuntu/Dropbox/grepawk',
+            'ln_target'=>'/home/ubuntu/Dropbox/',
             'path'=>'{ln_target}'
         ],
         'controllers' => [
@@ -76,7 +76,7 @@ class FileSystem extends Model {
         ],
         'ui' => [
             '_storage' => 'filesystem',
-            'path'=>'{app_path}/../resources/views',
+            'path'=>'{base_path}/resources/views',
         ],
     ];
 
