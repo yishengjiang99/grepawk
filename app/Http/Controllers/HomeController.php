@@ -169,6 +169,7 @@ class HomeController extends Controller
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
+                    $output.="OS path is ".$this->get_os_path();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
