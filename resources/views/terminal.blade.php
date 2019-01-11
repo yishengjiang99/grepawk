@@ -323,16 +323,25 @@
           html += "<tr>";
           $.each(table.headers, function(i, header) {
             var val = row[header] || "";
-            if (header === 'link') {
-              if (val.indexOf("onclick:") === 0) {
-                var cmd_str = val.replace("onclick:", "");
-                var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
-                val = "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
-              } else {
-                val = "<a target=_blank href='" + val + "'>link</a>";
-              }
+            if (header === 'links') {
+              var val_html="";
+              val.forEach(function(link,i){
+                if(link.indexOf("onclick:") === 0) {
+                  var cmd_str = link.replace("onclick:", "");
+                  var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
+                  val_html += "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>"+cmd_str+"</a>";
+                } else {
+                  val_html += "<a target=_blank href='" + val + "'>link</a>";
+                }
+                val_html+="<br>";
+              });
+              html += "<td>" + val_html + "</td>";
+
+            }else{
+              html += "<td>" + val + "</td>";
+
             }
-            html += "<td>" + val + "</td>";
+
           });
           html += "</tr>";
         });

@@ -2,11 +2,12 @@
 @section('content')
 
 <div class='container' style='margin-top:73px;margin-bottom:100px'>
+   <div class='row' id='hud-0'></div>
+
    <div class='row'>
-   <div class='col-md-3' id='hud-1'></div>
-   <div class='col-md-9'><iframe id='tty1' src="{{ url('/terminal') }}" height='450px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
+   <div class='col-lg-12'><iframe id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
    </div>
-   <div id='hud-options' class='row' style='height:64px'></div>
+   <div id='hud-1' class='row' style='height:64px'></div>
 </div>
 
 

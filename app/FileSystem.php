@@ -392,22 +392,35 @@ class FileSystem extends Model {
                 $is_folder=!$is_file;
                 $name = basename($node_path);
                 if ($is_folder) {
-                    $rows[] = ['cmd' => "cd $name", "mimetype"=>$mimeType, 'type' => 'folder', 'display' => "Open folder $name", 'link' => "onclick:cd ".urlencode($name)];
+                    $rows[] = ['cmd' => "cd $name", 
+                                'name'=>$name,
+                                "mimetype"=>$mimeType, 'type' => 'folder', 
+                                'display' => "Open folder $name", 
+                                'links' => ["onclick:cd ".urlencode($name)]
+                            ];
                 } else {
-                    $rows[] = ['cmd' => "cat $name", "mimetype"=>$mimeType, 'type' => $mimeType, 'display' => "Download or view file", 'link' => "onclick:cat ".urlencode($name)];
+                    $rows[] = ['name'=>$name, 
+                               'cmd' => "cat $name", 
+                               "mimetype"=>$mimeType,  
+                               'display' => "Download or view file", 
+                               'type'=>"file",
+                               'links' => ["onclick:cat ".urlencode($name),
+                                            "onclick:get ".urlencode($name)]
+                            ];
                     if(strpos($name,'.csv')!==false){
                         $cmd="convert $name ".basename($name,".csv");
                         $rows[] = [
+                            'name'=>$name, 
                             'cmd' =>$cmd,
                             'mimetype'=>$mimeType,
                             'display' => "Convert $name into psql table ".basename($name,".csv"), 
-                            'link' => "onclick:".$cmd
+                            'links' => ["onclick:".$cmd]
                         ];
 
                     }
                 }
             }
-            return ['headers' => ['cmd', 'display', 'mimetype','link'], 'rows' => $rows];
+            return ['headers' => ['name', 'display', 'mimetype','links'], 'rows' => $rows];
         }
 
     
