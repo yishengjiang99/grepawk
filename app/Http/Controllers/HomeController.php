@@ -209,7 +209,7 @@ class HomeController extends Controller
                     }
                     break;
                 case 'select':
-                    $tablename = $fs->current_node->get_db_ns();
+                    $table_ns = str_replace("/", "_", dirname($fs->getPWD()))."_f_".basename($fs->getPWD());
                     $sql=$msg;
                     if(stripos($sql," $tablename")===false){
                         $error="Must query tablename ".$tablename;
