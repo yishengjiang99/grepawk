@@ -160,12 +160,12 @@ class FileSystem extends Model {
             $node_types=[];
      
             $myrank = count(explode("/",$_pwd));
-            $parent_path = dirname($_pwd);
+   
+            $parent_path = dirname($this->getPwd());
             if(!isset($this->xpath_map[$_pwd])){
                 list($parent_index,$parent_mimetype,$parent_meta)=$this->xpath_map[$parent_path];                
                 $my_mimetype="filesystem";
                 if($parent_mimetype=='psql') $my_mimetype='psql_table';
-
                 $my_meta=['os_path'=>$parent_meta['os_path']."/".basename($_pwd)];
                 $my_meta=array_merge($my_meta,$parent_meta);
                 $this->xpath_map[$_pwd]=[$parent_index,$my_mimetype,$my_meta];  
@@ -343,25 +343,6 @@ class FileSystem extends Model {
     private static $ls_cache;
 
     
-  
-    public function pwd_meta(){
-        $meta=[];
-        switch ($this->current_node->storage_type) {
-            case 'filesystem':
-                break;
-            case 'search':
-                break;
-            case 'psql':
-                break;
-            case 'psql_table':
-                $columns = Schema::getColumnListing($this->current_node->get_db_ns());
-                $meta['cols'] = array_values(array_diff($columns,['id','created_at','updated_at']));
-                break;
-            default:
-                break;
-        }
-        return $meta;
-    }
     public static function ls_table($storage_type,$nodes,$node_types){
 
         if($storage_type=='psql_table'){
@@ -584,8 +565,7 @@ class FileSystem extends Model {
     public function cat($filename) {
         //echo implode("<br>",$this->vfs[0]);
         $full_path = $this->get_os_path()."/".$filename;
-        echo $full_path;
-        exit;
+
         // echo $full_path;
         // exit;
         // echo $this->xpath_map[$full_path];
@@ -599,11 +579,9 @@ class FileSystem extends Model {
         list($full_path,$mimetype,$meta)=$this->xpath_map[$full_path];
 
         $os_path = isset($meta['os_path']) ? $meta['os_path'] : $full_path;
-echo $os_path;
-exit;
+
         exec("file --mime-type ".$os_path."/".$filename."", $ob);
-        var_dump($ob);
-        exit;
+
   
         //if (!Storage::exists($filepath)) throw new\ Exception("$filename does not exist on fs");
         
@@ -686,23 +664,23 @@ exit;
             if(!isset($this->xpath_map[$new_path])){
                 $popped_stack[]=basename($new_path);
                 $new_path=dirname($new_path);
+                if(!$new_path) new \Exception("Cannot cd to $todir");
                 $this->ls("",$new_path);
                 
             }else{
                 if(count($popped_stack)){
                     $new_path=$new_path."/".array_pop($popped_stack);
-                }else{
-                    break;
                 }
             }
         }
+
         if(!isset($this->xpath_map[$new_path])){
             $this->ls("",$new_path);
             if(!isset($this->xpath_map[$new_path])){
                 throw new \Exception("Cannot cd to $new_path");
             }
         }
-        if($dry) return $new_path;
+        if($dry!==false) return $new_path;
         else{
             $this->setPWD($new_path);
             return $new_path;
