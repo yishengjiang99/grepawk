@@ -9,6 +9,7 @@ use Illuminate\ Support\ Facades\ Storage;
 use Auth;
 use DB;
 use Log;
+use File;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 
@@ -32,23 +33,23 @@ class FileSystem extends Model {
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/root/data',
+            'path'=>'{storage_path}/app/root/data',
         ],
         'data/timeseries' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/app/root/data/timeseries'
+            'path'=>'{base_path}/timeseries'
         ],
         'data/snapshots' => [
             '_storage' => 'filesystem',
-            'path'=>'{storage_path}/app/root/data/snapshots',
+            'path'=>'{base_path}/snapshots'
         ],
-        'data/bin' =>[
+        'bin' =>[
             '_storage'=>'filesystem',
-            'path'=>'{storage_path}/app/root/data/bin',
+            'path'=>'{base_path}/bin',
         ],
         'files'=>[
             '_storage'=>'filesystem',
-            'path'=>'{storage_path}/app/public'
+            'path'=>'{storage_path}/app/root/public'
         ],
         'files/myfiles'=>[
             '_storage'=>'filesystem',
@@ -56,13 +57,12 @@ class FileSystem extends Model {
         ],
         'dropbox' => [
             '_storage' => 'filesystem',
-            'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'/home/ubuntu/Dropbox/grepawk'
+            'path'=>'{dropbox_path}'
         ],
         'dropbox/myfiles' => [
             '_storage' => 'filesystem',
             'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'/home/ubuntu/Dropbox/grepawk/{USERNAME}'
+            'path'=>'{dropbox_path}/{USERNAME}'
         ],
         'controllers' => [
             '_storage' => 'filesystem',
@@ -87,6 +87,16 @@ class FileSystem extends Model {
     ];
 
 
+    public function get_parent_info($pwd,&$relative_path=[]){
+        if(isset($this->xpath_map[$pwd])){
+             return $this->xpath_map[$pwd];
+        }else {
+            if(dirname($pwd)==="") throw new \Exception("Cannot find xpath_map in get_parent_info");
+            $relative_path[] = basename($pwd);
+            return $this->get_parent_info(dirname($pwd));
+        }
+    }
+
 
     public function get_os_path($pwd="",$append=""){
 
@@ -110,8 +120,10 @@ class FileSystem extends Model {
     public static $full_vfs_map;
 
 
-    public static function init_vfs(){
+    public function init_vfs(){
+
       if(!self::$full_vfs_map) {
+         // echo "initiating fs";
         $xpaths =[];
         $mimetypes=[];
         $meta_list=[];
@@ -121,8 +133,11 @@ class FileSystem extends Model {
         $meta_list=[];
         $meta_list[]=['_storage'=>'vfs/root',
                       'os_path'=>storage_path()."/app/root"];
+                      
         $max_ls_depth=5;
         $list_index=0;
+        $vfs_children_map=[];
+        $vfs_children_map['/root']=[];
         foreach(self::$virtual_fs as $name=>$attributes){
             $folder_path=$base_path."/".$name;
             $xpaths[]=$folder_path;
@@ -131,31 +146,30 @@ class FileSystem extends Model {
             if(isset($newmeta['path'])){
                 $os_path= $newmeta['path'];
                 $os_path = str_replace('{base_path}', base_path(), $os_path);
-
                 $os_path = str_replace('{app_path}', app_path(), $os_path);
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
-                
+                $os_path = str_replace('{dropbox_path}', env('DROPBOX_PATH','/home/ubuntu/dropbox/grepawk'),$os_path);
+
+                $os_path = str_replace('{USERNAME}',$this->private_dir,$os_path);
                 if($attributes['_storage']==='symlink'){
                     $os_path = str_replace('{ln_target}',$newmeta['ln_target'], $os_path);
                 }
                 $newmeta['os_path']=$os_path;
-           
             }else{
                 $newmeta['os_path']="";
             }
             $meta_list[]=$newmeta;
-            if(isset($attributes['children'])){
-                foreach((Array)$attributes['children'] as $i=>$child){
-                    $xpaths[]=$folder_path."/".$child;
-                    $mimetypes[]=$attributes['children_storage'][$i];
-                    $meta_list[]=["ref:"=>$list_index,];  //parent meta
-                } 
+            $vfs_children_map[$folder_path]=[];
+
+            $parent_path =dirname($folder_path);
+            if(isset($vfs_children_map[$parent_path])){
+               // echo "<br>adding child for $parent_path: $folder_path";
+                $vfs_children_map[$parent_path][]=['path'=>$folder_path,'_storage'=>$attributes['_storage']];
             }
             $list_index++;
         }
-        self::$full_vfs_map=[$xpaths,$mimetypes,$meta_list];
+        self::$full_vfs_map=[$xpaths,$mimetypes,$meta_list,$vfs_children_map];
       }
-     // var_dump(self::$full_vfs_map[1]);
 
       return self::$full_vfs_map;
     }
@@ -169,61 +183,46 @@ class FileSystem extends Model {
         $error="";
         Log::debug("LS TO $_pwd");
 
-
-        if(true && !isset(self::$ls_cache[$_pwd])){
-            Log::debug("NO cache for $_pwd");
-            Log::debug(json_encode(debug_backtrace(3)));
-            //self::$ls_cache[$this->pwd]=[];
+        if(!isset(self::$ls_cache[$_pwd])){
+            echo "<br>LS querying for ls_cache for $_pwd";
+            echo "<br>LS called for $_pwd from ".debug_backtrace(2)[1]['function'];
             $nodes=[];
             $node_types=[];
-     
             $myrank = count(explode("/",$_pwd));
-   
             $parent_path = dirname($this->getPwd());
             if(!isset($this->xpath_map[$_pwd])){
-                list($parent_index,$parent_mimetype,$parent_meta)=$this->xpath_map[$parent_path];                
+                echo "<br>xpath map is not set for $_pwd";
+                $relative_path=[];
+                $ancestor_info = $this->get_parent_info($_pwd,$relative_path);
+                $os_path = $ancestor_info[2]['os_path'];
+                while($_path = array_pop($relative_path)){
+                    $os_path.="/$_path";
+                }
+                $parent_mimetype  =$ancestor_info[1];
+                echo "<br>parent_mimetype for $_pwd is set to $parent_mimetype";
+                
                 $my_mimetype="filesystem";
                 if($parent_mimetype=='psql') $my_mimetype='psql_table';
-                $my_meta=['os_path'=>$parent_meta['os_path']."/".basename($_pwd)];
-                $my_meta=array_merge($my_meta,$parent_meta);
-                $this->xpath_map[$_pwd]=[$parent_index,$my_mimetype,$my_meta];  
+                echo "<br> $_pwd mimetype is et to $my_mimetype";
+                $my_meta=['os_path'=>'$os_path','mime_type'=>$my_mimetype];
+                $this->xpath_map[$_pwd]=[$_pwd,$my_mimetype,$my_meta];  
             }else{
-                list($my_index,$my_mimetype,$my_meta)=$this->xpath_map[$_pwd];
+                list($_,$my_mimetype,$my_meta)=$this->xpath_map[$_pwd];
             }
-
-            while(true){
-                if(isset($my_meta['ref:'])){
-                    $meta_ref=intval($my_meta['ref:']);
-                    $my_meta = $this->full_vfs_map[2][$meta_ref];
-                }else{
-                    break;
+            if(isset($this->vfs_children_map[$_pwd])){
+                foreach($this->vfs_children_map[$_pwd] as $children_info){
+                    $nodes[]=basename($children_info['path']);
+                    $node_types[]=$children_info['_storage'];
                 }
-            }
-
-
-
-            foreach($this->vfs[0] as $index=>$path){
-                $rank = count(explode("/",$path));
-                
-                if($rank!== $myrank+1) continue;
-                if(dirname($path)!==$_pwd) {
-                    continue;
-                }
-
-                $mimetype = $this->vfs[1][$index];
-                $meta =$this->vfs[2][$index];
-                $nodes[]=basename($path);
-                $node_types[]=$mimetype;
             }
             $storage = $my_mimetype;
             $os_path = isset($my_meta['os_path']) ? $my_meta['os_path'] : "none";
-            if(!$os_path && isset($my_meta['path'])){
-                $os_path = $my_meta['path'];
-            }
-   
-            switch($storage){
+            echo "<br>storage for $_pwd is $storage";
+            echo "<br>LS os_path is $os_path";
+            try{            
+             echo '<br>try '.$storage;
+             switch($storage){
                 case 'vfs/root':
-                    break; // 
                 case 'symlink':
                 case 'html':
                 case 'csv':
@@ -232,26 +231,32 @@ class FileSystem extends Model {
                     $file_filter="|grep $storage";
                 case 'data':
                 case 'filesystem':
-                    if($os_path=='none') break;
-                    $file_filter="";
-                    $folders=[];
-                    $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
-                    Log::debug($os_query);
-                    $os_info=[];
-                    exec($os_query,$os_info);
-                    $parent_path=$_pwd;
-                    foreach($os_info as $os_info_item){
-                        if(strpos($os_info_item,": ")===false) continue;
-                        list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
-                        $_mimetype="ls-".$_mimetype;
-                   
-                        $node_path=$parent_path."/".basename($filename);
-                        if(in_array($node_path,$nodes)) continue;
-
-                        $this->xpath_map[$node_path]=[0,$_mimetype,['os_path'=>$os_path.'/'.$filename]];
-                        $nodes[]=basename($node_path);
-                        $node_types[]=trim($_mimetype);
-                    }              
+    
+                    if($os_path!=='none'){
+                        $file_filter="";
+                        $folders=[];
+                        $os_query="cd $os_path && ls -l $file_filter |tail -n +2|awk '{print $9}' |xargs file --mime-type";
+                        echo "<br>issuing os query <br>$os_query";
+                        Log::debug($os_query);
+                        $os_info=[];
+                        exec($os_query,$os_info);
+                        $parent_path=$_pwd;
+                        foreach($os_info as $os_info_item){
+                            if(strpos($os_info_item,": ")===false) continue;
+                            list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
+                            $_mimetype="ls-".$_mimetype;
+                       
+                            $node_path=$parent_path."/".basename($filename);
+                            //if(in_array($node_path,$nodes)) continue;
+                            
+                            $this->xpath_map[$node_path]=[$node_path,$_mimetype,['os_path'=>$os_path.'/'.$filename]];
+                            $nodes[]=basename($node_path);
+                            $node_types[]=trim($_mimetype);
+                        }   
+                    }else{
+                        echo "skiping $_pwd os query because os_path is none";
+                    }
+          
                     break;
                 case 'psql':
                     $parent_path=$_pwd;
@@ -274,10 +279,15 @@ class FileSystem extends Model {
                     $node_types[]='psql_row';
                     break;
                 default:
+                    echo "<br> default, mime = $storage os_query not performed";
                     break;
                 }
+            }catch(\Exception $e){
+                echo "EXCEPTION";
+               echo $e->getMessage();
+            }
 
-              
+            echo "<br> saving ls_cache for [$_pwd].";
             self::$ls_cache[$_pwd]=[
                 'nodes'=>$nodes,
                 'node_types'=>$node_types,
@@ -287,7 +297,10 @@ class FileSystem extends Model {
                 'dl_links'=>[],
                 'table'=>self::ls_table($my_mimetype,$nodes,$node_types)
             ];
+        }else{
+           // echo "<br>ls_cache found for $_pwd";
         }
+
         if($args=='') return self::$ls_cache[$_pwd]['output'];
         if($args=='-t') return self::$ls_cache[$_pwd]['table'];
         if($args=='-o') return self::$ls_cache[$_pwd]['options'];
@@ -308,37 +321,37 @@ class FileSystem extends Model {
     private $privateDir = "guest";
     private $userName = "guest";
     public $xpath_map=[];
-
+    private $vfs_children_map;
 
     public function __construct($username){
         $this->username=$username;
         $this->private_dir = $username ? str_replace(" ", "_", $username) : "guest";
 
-        $this->vfs = self::init_vfs();
+        if(!File::exists($this->private_dir)){
+            $ret=Storage::makeDirectory($this->private_dir);
+            if(!$ret) throw new \Exception($this->private_dir."not make");
+        }   
+
+        $this->vfs = $this->init_vfs();
+        $this->vfs_children_map=$this->vfs[3];
         $this->xpath_map=[];
         foreach($this->vfs[0] as $i=>$path){
-            $this->xpath_map[$path]=[$path,$this->vfs[1][$i],$this->vfs[2][$i]];
+            $this->xpath_map[$path]=[$path,$this->vfs[1][$i],$this->vfs[2][$i],$i];
         }
 
-        $this->pwd = "/root";
         if(session('pwd')) {
+            echo "<br>contructor sertting pwd to ".session('pwd');
            $this->setPWD(session("pwd"));
+         }else{
+            $this->setPWD("/root");
+
          }
-
-        // $this->root_node = new Folder("root","vfs");
-        // $this->root_node->set_fs($this); //FileSystem Object..
-        // $this->root_node->setVFS(self::$virtual_fs); //associative array
-        // $this->current_node=$this->root_node;
-        // if(session('pwd')) {
-        //     $this->setPWD(session('pwd'));
-        //  }
     }
-
     public static function getInstance() {
         if (Auth::user() !== null) {
             return self::makeInstance(Auth::user() -> username);
         } else {
-            return self::makeInstance();
+            return self::makeInstance("guest");
         }
     }
     public static function makeInstance($userName = 0) {
@@ -663,8 +676,7 @@ class FileSystem extends Model {
         session(["pwd" => $this->pwd]);
     }
     public function cd($todir,$dry=false) {
-
-        if($todir=='root'){
+        if($todir==='root'){
             return $this->setPWD('/root');
         }
         $parts=explode("/",$todir);
@@ -678,37 +690,24 @@ class FileSystem extends Model {
             else $path_parts[]=$part;
         }
         $new_path=implode("/",$path_parts);
-        
-        $popped_stack=[];
-        $i=0;
-        while($i++<60){
-            if(!isset($this->xpath_map[$new_path])){
-                $popped_stack[]=basename($new_path);
-                $new_path=dirname($new_path);
-                if(!$new_path) {
-                  new \Exception("Cannot cd to $todir");
-                }
-                $this->ls("",$new_path);
-                
-            }else{
-                if(count($popped_stack)){
-                    $new_path=$new_path."/".array_pop($popped_stack);
-                }else{
-                    break;
-                }
+        echo "<br>cd to $todir <br> new path = $new_path";
+        $parent_info = $this->get_parent_info($new_path,$relative_path);
+        echo "<br>nearest ancestor info".json_encode($parent_info);
+        $parent_path=$parent_info[0];
+        $current_path=$parent_path;
+        if($current_path!==$todir){
+            echo "<br>cd-ing from $parent_path to $todir";
+            $current_path=$parent_path;
+            foreach((Array)$relative_path as $_path){
+                $current_path=$current_path."/".$_path;
+                $this->ls("o",$current_path);
             }
         }
 
-        if(!isset($this->xpath_map[$new_path])){
-            $this->ls("",$new_path);
-            if(!isset($this->xpath_map[$new_path])){
-                throw new \Exception("Cannot cd to $new_path");
-            }
-        }
-        if($dry!==false) return $new_path;
+        if($dry!==false) return $current_path;
         else{
-            $this->setPWD($new_path);
-            return $new_path;
+            $this->setPWD($current_path);
+            return $current_path;
         }
     }
 }
