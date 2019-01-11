@@ -57,7 +57,7 @@ class HomeController extends Controller
 
     public function stdin(Request $request){
         if(Auth::user()){
-            $this->username=Auth::user()->name;
+            $this->username=Auth::user()->name."@".$_SERVER['REMOTE_ADDR'];
         }else{
             $this->username="guest@".$_SERVER['REMOTE_ADDR'];
         }
@@ -74,8 +74,6 @@ class HomeController extends Controller
         $argv1= isset($msgt[1]) ? $msgt[1] : 0;
      
         $argv2= isset($msgt[2]) ? $msgt[2] : 0;
-       
-
         $output="";
         $error="";
         $hints=null;
@@ -87,7 +85,7 @@ class HomeController extends Controller
         try{
             switch($cmd){
                 case "help":
-                    $output="type 'ls' to get started";
+                    $output="type 'ls' to get started.";
                     //$options=$fs->ls('-o');
                     $hints = $fs->ls("-j"); 
                     break;

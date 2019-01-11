@@ -31,9 +31,22 @@ class FileSystem extends Model {
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'psql',
-            'children'=>       ['queries','live', 'intro'],
-            'children_storage' =>['psql','stream','html'],
             'path'=>'{storage_path}/root/data'
+        ],
+        'data/timeseries' => [
+            '_storage' => 'filesystem',
+            'path'=>'{base_path}/timeseries'
+        ],
+        'data/snapshots' => [
+            '_storage' => 'symlink',
+            'path'=>'{base_path}/{ln_target}',
+            'ln_target'=>'timeseries',
+            'std_out' => '| tail -n 1',
+        ],
+        'bin' =>[
+            '_storage'=>'filesystem',
+            
+
         ],
         'files'=>[
             '_storage'=>'filesystem',
@@ -59,7 +72,11 @@ class FileSystem extends Model {
             'path'=>'{app_path}/../resources/views',
         ],
     ];
-
+    public function get_os_path(){
+        $node=$this->xpath_map[$this->pwd];
+        var_dump($node);
+        exit;
+    }
 
     public static $full_vfs_map;
 
@@ -73,10 +90,17 @@ class FileSystem extends Model {
         $xpaths[]='/root';
         $mimetypes[]='vfs/root';
         $meta_list=[];
-        $meta_list[]=['os_path'=>storage_path()."/app/root"];
+        $meta_list[]=['_storage'=>'vfs/root',
+                      'os_path'=>storage_path()."/app/root"];
         $max_ls_depth=5;
         $list_index=0;
         foreach(self::$virtual_fs as $name=>$attributes){
+          //  var_dump($attributes);
+            if(!isset($attributes['_storage'])){
+                var_dump($attributes);
+                exit;
+
+            }
             $folder_path=$base_path."/".$name;
             $xpaths[]=$folder_path;
             $mimetypes[]=$attributes['_storage'];
