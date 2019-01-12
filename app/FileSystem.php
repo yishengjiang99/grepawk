@@ -10,8 +10,13 @@ use Auth;
 use DB;
 use Log;
 use File;
+use Cookie;
+use Session;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+
+
+
 
 class FileSystem extends Model {
 
@@ -33,7 +38,7 @@ class FileSystem extends Model {
     public static $virtual_fs = [
         'data' => [
             '_storage' => 'vfs/node',
-            'path'=>'{storage_path}/app/root/data',
+            'path'=>'{base_path}/data',
         ],
         'data/timeseries' => [
             '_storage' => 'vfs/node',
@@ -49,7 +54,7 @@ class FileSystem extends Model {
         ],
         'files'=>[
             '_storage'=>'filesystem',
-            'path'=>'{storage_path}/app/root/public'
+            'path'=>'{storage_path}/app/root'
         ],
         'files/myfiles'=>[
             '_storage'=>'filesystem',
@@ -59,11 +64,11 @@ class FileSystem extends Model {
             '_storage' => 'filesystem',
             'path'=>'{dropbox_path}'
         ],
-        'dropbox/myfiles' => [
-            '_storage' => 'filesystem',
-            'ln_target'=>'/home/ubuntu/Dropbox/',
-            'path'=>'{dropbox_path}/{USERNAME}'
-        ],
+        // 'dropbox/myfiles' => [
+        //     '_storage' => 'filesystem',
+        //     'ln_target'=>'/home/ubuntu/Dropbox/',
+        //     'path'=>'{dropbox_path}/{USERNAME}'
+        // ],
         'controllers' => [
             '_storage' => 'filesystem',
             'path'=>'{app_path}/http/Controllers/',
@@ -75,10 +80,6 @@ class FileSystem extends Model {
         'logs' => [
             '_storage' => 'filesystem',
             'path'=>'/var/log',
-        ],
-        'logs/apache2' => [
-            '_storage' => 'filesystem',
-            'path'=>'/var/log/apache2',
         ],
         'ui' => [
             '_storage' => 'filesystem',
@@ -104,9 +105,13 @@ class FileSystem extends Model {
 	return json_decode($file);
     }
     public function get_parent_info($pwd,&$relative_path=[]){
+        if($pwd=='/root') return $this->xpath_map[$pwd];
+
+
         if(isset($this->xpath_map[$pwd])){
              return $this->xpath_map[$pwd];
         }else {
+
             if(dirname($pwd)==="") throw new \Exception("Cannot find xpath_map in get_parent_info");
             $relative_path[] = basename($pwd);
             return $this->get_parent_info(dirname($pwd));
@@ -163,7 +168,7 @@ class FileSystem extends Model {
                 $os_path = str_replace('{base_path}', base_path(), $os_path);
                 $os_path = str_replace('{app_path}', app_path(), $os_path);
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
-		$dropbox_path =  env('DROPBOX_PATH','/home/ubuntu/Dropbox');
+		        $dropbox_path =  env('DROPBOX_PATH','/home/ubuntu/Dropbox');
                 $os_path = str_replace('{dropbox_path}',$dropbox_path,$os_path);
                 $os_path = str_replace('{USERNAME}', $this->username, $os_path);
                 if($attributes['_storage']==='symlink'){
@@ -197,7 +202,7 @@ class FileSystem extends Model {
         if(!self::$ls_cache) $ls_cache=[];
         $error="";
 
-        if(true || !isset(self::$ls_cache[$_pwd])){
+        if(!isset(self::$ls_cache[$_pwd])){
           //  echo "<br>LS querying for ls_cache for $_pwd";
             //echo "<br>LS called for $_pwd from ".debug_backtrace(2)[1]['function'];
             $nodes=[];
@@ -228,8 +233,8 @@ class FileSystem extends Model {
             }
             $storage = $my_mimetype;
             $os_path = isset($my_meta['os_path']) ? $my_meta['os_path'] : "none";
-            // echo "<br>storage for $_pwd is $storage";
-            // echo "<br>LS os_path is $os_path";
+            echo "<br>storage for $_pwd is $storage";
+            echo "<br>LS os_path is $os_path";
             try{            
              switch($storage){
                 case 'vfs/root':
@@ -297,7 +302,6 @@ class FileSystem extends Model {
                     break;
                 }
             }catch(\Exception $e){
-                //echo "EXCEPTION";
                 throw $e;
             }
 
