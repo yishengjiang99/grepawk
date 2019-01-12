@@ -30,19 +30,15 @@
 GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.
 </p>
 <p>
-You can use the product as a guest <a href=/home>Here</a>.
+   <div class='col-lg-12' style='margin-top:25px'><iframe id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
 </p>
 <p>
 <h4>Live development stream:</h4>
-<br>
-<iframe
-    src="https://player.twitch.tv/?channel=ragnus_the_orc"
-    height="320"
-    width="640"
-    frameborder="1"
-    scrolling="yes"
-    allowfullscreen="no">
+</P>
+<div class=container>
+<iframe src='/twitch' frameborder=0 scrolling=no width=854 height=480>
 </iframe>
+</div>
 </p>
         </div>
     </body>

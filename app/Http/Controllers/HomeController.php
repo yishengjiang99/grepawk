@@ -9,6 +9,7 @@ use Auth;
 use File;
 use Log;
 use DB;
+use Cookie;
 use App\FileSystem;
 use App\VFile;
 use Schema;
@@ -33,6 +34,7 @@ class HomeController extends Controller
      */
     public function index()
     {
+	dd(session('me'));
         return view('home');
     }
 
@@ -42,14 +44,19 @@ class HomeController extends Controller
             $this->username=Auth::user()->name;
             $fs=FileSystem::makeInstance(Auth::user()->name);
         }else{
+	
+            if(isset($_cookie['username'])){
+			$this->username= $_COOKIE['username'];
+			$this->private_dir = $_COOKIE['username'];
+		}else{
             $this->private_dir="anon";
-            $fs=FileSystem::makeInstance(0);
+            $fs=FileSystem::makeInstance("anon");
             $this->username="guest";
+		}
         }
         if(!File::exists($this->private_dir)){
             Storage::makeDirectory($this->private_dir);
         }       
-        
         return view('terminal',['username'=>$this->username, 
                                 'pwd'=>$fs->getPWD(),
                                 ]);
@@ -57,17 +64,28 @@ class HomeController extends Controller
 
 
     public function stdin(Request $request){
+	$session = session("me");
+	
         ob_end_clean_all();
         ob_start();
         echo 'started ob';
         $is_admin=false;
+
         if(Auth::user()){
             if(Auth::user()->id===1) $is_admin=true;
             $this->username=Auth::user()->name."@".$_SERVER['REMOTE_ADDR'];
         }else{
             $this->username="guest@".$_SERVER['REMOTE_ADDR'];
         }
-      
+	if(cookie('username')) $this->username=cookie('username');
+	if($session) $this->username=$session->username; 
+$cmd=$request->input("cmd",""); 
+if($cmd=='debug'){
+//dd($session);
+dd(cookie('username'));
+exit;
+}
+
         $msg =$request->input("msg");
         $msg =urldecode($msg);
         $data = $request->input('data');
@@ -78,9 +96,10 @@ class HomeController extends Controller
         $cmd = $msgt[0];
 
         $argv1= isset($msgt[1]) ? $msgt[1] : 0;
-     
         $argv2= isset($msgt[2]) ? $msgt[2] : 0;
         $output="";
+
+
         $error="";
         $hints=null;
         $fs = FileSystem::getInstance();
@@ -92,13 +111,32 @@ class HomeController extends Controller
         echo "<br>std msg: $msg";
         ob_end_clean_all();
         ob_start();
-
-
+	$cookies=[];
         try{
             switch($cmd){
+		case 'cookie': 
+			$output=json_encode(session("me"));
+			$output.=json_encode(cookie("username"));
+			break;
+		case 'debug':
+			$output=json_encode(session('me'));
+			$output.=json_encode($_COOKIE);
+			$output.=$this->username;
+			break;
+		case "register":
+		case "login":
+			if(!$argv1) {
+				$error="Usage: $cmd {username} {password}";
+			}else {
+				$this->username=$argv1;
+				$output.="Logged in as ".$this->username;
+				$player_file = $fs->load_player_profile($this->username);
+                                $cookies=['profile'=>$player_file];
+				$output.=json_encode($player_file);
+			}
+			break;
                 case "help":
                     $output="type 'ls' to get started.";
-                    //$options=$fs->ls('-o');
                     $hints = $fs->ls("-j"); 
                     break;
                 case 'checkin':
@@ -163,7 +201,7 @@ class HomeController extends Controller
                     ob_end_clean_all();
                     echo readFile($os_path);
 
-                case "ls":               
+                case "ls":
                     $destination = $argv1 ? $argv1 : "";
                     if($destination){
                         $destination_path = $fs->cd($destination,true); //dry cd
@@ -351,8 +389,8 @@ class HomeController extends Controller
         }
         $debug=ob_get_contents();
         ob_end_clean_all();
-
-        return response()->json([
+	
+        $ret=[
             "cd"=>basename($fs->getPWD()),
             'debug'=>$debug,
             "pwd"=>$fs->getPWD(),
@@ -362,7 +400,11 @@ class HomeController extends Controller
             "error"=>$error,
             'meta'=>$meta,
             'table'=>$table
-        ]);
+        ];
+	if(isset($cookies['profile'])){
+		Cookie::queue('profile',json_encode($cookies),394223);
+	}
+		return response()->json($ret);
     }
 
 }

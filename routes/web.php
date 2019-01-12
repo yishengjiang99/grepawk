@@ -70,6 +70,7 @@ Route::get('/ping', function(){
 
 
 Route::view('/pusher', 'pusher');
+Route::view('/twitch', 'twitch');
 
 Route::get('/terminal','HomeController@terminal');
 Route::resource('photos', 'PhotoController')->except(['show']);

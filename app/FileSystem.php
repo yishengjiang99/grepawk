@@ -86,7 +86,23 @@ class FileSystem extends Model {
         ],
     ];
 
+	
+   public function load_player_profile($username){
+	$os_path = storage_path()."/app/$username";
+	if(!file_exists($os_path)){
+		mkdir($os_path);
+		touch($os_path."/char.log");
+	}
 
+	$profile_path=$os_path."/char.txt";
+	if(!file_exists($profile_path)){
+		file_put_contents($profile_path,
+			json_encode(['username'=>$this->username])
+			);
+	}
+	$file = file_get_contents($profile_path);
+	return json_decode($file);
+    }
     public function get_parent_info($pwd,&$relative_path=[]){
         if(isset($this->xpath_map[$pwd])){
              return $this->xpath_map[$pwd];
@@ -148,9 +164,10 @@ class FileSystem extends Model {
                 $os_path = str_replace('{base_path}', base_path(), $os_path);
                 $os_path = str_replace('{app_path}', app_path(), $os_path);
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
-                $os_path = str_replace('{dropbox_path}', env('DROPBOX_PATH','/home/ubuntu/dropbox/grepawk'),$os_path);
+	
+                $os_path = str_replace('{dropbox_path}', env('DROPBOX_PATH','/home/ubuntu/Dropbox/grepawk'),$os_path);
 
-                $os_path = str_replace('{USERNAME}',$this->private_dir,$os_path);
+                $os_path = str_replace('{USERNAME}',$this->username, $os_path);
                 if($attributes['_storage']==='symlink'){
                     $os_path = str_replace('{ln_target}',$newmeta['ln_target'], $os_path);
                 }
