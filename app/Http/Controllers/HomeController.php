@@ -1,20 +1,109 @@
 <?php
 
+
+
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\ Database\ Eloquent\ Model;
+
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Console\Parser;
 use Auth;
 use File;
 use Log;
+
 use DB;
 use Cookie;
 use Session;
+use Player;
 use App\FileSystem;
 use App\VFile;
 use Schema;
 use App\Events\ServerEvent;
+
+
+
+class Playerr extends Model {
+    public static $os_base_path ="{BASE_PATH}/data/players/{USERNAME}";
+    private $profile;
+    private $player_folder;
+    private $username;
+    
+    public function __construct($profile){   
+        $this->profile=$profile;
+        if(!isset($profile['username'])){
+            dd($profile);
+            throw new \Exception("invalid profile constructror: ".json_encode($profile));
+        }
+        $this->username=$profile['username'];
+        $this->player_folder = base_path()."/data/players/".$profile['username']."/";
+        $this->is_admin= $this->username==='yisheng';
+        $this->fs = new FileSystem($this->username);
+    }
+    public function getProfile(){
+        $obj= json_decode(json_encode($this->profile));
+        $obj->created_str = date('r',$obj->created);
+        return $obj;
+    }
+    public function updateLog($event){
+        file_put_contents($this->player_folder."/events.txt","\n".time().",".$event, FILE_APPEND);
+    }
+    public function updateProfile($key,$val,$delta=false){
+        $this->profile[$key]= $delta ? (intval($this->profile[$key])+intval($val)) : $val;
+        $this->persist_profile();
+    }
+
+    //save to disk, session, cookie
+    public function persist_profile(){ 
+        $username=$this->profile['username'];
+        if(!file_exists($this->player_folder)){
+            mkdir($this->player_folder);
+            touch($this->player_folder."/char.txt");
+            touch($this->player_folder."/events.txt");
+        }
+        file_put_contents($this->player_folder."/char.txt",json_encode($this->profile)); 
+        session(['profile_json'=>json_encode($this->profile)]);
+        session(['profile2'=>$this->profile]);  
+        Cookie::queue('profile',json_encode($this->profile),394223);
+    }
+    
+    
+    public static function checkSession(){
+   
+        $profile = session("profile2");
+        if(!$profile){
+            $profile=Cookie::get('profile');
+            if($profile){
+                $profile = json_decode($profile,1);
+                $profile['source']='cookie';
+                $profile['session_start']=time();
+                $profile['cookie_created']=time();
+            }else{
+                $profile=[
+                    'username'=>'guest_'.$_SERVER['REMOTE_ADDR'],
+                    'visits'=>1,
+                    'xp'=>0,'gold'=>0,
+                    'source'=>'new',
+                    'created'=>time(),
+                    'updated'=>time()
+                ];
+            }
+        }else{
+            if(is_string($profile)) $profile=json_decode($profile,1);
+           // dd($profile);
+            $profile['source']='session';
+            $profile['session_updated']=time();
+        }
+        $player=new Playerr($profile);
+        $player->persist_profile();
+        return  $player;
+    }
+    public static function get_profile_username($username){
+        $profile=file_get_contents(self::os_base_path."/username/char.txt");
+        return json_code($profile);
+    }
+}
 
 class HomeController extends Controller
 {
@@ -26,7 +115,8 @@ class HomeController extends Controller
      */
     public function __construct()
     {	
-       $this->checkSession();
+       $this->player_file=Playerr::checkSession();
+
     }
 
     private $cookies=[];
@@ -34,36 +124,27 @@ class HomeController extends Controller
     private $player_file;
     private $is_admin=false;
     private $fs;
+    
+
+    // private function saveSession($profile){
+    //     session(['profile'=>$profile]);  
+    //     Cookie::queue('profile',json_encode($profile),394223);
+    //     Playerr::write_profile($profile);
+
+    // }
+
+
+    
+    private $playerObj; // App/Playerr
     private function checkSession(){
+        $playerObj=Playerr::checkSession();
+        $this->playerObj = $playerObj;
+        $this->player_file=$playerObj->getProfile();
+        $this->fs = $playerObj->fs;
+        $this->is_admin = $playerObj->is_admin;
+        $this->username = $this->player_file->username;
+    } 
 
-        $profile=Cookie::get('profile');
-	if(!$profile) $profile=Session::get("profile");
-
-	if(!$profile) $profile= session('profile');
-
-
-        $profile=json_decode($profile);
-	$cookies=[];
-        if($profile && count($profile)==0){
-            $this->username=$profile[0]['username'];
-        }else{
-            $this->username="guest@".$_SERVER['REMOTE_ADDR'];
-        }
-
-        if($this->username==='yisheng') $this->is_admin=true;
-
-        $this->fs = FileSystem::makeInstance($this->username);
-        $player_file = $this->fs->load_player_profile($this->username);
-	$player_file = (Array)$player_file;
-        $this->cookies['profile']=$player_file;
-	$player_file['visits'] = isset($player_file['visits']) ? $player_file['visits']+1 : 1;
-        $player_file['xp'] = isset($player_file['xp']) ? $player_file['xp']+1 : 1;
-
-	file_put_contents(storage_path().'/app/'.$this->username."/char.txt",json_encode($player_file));
-	$this->player_file = $player_file;
-	session(['profile'=>json_encode($player_file)]);
-
-    }
 
     /**
      * Show the application dashboard.
@@ -72,7 +153,7 @@ class HomeController extends Controller
      */
     public function index()
     {
-	$this->checkSession();
+	    $this->checkSession();
         return view('home');
     }
 
@@ -83,11 +164,12 @@ class HomeController extends Controller
                                 ]);
     }
 
-
     public function stdin(Request $request){
         $this->checkSession();
+
         $fs = $this->fs;
-	$player_file = $this->player_file;
+        
+        $player_file = $this->player_file;
 
         $is_admin=$this->is_admin;
 
@@ -116,46 +198,47 @@ class HomeController extends Controller
         echo "<br>std msg: $msg";
         ob_end_clean_all();
         ob_start();
-	$cookies=[];
+	    $cookies=[];
         try{
             switch($cmd){
-		case 'cookie': 
-			$output = json_encode($this->player_file);
-			break;
-		case 'debug':
-			$output=json_encode(session('me'));
-			$output.=json_encode($_COOKIE);
-			$output.=$this->username;
-			break;
+        		case 'cookie': 
+        			$output = json_encode($this->player_file);
+        			break;
+        		case 'debug':
+        			$output=json_encode(session('me'));
+        			$output.=json_encode($_COOKIE);
+        			$output.=$this->username;
+        			break;
                 case "help":
                     $output="type 'ls' to get started.";
                     $hints = $fs->ls("-j"); 
                     break;
-		case "register":
-		case "login":
-			if(!$argv1) {
-				$error="Usage: $cmd {username} {password}";
-				break;
-			}else {
-				$this->username=$argv1;
-				$output.="Logged in as ".$this->username;
-				$player_file = $fs->load_player_profile($this->username);
-			        $this->player_file=$player_file;
-				$output="Logged in as ".$this->username;
-				$cmd="checkin";
-			}
+        		case "register":
+		        case "login":
+        			if(!$argv1) {
+        				$error="Usage: $cmd {username} {password}";
+        				break;
+        			}else {
+        				$this->username=$argv1;
+                        $this->playerObj->updateProfile('username',$this->username);
+                        $this->checkSession();
+                        $fs = $this->fs;
+                        $player_file = $this->player_file;
+        				$output="Logged in as ".$this->username;
+        				$cmd="checkin";
+        			}
                 case 'checkin':
                     event(new ServerEvent(["output"=>"User ".$this->username." joined"]));
                     $output.="<p>GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.</p>";
-		    $output.="<p>";
-		    foreach($player_file as $k=>$v){
-			$output.="<br>$k:$v";
-		    }
-		    $output.="</p>";
+        		    $output.="<p>";
+        		    foreach($player_file as $k=>$v){
+        			    $output.="<br>$k: $v";
+        		    }
+        		    $output.="</p>";
                     $output.="<p>Type ls to get started</p>";
-		
                     $options=$fs->ls('-o');
                     break;
+
                 case 'convert':
                     $file=$argv1;
                     $tablename = $argv2;
@@ -379,29 +462,34 @@ class HomeController extends Controller
                         $meta['url']=url()->current()."?msg=$catcmd";
                     }
                     break;
-		case 'say':
-		case 'yell':
+        		case 'say':
+        		case 'yell':
                     $output="You $cmd ".$msg;
                     event(new ServerEvent(['output'=>$this->username."$cmd: ".$msg]));
-		    break;
-		default:
-		    $error="Unknown command $cmd";
-		    $output="-10 dpk";
-		    $player_file['xp']-=10;
+        		    break;
+        		default:
+        		    $error="Unknown command $cmd";
+                    $output="-10 xp";
+                    $this->playerObj->updateProfile('xp','-10',true);
+                            
                     break;
             }  
-	    file_put_contents(storage_path().'/app/'.$this->username."/char.txt",json_encode($player_file));
-            session(['profile'=>json_encode($player_file)]);
+            $this->playerObj->updateLog("msg_success,$msg");
         }catch(\Exception $e){
-            //foutthrow $e;
-
-           // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
+            throw $e;
+            $this->playerObj->updateLog("msg_exception,$msg,\"".$e->getMessage()."\"");
 
             $error.=$e->getMessage();
             $output.=ob_get_contents();
             ob_end_clean_all();
-            // $table = $fs->ls("-t");
         }
+
+        //$this->playerObj->updateLog("msg_success,$msg");
+
+
+        
+
+
         if($oformat=='debug'){
             echo 'end of debug';
             exit;
@@ -411,6 +499,7 @@ class HomeController extends Controller
 	
         $ret=[
             "cd"=>basename($fs->getPWD()),
+            "username"=>$this->username,
             'debug'=>$debug,
             "pwd"=>$fs->getPWD(),
             "hints"=>$fs->ls('-j'),
@@ -420,9 +509,7 @@ class HomeController extends Controller
             'meta'=>$meta,
             'table'=>$table
         ];
-	if(isset($cookies['profile'])){
-		Cookie::queue('profile',json_encode($cookies),394223);
-	}
+        $this->playerObj->persist_profile();
 		return response()->json($ret);
     }
 

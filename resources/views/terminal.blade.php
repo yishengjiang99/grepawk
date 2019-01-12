@@ -279,7 +279,7 @@
             var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class='onclick_cmd'>"+option.cmd+"</a>";
             html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
-          parent.iframe_interface("update_html",["hud-1",html]);
+         // parent.iframe_interface("update_html",["hud-1",html]);
 //           outputHtml(html);
           
         }
@@ -439,6 +439,12 @@
         if (ret.meta && ret.meta.url) {
           window.open(ret.meta.url, '_blank');
         }
+        if (ret.username){
+              setUsername(ret.username);
+        }
+        if (ret.updatePrompt){
+             updatePromptWithString(ret.updatePrompt);
+        }
       }
 
       //
@@ -470,7 +476,7 @@
     $(function() {
       // Initialize a new terminal object  
       var term = new Terminal('#input-line .cmdline', '#container output');
-      term.setUsername("guest@grepawk");
+      term.setUsername("{{$username}}@grepawk");
       term.setCd("$");
       term.init();
       term.cmd_string("checkin");

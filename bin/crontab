@@ -1,2 +1,1 @@
-* * * * * /usr/sbin/screencapture /Users/yisheng/Dropbox/grepawk/screenshot.jpg  2>&1
-
+/usr/sbin/screencapture /Users/yisheng/Dropbox/screenshots/screenshot_$(date +%s).jpg
