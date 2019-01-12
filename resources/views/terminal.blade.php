@@ -470,8 +470,8 @@
     $(function() {
       // Initialize a new terminal object  
       var term = new Terminal('#input-line .cmdline', '#container output');
-      term.setUsername("{{$username}}@grepawk");
-      term.setCd("{{$pwd}}");
+      term.setUsername("guest@grepawk");
+      term.setCd("$");
       term.init();
       term.cmd_string("checkin");
       $("body").on('click', '.cmd_btn', function(e) {

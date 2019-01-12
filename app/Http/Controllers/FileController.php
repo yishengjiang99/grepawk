@@ -6,12 +6,14 @@ use Illuminate\Http\Request;
 use App\FileSystem;
 use Log;
 use Storage;
-class FileController extends Controller
+class FileController extends HomeController
 {
     //
     public function upload(Request $request){
+	$this->checkSession();
+
         Log::critical("upload1 api called");
-        $fs=FileSystem::getInstance();
+        $fs=$this->fs;
 
         header( 'Content-type: text/html; charset=utf-8' );
         ob_start();

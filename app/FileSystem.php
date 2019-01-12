@@ -88,7 +88,7 @@ class FileSystem extends Model {
 
 	
    public function load_player_profile($username){
-	$os_path = storage_path()."/app/$username";
+	$os_path = storage_path()."/app/$username/";
 	if(!file_exists($os_path)){
 		mkdir($os_path);
 		touch($os_path."/char.log");
@@ -340,8 +340,7 @@ class FileSystem extends Model {
 
     public function __construct($username){
         $this->username=$username;
-        $this->private_dir = $username ? str_replace(" ", "_", $username) : "guest";
-
+        $this->private_dir = $username;
         if(!File::exists($this->private_dir)){
             $ret=Storage::makeDirectory($this->private_dir);
             if(!$ret) throw new \Exception($this->private_dir."not make");
@@ -360,13 +359,6 @@ class FileSystem extends Model {
             $this->setPWD("/root");
 
          }
-    }
-    public static function getInstance() {
-        if (Auth::user() !== null) {
-            return self::makeInstance(Auth::user() -> username);
-        } else {
-            return self::makeInstance("guest");
-        }
     }
     public static function makeInstance($userName = 0) {
         if (!isset(self::$_k[$userName])) {
