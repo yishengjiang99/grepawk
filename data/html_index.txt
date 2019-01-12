@@ -1,0 +1,10 @@
+https://stackoverflow.com/questions/17602878/how-to-handle-both-with-open-and-sys-stdout-nicely
+https://puzzling.stackexchange.com/questions/78345/ray-reflection-inside-the-cube
+https://nodejs.org/docs/latest-v9.x/api/
+https://linux.101hacks.com/unix/tee-command-examples/
+http://xoxohth.com/
+https://docs.python.org/3/library/urllib.parse.html
+https://docs.python.org/3/library/urllib.parse.html#structured-parse-results
+https://plus.espn.com/
+https://support.espn.com/hc/en-us/articles/360002464711-ESPN-Subscriber-Agreement
+EOF
