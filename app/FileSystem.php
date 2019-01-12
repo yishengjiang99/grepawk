@@ -104,10 +104,11 @@ class FileSystem extends Model {
 	return json_decode($file);
     }
     public function get_parent_info($pwd,&$relative_path=[]){
+	if($pwd=='/root' || $pwd=='root' || $pwd==='') return $this->xpath_map['/root'];
         if(isset($this->xpath_map[$pwd])){
              return $this->xpath_map[$pwd];
         }else {
-            if(dirname($pwd)==="") throw new \Exception("Cannot find xpath_map in get_parent_info");
+            if(dirname($pwd)==="") throw new \Exception("Cannot find xpath_map for $pwd in get_parent_info");
             $relative_path[] = basename($pwd);
             return $this->get_parent_info(dirname($pwd));
         }
