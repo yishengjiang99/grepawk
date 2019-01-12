@@ -239,9 +239,12 @@ class FileSystem extends Model {
                         foreach($os_info as $os_info_item){
                             if(strpos($os_info_item,": ")===false) continue;
                             list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
+                            $filename=trim($filename);
                             $_mimetype="ls-".$_mimetype;
                        
                             $node_path=$parent_path."/".basename($filename);
+                           // echo $node_path;
+                            
                             //if(in_array($node_path,$nodes)) continue;
                             
                             $this->xpath_map[$node_path]=[$node_path,$_mimetype,['os_path'=>$os_path.'/'.$filename]];

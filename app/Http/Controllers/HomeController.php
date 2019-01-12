@@ -105,7 +105,7 @@ class HomeController extends Controller
                     event(new ServerEvent(["output"=>"User ".$this->username." joined"]));
                     $output.="<p>GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.</p>";
                     $output.="<p>Type ls to get started</p>";
-                    $options=$fs->ls('-t');
+                    $options=$fs->ls('-o');
                     break;
                 case 'convert':
                     $file=$argv1;
@@ -164,18 +164,23 @@ class HomeController extends Controller
                     echo readFile($os_path);
 
                 case "ls":               
-                    $output = "File list of the ".$fs->getPWD()." folder <br>";
-                    $output.= "OS path is ".$fs->get_os_path($fs->getPWD());
-                    //$output.= $fs->ls();
-                    $hints = $fs->ls("-j"); 
-                    $table = $fs->ls("-t");
-                    $options=$fs->ls('-o');
+                    $destination = $argv1 ? $argv1 : "";
+                    if($destination){
+                        $destination_path = $fs->cd($destination,true); //dry cd
+                    }else{
+                        $destination_path = $fs->getPWD();
+                    }
+                    $output = "File list of the $destination_path folder <br>";
+                    $output.= "OS path is ".$fs->get_os_path($destination_path);
+                    $hints = $fs->ls("-j",$destination_path); 
+                    $table = $fs->ls("-t",$destination_path);
+                    $options=$fs->ls('-o',$destination_path);
                     break;
                 case 'cd':   
                     $toCd = $msgt[1];
                     $cd = $fs->cd($toCd); 
                     $output ="Opened $cd folder";
-                    $output.="OS path is ".$fs->get_os_path();
+                    $output.="<br>OS path is ".$fs->get_os_path();
                     $table = $fs->ls("-t");
                     $options=$fs->ls('-o');
                     break;
@@ -297,7 +302,8 @@ class HomeController extends Controller
                     break;
                 case 'touch':
                     $filename = $msgt[1];
-		    touch($fs->get_os_path()."/".$filename);
+                    Storage::put($fs->current_node->fs_path()."/".$filename,"");
+                    $output ="Created new file $filename";
                     $hints = $fs->ls("-j"); 
                     $table = $fs->ls("-t");
                     event(new ServerEvent(['output'=>$this->username.' make a new file at '.$fs->current_node->fs_path()."/".$filename]));
@@ -330,7 +336,7 @@ class HomeController extends Controller
                     break;
             }  
         }catch(\Exception $e){
-            //throw $e;
+            //foutthrow $e;
 
            // event(new ServerEvent(['error'=>$this->username." caused an exception with the cmd:<br>$msg"]));
 

@@ -72,6 +72,12 @@
 
       })
    });
+   $("body").on('click', '.onclick_cmd', function(e) {
+        var _cmd =$(this).attr('cmd');
+        //output("exec cmd from click: "+_cmd)
+        tty1.contentWindow.terminal.cmd_string(_cmd);
+        e.preventDefault();
+      });
  })
 </script>
 @endsection

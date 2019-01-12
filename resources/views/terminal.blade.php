@@ -276,7 +276,7 @@
       function outputOptions(options) {
           var html="";
           $.each(options, function(i, option) {
-            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class=''onclick_cmd>"+option.cmd+"</a>";
+            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class='onclick_cmd'>"+option.cmd+"</a>";
             html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
           parent.iframe_interface("update_html",["hud-1",html]);
@@ -298,6 +298,8 @@
         //   scrollTop: $(document).height()
         // }, 'fast');
         window.scrollTo(0, getDocHeight_());
+        $(cmdLine_).focus()
+        
       }
 
       function outputImageLink(imageUrl) {

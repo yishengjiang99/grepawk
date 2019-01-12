@@ -34,7 +34,7 @@ class FileController extends Controller
             );
             Log::critical("upload 1 saving file as $filePath");
             $output="$filePath is uploaded";
-            $table=$fs->ls("-t");
+            //$table=$fs->ls("-t");
             $options=$fs->ls("-o");
             $hints= $fs->ls("-j");
         }catch(\Exception $e){
@@ -42,7 +42,7 @@ class FileController extends Controller
         }
 
         $cbstr=json_encode([
-            "table"=>$table,
+          //  "table"=>$table,
             "hints"=>$hints,
             "output"=>$output,
             'options'=>$options,
