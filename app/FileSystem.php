@@ -32,19 +32,19 @@ class FileSystem extends Model {
 
     public static $virtual_fs = [
         'data' => [
-            '_storage' => 'filesystem',
+            '_storage' => 'vfs/node',
             'path'=>'{storage_path}/app/root/data',
         ],
         'data/timeseries' => [
-            '_storage' => 'filesystem',
+            '_storage' => 'vfs/node',
             'path'=>'{base_path}/timeseries'
         ],
         'data/snapshots' => [
-            '_storage' => 'filesystem',
+            '_storage' => 'vfs/node',
             'path'=>'{base_path}/snapshots'
         ],
         'bin' =>[
-            '_storage'=>'filesystem',
+            '_storage'=>'vfs/node',
             'path'=>'{base_path}/bin',
         ],
         'files'=>[
@@ -149,7 +149,6 @@ class FileSystem extends Model {
         $meta_list=[];
         $meta_list[]=['_storage'=>'vfs/root',
                       'os_path'=>storage_path()."/app/root"];
-                      
         $max_ls_depth=5;
         $list_index=0;
         $vfs_children_map=[];
@@ -164,10 +163,9 @@ class FileSystem extends Model {
                 $os_path = str_replace('{base_path}', base_path(), $os_path);
                 $os_path = str_replace('{app_path}', app_path(), $os_path);
                 $os_path = str_replace('{storage_path}', storage_path(),$os_path);
-	
-                $os_path = str_replace('{dropbox_path}', env('DROPBOX_PATH','/home/ubuntu/Dropbox/grepawk'),$os_path);
-
-                $os_path = str_replace('{USERNAME}',$this->username, $os_path);
+		$dropbox_path =  env('DROPBOX_PATH','/home/ubuntu/Dropbox');
+                $os_path = str_replace('{dropbox_path}',$dropbox_path,$os_path);
+                $os_path = str_replace('{USERNAME}', $this->username, $os_path);
                 if($attributes['_storage']==='symlink'){
                     $os_path = str_replace('{ln_target}',$newmeta['ln_target'], $os_path);
                 }
@@ -212,13 +210,12 @@ class FileSystem extends Model {
                 $ancestor_info = $this->get_parent_info($_pwd,$relative_path);
                 $os_path = $ancestor_info[2]['os_path'];
                 while($_path = array_pop($relative_path)){
-                    $os_path.="/$_path";
+                    $os_path.="/".$_path;
                 }
                 $parent_mimetype  =$ancestor_info[1];
-                
                 $my_mimetype="filesystem";
                 if($parent_mimetype=='psql') $my_mimetype='psql_table';
-                $my_meta=['os_path'=>'$os_path','mime_type'=>$my_mimetype];
+                $my_meta=['os_path'=>$os_path,'mime_type'=>$my_mimetype];
                 $this->xpath_map[$_pwd]=[$_pwd,$my_mimetype,$my_meta];  
             }else{
                 list($_,$my_mimetype,$my_meta)=$this->xpath_map[$_pwd];
@@ -236,6 +233,8 @@ class FileSystem extends Model {
             try{            
              switch($storage){
                 case 'vfs/root':
+			break;
+		case 'vfs/node':
                 case 'symlink':
                 case 'html':
                 case 'csv':

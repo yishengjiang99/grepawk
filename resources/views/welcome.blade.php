@@ -37,13 +37,13 @@
 GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.
 </p>
 <p>
-<a href='/fullscreen'>Full Screen HD</a>
-   <div class='col-lg-12' style='margin-top:25px'><iframe id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
+<a href='/fullscreen' target='_blank'>Full Screen HD</a>
+ 
+  <div class='col-lg-12' style='margin-top:25px'><iframe height=0 id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
 </p>
 <h4>Live development stream:</h4>
 <div class=container>
-<h4>Live development stream:</h4>
-<div class='row'>
+ <div class='row'>
   <iframe class=col-md-12 src='/twitch' frameborder=0 scrolling=no width=854 height=480>
   </iframe>
 </div>
