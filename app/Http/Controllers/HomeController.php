@@ -242,8 +242,10 @@ class HomeController extends Controller
                 case 'convert':
                     $file=$argv1;
                     $tablename = $argv2;
-                    $path = $fs->get_system_path($argv1);
-                    exec("cat $path|grep -v '^$'",$ob);
+		
+		    
+                    $os_path = $this->fs->get_os_path()."/$file";
+                    exec("cat $os_path|grep -v '^$'",$ob);
                     $headers=null;
                     $rows = [];
                     $coltypes=[];
