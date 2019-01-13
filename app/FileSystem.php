@@ -40,6 +40,11 @@ class FileSystem extends Model {
             '_storage' => 'vfs/node',
             'path'=>'{base_path}/data',
         ],
+	'sql'=>[
+            '_storage' => 'psql',
+	    '_db_prefix'=>'_',
+            'path'=>'{base_path}/data/sql',
+	],
         'data/timeseries' => [
             '_storage' => 'vfs/node',
             'path'=>'{base_path}/timeseries'
@@ -87,7 +92,6 @@ class FileSystem extends Model {
         ],
     ];
 
-	
    public function load_player_profile($username){
 	$os_path = storage_path()."/app/$username/";
 	if(!file_exists($os_path)){
@@ -104,6 +108,7 @@ class FileSystem extends Model {
 	$file = file_get_contents($profile_path);
 	return json_decode($file);
     }
+
     public function get_parent_info($pwd,&$relative_path=[]){
 	if($pwd=='/root' || $pwd=='root' || $pwd==='') return $this->xpath_map['/root'];
         if(isset($this->xpath_map[$pwd])){
@@ -256,12 +261,7 @@ class FileSystem extends Model {
                             list($filename,$_mimetype)=preg_split('/\:\s+/', $os_info_item);
                             $filename=trim($filename);
                             $_mimetype="ls-".$_mimetype;
-                       
                             $node_path=$parent_path."/".basename($filename);
-                           // echo $node_path;
-                            
-                            //if(in_array($node_path,$nodes)) continue;
-                            
                             $this->xpath_map[$node_path]=[$node_path,$_mimetype,['os_path'=>$os_path.'/'.$filename]];
                             $nodes[]=basename($node_path);
                             $node_types[]=trim($_mimetype);
@@ -269,25 +269,24 @@ class FileSystem extends Model {
                     }else{
                         //echo "skiping $_pwd os query because os_path is none";
                     }
-          
                     break;
                 case 'psql':
                     $parent_path=$_pwd;
-                    $table_ns=str_replace("/", "_", $parent_path)."_f_";
+                    $table_ns="";
                     $sql="select table_name from information_schema.tables where table_schema='public' and table_name like '$table_ns%'";
                     $tables = DB::connection('pgsql') -> select($sql);
                     foreach($tables as $table){
+			if($table->table_name=='users' || $table->table_name=='password_resets') continue;
                         $child_path =str_replace($table_ns,"",$table->table_name);
                         $full_path = $parent_path."/".$child_path;
                         $_meta=['db_name'=>$table->table_name];
-                        $this->xpath_map[$full_path]=[0,'psql_table',$_meta];
+                        $this->xpath_map[$full_path]=[$full_path,'psql_table',$_meta];
                         $nodes[]=basename($full_path);
                         $node_types[]='psql_table';
                     }
-           
                     break;
                 case 'psql_table':
-                    $tablename=str_replace("/", "_", dirname($_pwd))."_f_".basename($_pwd);
+                    $tablename=basename($_pwd);
                     $nodes[]=$tablename;
                     $node_types[]='psql_row';
                     break;
@@ -295,6 +294,7 @@ class FileSystem extends Model {
                     //echo "<br> default, mime = $storage os_query not performed";
                     break;
                 }
+	        session(['xpath'=>$this->xpath_map]);
             }catch(\Exception $e){
                 throw $e;
             }
@@ -345,16 +345,21 @@ class FileSystem extends Model {
 
         $this->vfs = $this->init_vfs();
         $this->vfs_children_map=$this->vfs[3];
-        $this->xpath_map=[];
-        foreach($this->vfs[0] as $i=>$path){
-            $this->xpath_map[$path]=[$path,$this->vfs[1][$i],$this->vfs[2][$i],$i];
-        }
+
+
+	if(session('xpath')){
+		$this->xpath_map = session('xpath');
+	}else{
+	        $this->xpath_map=[];
+        	foreach($this->vfs[0] as $i=>$path){
+            		$this->xpath_map[$path]=[$path,$this->vfs[1][$i],$this->vfs[2][$i],$i];
+        	}
+	}
 
         if(session('pwd')) {
            $this->setPWD(session("pwd"));
-         }else{
+        }else{
             $this->setPWD("/root");
-
          }
     }
     public static function makeInstance($userName = 0) {
