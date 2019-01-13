@@ -11,6 +11,7 @@
     color:white;
   }
   </style>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
