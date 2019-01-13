@@ -229,8 +229,6 @@ class FileSystem extends Model {
             }
             $storage = $my_mimetype;
             $os_path = isset($my_meta['os_path']) ? $my_meta['os_path'] : "none";
-            echo "<br>storage for $_pwd is $storage";
-            echo "<br>LS os_path is $os_path";
             try{            
              switch($storage){
                 case 'vfs/root':

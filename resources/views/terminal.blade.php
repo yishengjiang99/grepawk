@@ -80,6 +80,9 @@
       }
 
       //
+      var tab_scan_index=0;
+      var possible_matched_words=[];
+
       function historyHandler_(e) {
         if (history_.length) {
           if (e.keyCode == 38 || e.keyCode == 40) {
@@ -111,9 +114,18 @@
 
       //
       function processNewCommand_(e) {
-        if (e.keyCode == 9) { // tab
+        if(e.keyCode==32){ //space
+          tab_scan_index=0;
+          possible_matched_words=[];
+        }
+        else if (e.keyCode == 9) { // tab
           e.preventDefault();
           var word_parts = this.value.split(" ");
+          if(this.value[this.value.length-1]===' '){ //starting new words
+            word_parts.push("");
+
+          } 
+
           if(word_parts.length==0) return;
         
           var tab_complete_source;
@@ -128,28 +140,50 @@
           var matched_length=[];
           var max_distance=current_word.length;
           var closest_substring=current_word;
-          tab_complete_source.forEach(function(word,i){
-            console.log(word + " vs "+current_word)
-            if(word.startsWith(current_word)){
-              matched_words.push(word);
-            }
 
-          })
+          if(tab_scan_index>0 && possible_matched_words.length){
+            matched_words=possible_matched_words;
+          }else{
+            tab_complete_source.forEach(function(word,i){
+              console.log(word + " vs "+current_word)
+              if(word.startsWith(current_word)){
+                matched_words.push(word);
+              }
+            })
+          }
+   
           if(matched_words.length==0){
             //outputError("No matched file/folder name");
+            tab_scan_index=0;
+            
           }else if(matched_words.length==1){
+            //("replacing "+ word_parts[word_parts.length-1]+" with "+matched_words[0]);
             word_parts[word_parts.length-1]=matched_words[0];
             var newstr=word_parts.join(" ");
             this.value=newstr+ " ";
+            tab_scan_index=0;
           }else{
-            output(matched_words.join("&emsp;"));
-            return;
-            var suggested_str=this.value.replace(current_word, closest_substring);
-            if($(this).parent().find(".ending").length>0){
-              $(this).parent().find(".ending")[0].html(suggested_str);
-            }else{
-              $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
-            }
+            var output_str ="";
+            matched_words.forEach(function(word,i){
+               if(i===tab_scan_index){
+                output_str+="<b>"+word+"</b>&emsp;";
+               }else{
+                output_str+=word+"&emsp;";
+               }
+
+            })
+            output(output_str);
+            
+            var suggested_str = matched_words[tab_scan_index++];
+            word_parts[word_parts.length-1]=suggested_str;
+            possible_matched_words=matched_words;
+
+            this.value=word_parts.join(" ");
+            // if($(this).parent().find(".ending").length>0){
+            //   $(this).parent().find(".ending")[0].html(suggested_str);
+            // }else{
+            //   $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
+            // }
             //$("#ending").last().html(suggested_str)
           }
           return;

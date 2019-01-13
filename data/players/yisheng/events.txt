@@ -97,3 +97,58 @@
 1547335604,msg_success,ls -l
 1547335612,msg_success,checkin
 1547335613,msg_success,checkin
+1547337469,msg_success,ls
+1547349426,msg_success,ls
+1547349431,msg_success,cd bin
+1547349432,msg_success,ls
+1547349441,msg_success,cat extract_html_links.py
+1547349450,msg_success,cat crontab
+1547349457,msg_success,cat crontab
+1547349469,msg_success,cat crontab
+1547353404,msg_success,checkin
+1547353407,msg_success,ls
+1547353442,msg_success,checkin
+1547353449,msg_success,ls
+1547353466,msg_success,checkin
+1547353478,msg_success,ls
+1547353488,msg_success,checkin
+1547353556,msg_success,checkin
+1547353652,msg_success,checkin
+1547353841,msg_success,checkin
+1547353857,msg_success,checkin
+1547353891,msg_success,checkin
+1547354059,msg_success,checkin
+1547354060,msg_success,ls
+1547354178,msg_success,checkin
+1547354222,msg_success,ls bin_cron
+1547354232,msg_success,checkin
+1547354233,msg_success,ls
+1547354358,msg_success,checkin
+1547354375,msg_success,ls crontab
+1547354563,msg_success,checkin
+1547354581,msg_success,ls bin_cron.save
+1547354607,msg_success,checkin
+1547354608,msg_success,ls
+1547354610,msg_success,cd ..
+1547354614,msg_success,cd data
+1547354619,msg_success,checkin
+1547354620,msg_success,ls
+1547354634,msg_success,ls
+1547354650,msg_success,cd html_links_2019-01-11.csv
+1547354672,msg_success,checkin
+1547354673,msg_success,ls
+1547354689,msg_success,cd html_links_2019-01-12.csv
+1547354799,msg_success,checkin
+1547354804,msg_success,ls csv
+1547354806,msg_success,cd html_index.txt
+1547354810,msg_success,cat html_index.txt
+1547354852,msg_success,checkin
+1547354854,msg_success,ls
+1547354856,msg_success,cat html_index.txt
+1547354859,msg_success,ls
+1547354862,msg_success,cat players
+1547354863,msg_success,ls
+1547354866,msg_success,cd players
+1547354888,msg_success,cd timeseries
+1547354897,msg_success,cat ps_stat_2019-01-11.txt
+1547354910,msg_success,ls
