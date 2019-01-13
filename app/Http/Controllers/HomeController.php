@@ -33,8 +33,7 @@ class Playerr extends Model {
     public function __construct($profile){   
         $this->profile=$profile;
         if(!isset($profile['username'])){
-            dd($profile);
-            throw new \Exception("invalid profile constructror: ".json_encode($profile));
+		$profile['username']='guest';
         }
         $this->username=$profile['username'];
         $this->player_folder = base_path()."/data/players/".$profile['username']."/";
@@ -65,15 +64,15 @@ class Playerr extends Model {
         file_put_contents($this->player_folder."/char.txt",json_encode($this->profile)); 
         session(['profile_json'=>json_encode($this->profile)]);
         session(['profile2'=>$this->profile]);  
-        Cookie::queue('profile',json_encode($this->profile),394223);
+        Cookie::queue('profile3',json_encode($this->profile),394223);
     }
     
     
     public static function checkSession(){
    
-        $profile = session("profile2");
+        $profile = session("profile3");
         if(!$profile){
-            $profile=Cookie::get('profile');
+            $profile=Cookie::get('profile5');
             if($profile){
                 $profile = json_decode($profile,1);
                 $profile['source']='cookie';
@@ -227,14 +226,15 @@ class HomeController extends Controller
         				$output="Logged in as ".$this->username;
         				$cmd="checkin";
         			}
+		case 'stats':
+                            $output.="<p>";
+                            foreach($player_file as $k=>$v){
+                                    $output.="<br>$k: $v";
+                            }
+                            $output.="</p>";
                 case 'checkin':
                     event(new ServerEvent(["output"=>"User ".$this->username." joined"]));
                     $output.="<p>GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.</p>";
-        		    $output.="<p>";
-        		    foreach($player_file as $k=>$v){
-        			    $output.="<br>$k: $v";
-        		    }
-        		    $output.="</p>";
                     $output.="<p>Type ls to get started</p>";
                     $options=$fs->ls('-o');
                     break;
@@ -364,10 +364,8 @@ class HomeController extends Controller
                     }
                     break;
                 case 'select':
-                    $table_ns = str_replace("/", "_", dirname($fs->getPWD()))."_f_".basename($fs->getPWD());
                     $sql=$msg;
-                    if(stripos($sql," $tablename")===false){
-                        $error="Must query tablename ".$tablename;
+                    if(false){
                         break;
                     }else{
                         try{
@@ -462,6 +460,9 @@ class HomeController extends Controller
                         $meta['url']=url()->current()."?msg=$catcmd";
                     }
                     break;
+		case 'fs':
+			$output=implode("<br>",array_keys($fs->xpath_map));
+			break;
         		case 'say':
         		case 'yell':
                     $output="You $cmd ".$msg;
