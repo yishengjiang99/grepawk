@@ -1,3 +1,2 @@
 * * * * * www-data sh /var/www/html/grepawk/bin/snapshot-os.sh 1 >&2 /var/log/cron.log
-10 * * * * yisheng /usr/sbin/screencapture /Users/yisheng/Dropbox/screenshots/screenshot_$(date+%s).jpg
 
