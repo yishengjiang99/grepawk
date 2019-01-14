@@ -1,9 +1,12 @@
 @extends('layouts.app')
 @section('content')
 
-   <div class='col-lg-12' style='margin-top:25px'>
-<a href='/fullscreen' target='_blank'>Full Screen HD</a><br>
-  <iframe id='tty1' src="{{ url('/terminal') }}" height='560px' width='70%' frameborder="0" scrolling="yes"></iframe></div>
+<div class=row>   
+<div class='col-lg-10 offset-lg-2' style='margin-top:2em'>
+  <a href='/fullscreen' target='_blank'>Full Screen HD</a><br>
+  <iframe id='tty1' src="{{ url('/terminal') }}" height='560px' width='70%' frameborder="0" scrolling="yes"></iframe>
+</div>
+</div>
 
 <div id='new_file' class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">

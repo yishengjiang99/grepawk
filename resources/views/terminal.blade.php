@@ -69,7 +69,7 @@
       var prompt_string = "";
 
        window.addEventListener('click', function(e) {
-         	$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
+//         	$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
        }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);

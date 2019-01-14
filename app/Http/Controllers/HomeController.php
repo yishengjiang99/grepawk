@@ -182,8 +182,16 @@ class HomeController extends Controller
         $msgt = explode(" ",$msg);
         $cmd = $msgt[0];
 
-        $argv1= isset($msgt[1]) ? $msgt[1] : 0;
-        $argv2= isset($msgt[2]) ? $msgt[2] : 0;
+
+	$input_options=[]; //flags
+	$argv_start_index=1;
+
+	for($i=1;$i<count($msgt); $i++){
+		if(substr($msgt[$i],0,1)==='-') $input_options[]=$msgt[$i];
+		else $argv_start_index=$i;
+	}
+        $argv1= isset($msgt[$argv_start_index]) ? $msgt[$argv_start_index] : 0;
+        $argv2= isset($msgt[$argv_start_index+1]) ? $msgt[$argv_start_index+1] : 0;
         $output="";
 
 
@@ -342,6 +350,24 @@ header('Content-Length: ' . filesize($os_path));
 			die();
 
 		exit;
+case "head":
+$os_path=$fs->get_os_path();
+$optstr="";
+$argv3=isset($msgt[4]) ? $msgt[4] : false;
+if($argv1==='-n' && $argv2 && $argv3) {
+	$optstr.="-n $argv1";
+	$filename=$argv3;
+}else{
+	$optstr='';
+	$filename=$argv1;
+}
+
+$os_path.="/".$filename;
+$ob=[];
+$cmd="head $optstr $os_path";
+exec($cmd,$ob);
+$output.= "<pre>".implode("\n",$ob)."</pre>";
+break;
                 case "ls":
                     $destination = $argv1 ? $argv1 : "";
                     if($destination){
@@ -349,6 +375,16 @@ header('Content-Length: ' . filesize($os_path));
                     }else{
                         $destination_path = $fs->getPWD();
                     }
+if(count($input_options)>0){
+        $ob=[];
+$output=$fs->get_os_path($destination_path);
+$output.="<br>".$destination_path;
+$optstr=implode(" ",$input_options);
+        exec("cd ".$fs->get_os_path($destination_path)." && ls $optstr",$ob);
+        $output.= "<table><tr>".str_replace("\t","</td><td>",implode("</td></tr><tr><td>",$ob))."</tr></table>";
+$output= "<pre>".implode("\n",$ob)."</pre>";
+        break;
+}
                     $output = "File list of the $destination_path folder <br>";
                     $output.= "OS path is ".$fs->get_os_path($destination_path);
                     $hints = $fs->ls("-j",$destination_path); 
