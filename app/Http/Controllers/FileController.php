@@ -23,6 +23,7 @@ class FileController extends HomeController
         $filetype = $request->input("type");
         $table=[];
         $options=[];
+
         $file=$request->file("file");
         try{
             $cbstr=json_encode([
@@ -31,9 +32,8 @@ class FileController extends HomeController
             echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
             flush();
             ob_flush();   
-            $filePath =$file->storeAs($fs->getPWD(),
-                $file->getClientOriginalName()
-            );
+            $filePath=env('DROPBOX_PATH','/home/ubuntu/Dropbox')."/".$file->getClientOriginalName();
+	move_uploaded_file( $_FILES['file']['tmp_name'], $filePath);
             Log::critical("upload 1 saving file as $filePath");
             $output="$filePath is uploaded";
             //$table=$fs->ls("-t");

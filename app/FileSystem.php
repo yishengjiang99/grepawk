@@ -119,11 +119,23 @@ class FileSystem extends Model {
         }
     }
 
+   public function get_os_path2($filename){
+	$pwd = $this->getPWD();
+        if(substr($pwd, 0, strlen('/root/data')) === '/root/data') {
+
+		return base_path()."/data/".str_replace('/root/data/','',$pwd)."/".$filename;
+        }
+    }
 
     public function get_os_path($pwd="",$append=""){
 
         $pwd = $pwd ? $pwd : $this->getPWD();
- 
+
+        if($pwd==="/root/data") return base_path()."/data";
+
+        if($pwd==="/root/data/snapshots") return base_path()."/data/snapshots";
+
+	if($pwd==="/root/data/timeseries") return base_path()."/data/timeseries";
        
         if(isset($this->xpath_map[$pwd]) &&
             isset($this->xpath_map[$pwd][2]) &&

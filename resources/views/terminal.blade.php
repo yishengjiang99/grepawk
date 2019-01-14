@@ -448,7 +448,8 @@
           };
           input_auto_complete_source = ret.hints.clone();
         }
-        if (ret.options) {
+
+        if (ret.options && ret.options.rows) {
           outputOptions(ret.options.rows);
           option_select = ret.options;
         }

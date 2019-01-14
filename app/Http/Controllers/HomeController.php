@@ -248,9 +248,15 @@ class HomeController extends Controller
                     exec("cat $os_path|grep -v '^$'",$ob);
                     $headers=null;
                     $rows = [];
-                    $coltypes=[];
-                    foreach($ob as $i=>$line){
-                        if($i==0) {
+                    $coltypes=null;
+		    $i=0;
+                    foreach($ob as $ii=>$line){
+try{
+			$line=trim($line);
+                      if(substr($line,0,2)=='##') continue;
+			$i++;
+
+		      if(!$headers || substr($line,0,1) =="#"){
                             $headercsv = str_getcsv($line);
                             foreach($headercsv as $i=>$header){
                                 if($header=="") continue;
@@ -258,7 +264,7 @@ class HomeController extends Controller
                             }
                             continue;
 
-                        }else if($i==1){
+                        }else if($coltypes===null || $i<4){
                             $cols = str_getcsv($line);
                             foreach($cols as $i=>$c){
                                 $coltypes[$i] = is_numeric($c) ? 'decimal' : 'string';
@@ -269,7 +275,10 @@ class HomeController extends Controller
                         foreach($headers as $i=>$header){
                             $rowobj[$header]=$lineparts[$i];
                         }
-                        $rows[]=$rowobj;    
+                        $rows[]=$rowobj;   
+}catch(\Exception $e){
+	$error.="<br>line '$line' could not be processed";
+} 
                     }
 
                     $header_list=[];
@@ -277,12 +286,23 @@ class HomeController extends Controller
                         $header_list[]=$header." ".$coltypes[$i];
                     }
                     $full_table_name=$fs->create_db_table($tablename,$header_list);
+                    $sql="select table_name from information_schema.tables where table_schema='public' and table_name='full_table_name'";
+
+                    $tables = DB::connection('pgsql') -> select($sql);
+if(count($tables)){
+	$error="$full_table_name exists";break;
+}
                     $row_inserted=0;
                     foreach($rows as $row){
                         $row['created_at']=new \DateTime();
+try{
                         $insertSuccessful=DB::table($full_table_name)->insert($row);
+}catch(\Exception $e){
+        $error.="<br>row ".json_encode($row)." coud not be inserted";
+	$insertSuccessful=false;
+}
                         if(!$insertSuccessful){
-                            $errors.="<br>Error inserting ".json_encode($row).".";
+                            $error.="<br>Error inserting ".json_encode($row).".";
                         }else{
                             $row_inserted++;
                         }
@@ -290,6 +310,15 @@ class HomeController extends Controller
                     $output = "Inserted $row_inserted rows into table $full_table_name";
                     $table = $fs->ls("-t");
                     break;
+			
+case "mv":
+
+$os_path=$fs->get_os_path2($argv1);
+$topath=$fs->get_os_path2($argv2);
+$ret=rename($os_path,$topath);
+$output=json_encode($ret);
+
+break;
                 case "get":
                     $os_path=$fs->get_os_path()."/".$argv1;
 

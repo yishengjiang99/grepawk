@@ -3,7 +3,7 @@
 
    <div class='col-lg-12' style='margin-top:25px'>
 <a href='/fullscreen' target='_blank'>Full Screen HD</a><br>
-  <iframe id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
+  <iframe id='tty1' src="{{ url('/terminal') }}" height='560px' width='70%' frameborder="0" scrolling="yes"></iframe></div>
 
 <div id='new_file' class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
