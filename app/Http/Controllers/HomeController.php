@@ -26,9 +26,9 @@ use App\Events\ServerEvent;
 
 class Playerr extends Model {
     public static $os_base_path ="{BASE_PATH}/data/players/{USERNAME}";
-    private $profile;
-    private $player_folder;
-    private $username;
+    public $profile;
+    public $player_folder;
+    public $username;
     
     public function __construct($profile){   
         $this->profile=$profile;
@@ -118,14 +118,14 @@ class HomeController extends Controller
 
     }
 
-    private $cookies=[];
-    private $username="guest";
-    private $player_file;
-    private $is_admin=false;
-    private $fs;
+    public $cookies=[];
+    public $username="guest";
+    public $player_file;
+    public $is_admin=false;
+    public $fs;
     
 
-    // private function saveSession($profile){
+    // public function saveSession($profile){
     //     session(['profile'=>$profile]);  
     //     Cookie::queue('profile',json_encode($profile),394223);
     //     Playerr::write_profile($profile);
@@ -134,8 +134,8 @@ class HomeController extends Controller
 
 
     
-    private $playerObj; // App/Playerr
-    private function checkSession(){
+    public $playerObj; // App/Playerr
+    public function checkSession(){
         $playerObj=Playerr::checkSession();
         $this->playerObj = $playerObj;
         $this->player_file=$playerObj->getProfile();
@@ -291,12 +291,23 @@ class HomeController extends Controller
                     $table = $fs->ls("-t");
                     break;
                 case "get":
-                    $mimetype = $argv2 ? $argv2 : 'File/File';
-                    header("Content-Type: $mimetype");
                     $os_path=$fs->get_os_path()."/".$argv1;
-                    ob_end_clean_all();
-                    echo readFile($os_path);
 
+                    $mimetype =mime_content_type($os_path);
+header('Content-Description: File Transfer');
+header('Content-Type: application/octet-stream');
+header('Content-Transfer-Encoding: binary');
+header('Connection: Keep-Alive');
+header('Expires: 0');
+header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+header('Pragma: public');
+header('Content-Length: ' . filesize($os_path));
+                    $os_path=$fs->get_os_path()."/".$argv1;
+		    header("Content-Disposition: attachment; filename='$argv1'");
+                    echo readFile($os_path);
+			die();
+
+		exit;
                 case "ls":
                     $destination = $argv1 ? $argv1 : "";
                     if($destination){

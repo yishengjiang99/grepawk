@@ -9,9 +9,9 @@ use Storage;
 class FileController extends HomeController
 {
     //
+
     public function upload(Request $request){
 	$this->checkSession();
-
         Log::critical("upload1 api called");
         $fs=$this->fs;
 
@@ -58,7 +58,7 @@ class FileController extends HomeController
     }
     public function uploadCSV(Request $request){
         Log::critical("upload api called");
-        $fs=FileSystem::getInstance();
+        $fs=$this->fs;
 
         header( 'Content-type: text/html; charset=utf-8' );
         ob_start();

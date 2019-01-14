@@ -69,7 +69,7 @@
       var prompt_string = "";
 
        window.addEventListener('click', function(e) {
-         //$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
+         	$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
        }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
@@ -241,13 +241,17 @@
             formObj.attr("action", "/files/upload?type=" + file_type);
             outputHtml(formObj.wrap('<div>').parent().html())
             break;
+	  case 'get':
+               var fullcmd = cmd + " " + args.join(" ");
+
+		window.open("/stdin?msg=" + fullcmd);
           default:
             if (cmd) {
               args.map(function(a){
                 return encodeURIComponent(a)
               })
               var fullcmd = cmd + " " + args.join(" ");
-
+		
               $.get("/stdin?msg=" + fullcmd, function(ret,status,xhr) {
                 var ct = xhr.getResponseHeader("content-type") || "";
                 if(ct.indexOf('image')>-1){
@@ -275,7 +279,7 @@
           output("Sending api request for " + prompt_context + " with data: " + JSON.stringify(prompt_loop_answers));
           prompt_loop_mode = false;
           updatePrompt();
-          $.getJSON("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function(ret) {
+          $.get("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function(ret) {
             prompt_loop_answers = [];
             prompt_context = "";
             prompt_string = "";
