@@ -189,6 +189,11 @@
           }
           return;
         } else if (e.keyCode == 13) { // enter
+          if(this.value[this.value.length-1]==="\\"){
+            $(this).parent().append("<textarea id=newline_tf></textarea>");
+            $("#newline_tf").focus();
+            return;
+          }
           // Save shell history.
           if (this.value) {
             history_[history_.length] = this.value;
@@ -539,7 +544,8 @@
     <output></output>
     <div id="input-line" class="input-line">
       <div class="prompt"></div>
-      <div>
+      <br>
+      <div style='display:block'>
         <input size=100 class="cmdline" autofocus />
       </div>
     </div>

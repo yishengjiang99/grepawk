@@ -197,9 +197,14 @@ class HomeController extends Controller
         echo "<br>std msg: $msg";
         ob_end_clean_all();
         ob_start();
-	    $cookies=[];
+  	    $cookies=[];
         try{
             switch($cmd){
+      
+            case 'quests':
+              $output.="<li> Upload an csv +10xp";
+              $output.="<li> Upload an image +10 xp";
+              break;
         		case 'cookie': 
         			$output = json_encode($this->player_file);
         			break;
