@@ -1,5 +1,9 @@
 const fs = require('fs');
 var path = require("path");
+var mime = require('mime-types');
+
+
+
 const dirname = path.resolve(__dirname);
 const base_path = path.dirname(dirname);
 const data_path = base_path+ "/data";
@@ -14,13 +18,24 @@ http.createServer(function(req, res) {
   // The filename is simple the local directory and tacks on the requested url
   var filename = __dirname+req.url;
 
+
+  var stat = fileSystem.statSync(req.url);
+  res.append("getting file meta");
+
+  res.writeHead(200,{
+    'Content-Type':mime.contentType(filename),
+    'Content-Length':stat.size,
+  });
+  res.append("Starting file read");
+
   // This line opens the file as a readable stream
   var readStream = fs.createReadStream(filename);
-
   // This will wait until we know the readable stream is actually valid before piping
   readStream.on('open', function () {
     // This just pipes the read stream to the response object (which goes to the client)
-    readStream.pipe(res);
+    res.append("File stream open read");
+    res.append('hello') 
+   readStream.pipe(res);
   });
 
   // This catches any errors that happen while creating the readable stream (usually invalid names)
@@ -30,34 +45,3 @@ http.createServer(function(req, res) {
 }).listen(8080);
 
 
-
-
-/*
-fs.readdir(data_path,{withFileTypes:true},(err,files)=>{
-  console.log(files);
-  files.forEach(function(file,index){
-    console.log("%s, %s, %s,%s",index,file.isBlockDevice(),file.name,file.isDirectory())
-  })
-})
-
- 
-fs.open(data_path+"/wow_sample.csv",'r',(err,fd)=>{
-  if(err) throw err;
-  fs.fstat(fd,(err,stat)=>{
-    console.log(`stats: ${JSON.stringify(stat)}`);
-    if(err) throw err;
-    fs.close(fd,(err)=>{
-      if(err) throw err;
-    });
-  });
-});
-fs.rename('/tmp/hello', '/tmp/world', (err) => {
-  if (err) throw err;
-  fs.stat('/tmp/world', (err, stats) => {
-    if (err) throw err;
-    console.log(`stats: ${JSON.stringify(stats)}`);
-  });
-
-  console.log('renamed complete');
-});
-*/

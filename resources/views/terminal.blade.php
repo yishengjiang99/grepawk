@@ -234,7 +234,27 @@
         }
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
+        var argsstr = args.join(' ');
         switch (cmd) {
+          case 'find':
+         
+            $.ajax({
+              url:"{{!!env('JSONP_URL','http://stdin.grepawk.net')}}/ls",
+              jsonp:'callback',
+               data:{
+                 'msg':argsstr,
+               },
+              dataType:'jsonp',
+               success:function(ret){
+                _parse_api_response(ret);
+              },      
+              error: function (xhr, ajaxOptions, thrownError) {
+                alert(xhr.status);
+                alert(thrownError);
+              }
+            });
+            
+            break;
           case 'new':
             parent.iframe_interface("new");
             //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())

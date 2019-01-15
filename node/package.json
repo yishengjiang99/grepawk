@@ -9,7 +9,8 @@
   "author": "Yisheng Jiang",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "mime-types": "^2.1.21"
   },
   "devDependencies": {
     "eslint": "^5.12.0"
