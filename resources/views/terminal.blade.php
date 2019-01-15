@@ -265,10 +265,10 @@
             formObj.attr("action", "/files/upload?type=" + file_type);
             outputHtml(formObj.wrap('<div>').parent().html())
             break;
-	  case 'get':
-               var fullcmd = cmd + " " + args.join(" ");
-
-		window.open("/stdin?msg=" + fullcmd);
+	        case 'get':
+            var fullcmd = cmd + " " + args.join(" ");
+            window.open("/stdin?msg=" + fullcmd);
+            break;
           default:
             if (cmd) {
               args.map(function(a){
