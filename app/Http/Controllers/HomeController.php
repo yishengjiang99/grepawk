@@ -208,7 +208,12 @@ class HomeController extends Controller
   	    $cookies=[];
         try{
             switch($cmd){
-      
+case "gitpull":
+
+	exec("cd ".base_path()." && git pull",$ob);
+	$output.=implode("<br>",$ob);
+
+break;      
             case 'quests':
               $output.="<li> Upload an csv +10xp";
               $output.="<li> Upload an image +10 xp";

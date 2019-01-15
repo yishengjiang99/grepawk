@@ -237,9 +237,9 @@
         var argsstr = args.join(' ');
         switch (cmd) {
           case 'find':
-         
+         	
             $.ajax({
-              url:"http://stdin.grepawk.net/ls",
+              url:"http://fs.grepawk.net/ls",
               jsonp:'callback',
                data:{
                  'msg':argsstr,
@@ -249,8 +249,8 @@
                 _parse_api_response(ret);
               },      
               error: function (xhr, ajaxOptions, thrownError) {
-                alert(xhr.status);
-                alert(thrownError);
+		
+                alert(JSON.stringify(xhr));
               }
             });
             break;
