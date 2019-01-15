@@ -239,7 +239,7 @@
           case 'find':
          
             $.ajax({
-              url:"{{!!env('JSONP_URL','http://stdin.grepawk.net')}}/ls",
+              url:"http://stdin.grepawk.net/ls",
               jsonp:'callback',
                data:{
                  'msg':argsstr,
@@ -253,7 +253,6 @@
                 alert(thrownError);
               }
             });
-            
             break;
           case 'new':
             parent.iframe_interface("new");
