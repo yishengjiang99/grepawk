@@ -27,6 +27,7 @@
     }
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
+    var node_url ="{{env('jsonp_url','http://fs.grepawk.net')}}";
     var util = util || {};
     util.toArray = function(list) {
       return Array.prototype.slice.call(list || [], 0);
@@ -83,7 +84,7 @@
       //
       var tab_scan_index=0;
       var possible_matched_words=[];
-
+      var tab_complete_last_word='';
       function historyHandler_(e) {
         if (history_.length) {
           if (e.keyCode == 38 || e.keyCode == 40) {
@@ -124,7 +125,6 @@
           var word_parts = this.value.split(" ");
           if(this.value[this.value.length-1]===' '){ //starting new words
             word_parts.push("");
-
           } 
 
           if(word_parts.length==0) return;
@@ -142,7 +142,7 @@
           var max_distance=current_word.length;
           var closest_substring=current_word;
 
-          if(tab_scan_index>0 && possible_matched_words.length){
+          if(tab_scan_index>0 && possible_matched_words.length && tab_complete_last_word==current_word){
             matched_words=possible_matched_words;
           }else{
             tab_complete_source.forEach(function(word,i){
@@ -178,6 +178,7 @@
             var suggested_str = matched_words[tab_scan_index++];
             word_parts[word_parts.length-1]=suggested_str;
             possible_matched_words=matched_words;
+            tab_complete_last_word=this.value;
 
             this.value=word_parts.join(" ");
             // if($(this).parent().find(".ending").length>0){
@@ -239,20 +240,23 @@
           case 'find':
          	
             $.ajax({
-              url:"http://fs.grepawk.net/ls",
+              url:node_url+"/ls",
               jsonp:'callback',
                data:{
                  'msg':argsstr,
                },
               dataType:'jsonp',
                success:function(ret){
+                // alert(JSON.stringify(ret));
                 _parse_api_response(ret);
               },      
               error: function (xhr, ajaxOptions, thrownError) {
-		
                 alert(JSON.stringify(xhr));
               }
             });
+            break;
+          case 'download':
+            open_dl_iframe(node_url+"/cat/?msg="+argsstr+"&format="+cmd);
             break;
           case 'new':
             parent.iframe_interface("new");

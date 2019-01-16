@@ -22,9 +22,12 @@ http.createServer(function(req, res) {
   var stat = fileSystem.statSync(req.url);
   res.append("getting file meta");
 
+
+
   res.writeHead(200,{
     'Content-Type':mime.contentType(filename),
     'Content-Length':stat.size,
+    'Content-Disposition':'attachment; filename="'+filename+'"',
   });
   res.append("Starting file read");
 
