@@ -1,7 +1,5 @@
 var express = require('express');
 var app = express();
-var indexRouter = require('./routes/index');
-app.use('/html', indexRouter);
 
 
 
@@ -66,7 +64,9 @@ var init=function(){
 // console.log(fs_cache);
 // console.log(filename_to_path_map);
 
-var ls=function(filename,max_level=10,res=null){
+var ls=function(filename,max_level,res){
+  max_level=max_level||10;
+
   filename_to_path_map=init();
   filename=filename.toLowerCase();
   var file_list=[];
@@ -97,6 +97,7 @@ var ls=function(filename,max_level=10,res=null){
     var _file=filename_to_path_map[filename];
     _file['filename']=filename;
     _file['cmd']="download "+filename;
+  
     file_list_objects.push(_file);
   })
   return file_list_objects;
@@ -124,6 +125,32 @@ var send_jsonp_output = function(outputstr,req,res){
 
 
 const mime = require('mime-types');
+
+
+app.get('/cat',function(req,res){
+  filename_to_path_map=init();
+  var format = req.query.format || 'jsonp';
+
+  filename=req.query.msg || "";
+
+  if(!filename) res.end("usage: cat {filename}");
+
+
+  var _file = filename_to_path_map[filename];
+
+  if (_file.is_dir) res.end("usage: cd {dirname");
+
+  var os_path = _file.path;
+  var spawn = require('child_process').spawn,
+  cat = spawn("cat "+os_path,[]).on('error', function( err ){console.log(err) })
+;
+  res.send("data: starting "+os_path);
+
+  cat.stdout.on("data", function (data) {
+    res.send("data: ".data.toString());
+  });
+ res.send("data:");
+});
 
 app.get('/download',function(req,res){
   filename_to_path_map=init();
@@ -198,11 +225,6 @@ app.get('/ls', function(req, res){
   }
 });
 
-
-// app.get('/stream/',function(req,res){
-  
-// })
-var indexRouter = require('./routes/index');
 
 
 app.listen(3000);

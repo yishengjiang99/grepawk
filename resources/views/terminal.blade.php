@@ -255,8 +255,16 @@
               }
             });
             break;
+          case 'cat':
+            
+                             
+            var source = new EventSource(node_url+"/cat/?msg="+argsstr);
+            source.addEventListener("message",function(event){
+              output(event.data)
+            },false);
+            break;
           case 'download':
-            open_dl_iframe(node_url+"/cat/?msg="+argsstr+"&format="+cmd);
+            open_dl_iframe(node_url+"/download/?msg="+argsstr+"&format="+cmd);
             break;
           case 'new':
             parent.iframe_interface("new");
