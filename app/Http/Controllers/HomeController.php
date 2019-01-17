@@ -208,17 +208,21 @@ class HomeController extends Controller
   	    $cookies=[];
         try{
             switch($cmd){
-case "gitpull":
-
-	exec("cd ".base_path()." && git pull",$ob);
-	$output.=implode("<br>",$ob);
-
-break;      
+            case "gitpull":
+                exec("cd ".base_path()." && git pull",$ob);
+                $output.=implode("<br>",$ob);
+                break;      
             case 'quests':
               $output.="<li> Upload an csv +10xp";
               $output.="<li> Upload an image +10 xp";
               break;
-        		case 'cookie': 
+             case 'tail':
+                if(in_array("-f",$input_options) && $argv1){
+                    $url = env("jsonp_url",'http://fs.grepawk.net')."/tailf?msg=$argv1";
+                    header("Location: $url");
+                    exit();
+                }
+        	 case 'cookie': 
         			$output = json_encode($this->player_file);
         			break;
         		case 'debug':

@@ -1,2 +1,0 @@
-* * * * * www-data sh /var/www/html/grepawk/bin/snapshot-os.sh 1 >&2 /var/log/cron.log
-

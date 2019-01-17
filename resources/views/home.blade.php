@@ -37,7 +37,6 @@
     </div>
   </div>
 </div>
-    <iframe id="pusher_listener" src='/pusher' height="0" width="0" frameborder="0" scrolling="yes"></iframe>
 
 
 <script>
