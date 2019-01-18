@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Events\ServerEvent;
 use App\FileSystem;
 use Cookie;
+use Illuminate\ Database\ Eloquent\ Model;
 use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
