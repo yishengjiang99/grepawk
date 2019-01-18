@@ -194,7 +194,6 @@ class HomeController extends Controller
         $argv2= isset($msgt[$argv_start_index+1]) ? $msgt[$argv_start_index+1] : 0;
         $output="";
 
-
         $error="";
         $hints=null;
         $pwd = $fs->getPWD();
@@ -248,6 +247,7 @@ class HomeController extends Controller
         				$output="Logged in as ".$this->username;
         				$cmd="checkin";
         			}
+    case 'whoami':
 		case 'stats':
                             $output.="<p>";
                             foreach($player_file as $k=>$v){
