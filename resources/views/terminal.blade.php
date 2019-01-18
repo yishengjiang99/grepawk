@@ -16,6 +16,8 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
+   <script src="https://amp.ai/libs/173cb218d12862ef.js"></script>
+
   <script>
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
@@ -236,14 +238,16 @@
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
         var argsstr = args.join(' ');
+        amp.observe("send_cmd", { cmd: cmd, args:argsstr});
+
         switch (cmd) {
           case 'find':
-         	
             $.ajax({
               url:node_url+"/ls",
               jsonp:'callback',
                data:{
                  'msg':argsstr,
+                 'format':'jsonp'
                },
               dataType:'jsonp',
                success:function(ret){
@@ -255,14 +259,50 @@
               }
             });
             break;
-          case 'cat':
             
-                             
-            var source = new EventSource(node_url+"/cat/?msg="+argsstr);
-            source.addEventListener("message",function(event){
-              output(event.data)
-            },false);
-            break;
+          case 'tail':
+            if(args.length<1){
+              outputError("Usage: tail [options] {filename}");
+              break;
+            }
+            if(args[0]=="-f"){
+              if(args.length<2){
+                outputError("Usage: tail -f {filename}")
+                break;
+              }else{
+                output("Tail -f on "+args[1]);
+                var eventSource = new EventSource(node_url+"/tailf/?msg="+args[1]);
+                eventSource.addEventListener('message',function(e){
+                  if(e.data=='done'){
+                    debugger;
+                    eventSource.close();
+                  }
+                  output("<br>"+e.data);
+                 // debugger;
+                },false);
+                eventSource.addEventListener('open', function(e) {
+                  if (e.readyState == EventSource.CLOSED) {
+                    output("Connection was opened")
+                  }
+                }, false)
+
+                eventSource.addEventListener('error', function(e) {
+                  if (e.readyState == EventSource.CLOSED) {
+                    output("Connection was closed")
+                  }
+                }, false)
+                // eventSource.addEventListener('error',function(e){
+                //   outputError(e.data);
+                //   debugger;
+                // });
+                // eventSource.addEventListener('done',function(e){
+                //     alert('done');
+                //     debugger;
+                // });
+                break;
+              }
+            }
+            //fall through in general case
           case 'download':
             open_dl_iframe(node_url+"/download/?msg="+argsstr+"&format="+cmd);
             break;
@@ -366,7 +406,9 @@
         // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
-
+      function outputAppend(data){
+        $(output_).find("p").last().append(data);
+      }
       function output(html) {
         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
         // $('html, body').animate({
@@ -566,6 +608,9 @@
       });
       window.terminal=term;
     });
+    $(window).unload(function(ret){
+        amp.observe("page_leave");
+    });
   </script>
 </head>
 
@@ -575,9 +620,8 @@
     <output></output>
     <div id="input-line" class="input-line">
       <div class="prompt"></div>
-      <br>
       <div style='display:block'>
-        $<input size=100 class="cmdline" style='background-color:black; color:white' autofocus />
+        <input size=100 class="cmdline input-line" autofocus />
       </div>
     </div>
   </div>

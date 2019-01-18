@@ -7,10 +7,8 @@ var fs = require('fs');
 var path = require('path');
 
 
-
-
 const dirname = path.resolve(__dirname);
-const base_path = path.dirname(dirname);
+const base_path = path.dirname(dirname)+"/";
 const data_path = base_path+ "/data/";
 const bin_path = base_path + "/bin/";
 const storage_path = base_path + "/storage/app/";
@@ -45,12 +43,9 @@ var g_filename_to_path_map;
 
 var init=function(){
   if(g_filename_to_path_map) return g_filename_to_path_map;
-
   g_filename_to_path_map={};
-  fs_cache=walkSync(data_path,fs_cache);
-  fs_cache=walkSync(storage_path,fs_cache);
-  fs_cache=walkSync(bin_path,fs_cache);
-  fs_cache=walkSync(logs_path,fs_cache);
+  fs_cache=walkSync(base_path,fs_cache);
+
   fs_cache.forEach(function(file){
     filename= file.filename in g_filename_to_path_map ? file.filename+".2" : file.filename;
     console.log("adding "+filename);
@@ -65,8 +60,10 @@ var init=function(){
 // console.log(filename_to_path_map);
 
 var ls=function(filename,max_level,res){
-  max_level=max_level||10;
 
+    
+  filename=filename||"";
+  max_level=max_level||10;
   filename_to_path_map=init();
   filename=filename.toLowerCase();
   var file_list=[];
