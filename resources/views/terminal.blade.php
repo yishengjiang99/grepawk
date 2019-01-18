@@ -620,7 +620,6 @@
     <output></output>
     <div id="input-line" class="input-line">
       <div class="prompt"></div>
-      <br>
       <div style='display:block'>
         <input size=100 class="cmdline input-line" autofocus />
       </div>
