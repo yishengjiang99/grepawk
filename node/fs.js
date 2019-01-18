@@ -1,50 +1,128 @@
+const net = require('net');
 const fs = require('fs');
-var path = require("path");
-var mime = require('mime-types');
-
-
-
+var path = require('path');
 const dirname = path.resolve(__dirname);
-const base_path = path.dirname(dirname);
-const data_path = base_path+ "/data";
-console.log("base path is %s",base_path);
+const base_path = path.dirname(dirname)+"/";
 
 
+const appDirectory = fs.realpathSync(process.cwd());
 
-var rd=fs.createReadStream(data_path+"/wow_sample.csv")
-var http = require('http');
+//post csv
 
-http.createServer(function(req, res) {
-  // The filename is simple the local directory and tacks on the requested url
-  var filename = __dirname+req.url;
-
-
-  var stat = fileSystem.statSync(req.url);
-  res.append("getting file meta");
-
-
-
-  res.writeHead(200,{
-    'Content-Type':mime.contentType(filename),
-    'Content-Length':stat.size,
-    'Content-Disposition':'attachment; filename="'+filename+'"',
+var userProfiles={};
+// List all files in a directory in Node.js recursively in a synchronous fashion
+var walkSync = function(dir,filelist,level) {
+  var fs = fs || require('fs'),
+      files = fs.readdirSync(dir);
+       
+  level = level || 0;
+  filelist = filelist || [];
+  filename = path.basename(dir);
+  filelist.push({'level':level,'is_dir':1, 'filename':filename,'path':dir});
+  files.forEach(function(file) {
+    var stat = fs.statSync(dir + file);
+    if (stat.isDirectory()) {
+      filelist = walkSync(dir + file + '/', filelist,level+1);
+    //  filelist.push({'path':dir,'is_dir':true, 'size':stat.size,'filename':file,'created':stat.birthtimeMs,'updated':stat.atimeMs});
+      filelist.push({'level':level+1,'filename':file,'path':dir+file,'is_dir':1,'size':stat.size,'created':new Date(stat.birthtimeMs),'updated':new Date(stat.atimeMs)});
+    }
+    else {
+      filelist.push({'level':level+1,'filename':file,'path':dir+file,'is_dir':0,'size':stat.size,'created':new Date(stat.birthtimeMs),'updated':new Date(stat.atimeMs)});
+    }
   });
-  res.append("Starting file read");
+  return filelist;
+}
 
-  // This line opens the file as a readable stream
-  var readStream = fs.createReadStream(filename);
-  // This will wait until we know the readable stream is actually valid before piping
-  readStream.on('open', function () {
-    // This just pipes the read stream to the response object (which goes to the client)
-    res.append("File stream open read");
-    res.append('hello') 
-   readStream.pipe(res);
+
+var fs_cache=[];
+var g_filename_to_path_map=false;
+
+var init=function(){//
+  if(g_filename_to_path_map) return g_filename_to_path_map;
+  g_filename_to_path_map={};
+  //fs_cache=walkSync(data_path,fs_cache);
+  fs_cache=walkSync(base_path,fs_cache);
+  fs_cache.forEach(function(file){
+    filename= file.filename in g_filename_to_path_map ? file.filename+".2" : file.filename;
+    console.log("adding "+filename);
+    g_filename_to_path_map[filename]=file;
   });
+  return g_filename_to_path_map;
+}
 
-  // This catches any errors that happen while creating the readable stream (usually invalid names)
-  readStream.on('error', function(err) {
-    res.end(err);
+var ls=function(filename,max_level){
+  filename=filename||"";
+  max_level=max_level||10;
+
+  filename_to_path_map=init();
+
+  filename=filename.toLowerCase();
+
+  var file_list=[];
+  var max_level=max_level;
+  Object.keys(filename_to_path_map).map(function(file_name,index){   
+
+    var _file=filename_to_path_map[file_name];
+    if(!_file) return;
+    if(_file.filename.indexOf(filename)>-1 || _file.path.indexOf(filename)>-1){
+
+      if(_file.level < max_level+1){
+        file_list.push(file_name);
+      }
+    }
+  })
+}
+
+var ls_output=function(file_list){
+  var retstr="";
+  file_list.forEach(function(file_name,index){
+    var fileobj = filename_to_path_map[file_name];
+    if(fileobj['is_dir']){
+      retstr+="<span style='color:blue;margin-right:20px'><b>"+file_name+"</b></span>";
+    }else{
+      retstr+="<span style='color:white'>"+file_name+"</span><br>";
+    }
   });
-}).listen(8080);
+  return retstr;
+}
 
 
+
+init();
+console.log("wrirting ls");
+ls();
+
+const server = net.createServer((socket) => {
+  socket.write("Hello to file server!\n");
+  socket.setEncoding("utf-8");
+
+  var remote_address=socket.address().host;
+  console.log("connection from "+remote_address);
+  userProfiles[remote_address]={
+    'profile':"aa"
+  };
+
+  socket.on("data",function(data){
+    data = data.trim();
+    if(!data) return;
+    if(data.charAt(0)=='#') return; 
+    if(data==="ls"){
+      var file_list =ls();
+      var fileout=ls_output(file_list);
+      socket.write(fileout);
+
+    }
+
+
+    //stream.on("data",(chunk)=>socket.write(chunk.toString('ascii')));
+   // stream.pipe(socket);
+   // data.pipe(fs);
+  });
+}).on('error', (err) => {
+  throw err;
+});
+
+// grab an arbitrary unused port.
+server.listen(4010);
+
+//
