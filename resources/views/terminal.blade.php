@@ -577,7 +577,7 @@
       <div class="prompt"></div>
       <br>
       <div style='display:block'>
-        <input size=100 class="cmdline" autofocus />
+        $<input size=100 class="cmdline" style='background-color:black; color:white' autofocus />
       </div>
     </div>
   </div>
