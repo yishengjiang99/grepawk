@@ -622,7 +622,7 @@
       <div class="prompt"></div>
       <br>
       <div style='display:block'>
-        <input size=100 class="cmdline" autofocus />
+        <input size=100 class="cmdline input-line" autofocus />
       </div>
     </div>
   </div>
