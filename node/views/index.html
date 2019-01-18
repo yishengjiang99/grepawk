@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>grepawk</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="gic0czvvHWqyEZ6vRzuhw75oUlYJywdjcXpxUsSE">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.js" crossorigin="anonymous"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+</head>
+<body>
+<!-- As a link -->
+<nav class="navbar navbar-light bg-light navbar-expand-lg">
+    <a class="navbar-brand" href="#">GrepAwk.net</a>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul id='nav-bar-right-list' class="navbar-nav mr-auto">
+
+        </ul>
+        <ul class="navbar-nav">
+                        <li style='margin-left:25px' class="nav-item">
+                <a class="nav-link" href="/login">Login</a>
+            </li>
+                                <li style='margin-left:25px' class="nav-item">
+                    <a class="nav-link" href="/register">Register</a>
+                </li>
+                                    </ul>
+    </div>
+</nav>
+<main role='main'>
+
+<div class=row>   
+<div class='col-lg-10 offset-lg-2' style='margin-top:2em'>
+  <a href='/fullscreen' target='_blank'>Full Screen HD</a><br>
+  <iframe id='tty1' src="/terminal" height='560px' width='70%' frameborder="0" scrolling="yes"></iframe>
+</div>
+</div>
+
+<div id='new_file' class="modal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">New File</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+         <form id='new_file_form'>
+         <input type="hidden" name="_token" value="gic0czvvHWqyEZ6vRzuhw75oUlYJywdjcXpxUsSE">         <div class="form-group">
+            <label for="file-name-input">File Name</label>
+            <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
+         </div>
+         <div class="form-group">
+            <label for="file-content-input">File Content</label>
+            <TextArea cols=80 rows=15 type="text" name='filecontent' class="form-control" id="file-content-input" placeholder="Another input"></TextArea>
+         </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" id='new-file-submit'>Save changes</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+    <iframe id="pusher_listener" src='/pusher' height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+
+
+<script>
+ function iframe_interface(cmd,args){
+    if(typeof cmd==='object' && cmd.update){
+        tty1.contentWindow.iframe_interface(cmd.update);
+    }
+    if(cmd=="new"){
+        $("#new_file").show();
+    }
+    if(cmd=="update_options"){
+       $("#hud-options").html(args);
+    }
+    if(cmd=='update_html'){
+      $("#"+args[0]).html(args[1]);
+    }
+    if(cmd=='debug'){
+       $("#debugger").append("<p>"+args+"<p>");
+    }
+ }
+
+ $(document).ready(function(){
+   window.tty1 = document.getElementById('tty1');
+   $("#new-file-submit").click(function(e){
+      var postdata=$("#new_file_form").serialize();
+      $.post("/files/new",postdata,function(retObj){
+         tty1.contentWindow.iframe_interface(retObj);
+         $("#new_file").hide();
+
+      })
+   });
+   $("body").on('click', '.onclick_cmd', function(e) {
+        var _cmd =$(this).attr('cmd');
+        //output("exec cmd from click: "+_cmd)
+        tty1.contentWindow.terminal.cmd_string(_cmd);
+        e.preventDefault();
+      });
+ })
+</script>
+</main>
+</body>
+</html>
