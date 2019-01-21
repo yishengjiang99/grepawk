@@ -1,5 +1,4 @@
 <html>
-
 <head>
   <title>cmd</title>
   <link href="/css/cmd.css" rel="stylesheet">
