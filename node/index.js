@@ -1,8 +1,5 @@
 var express = require('express');
 var app = express();
-
-
-
 var fs = require('fs');
 var path = require('path');
 
@@ -11,7 +8,6 @@ const dirname = path.resolve(__dirname);
 const base_path = path.dirname(dirname)+"/";
 const data_path = base_path+ "/data/";
 const bin_path = base_path + "/bin/";
-const storage_path = base_path + "/storage/app/";
 const logs_path = base_path + "/storage/logs/";
 
 
@@ -44,8 +40,9 @@ var g_filename_to_path_map;
 var init=function(){
   if(g_filename_to_path_map) return g_filename_to_path_map;
   g_filename_to_path_map={};
-  fs_cache=walkSync(base_path,fs_cache);
-
+  fs_cache=walkSync(data_path,fs_cache);
+  fs_cache=walkSync(bin_path,fs_cache);
+  fs_cache=walkSync(logs_path,fs_cache);
   fs_cache.forEach(function(file){
     filename= file.filename in g_filename_to_path_map ? file.filename+".2" : file.filename;
     console.log("adding "+filename);
