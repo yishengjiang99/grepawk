@@ -573,7 +573,9 @@
       term.init();
       term.cmd_string("checkin");
 
-      var socket = io(node_url);
+      var socket = io(node_url,{
+        'transports':'websocket'
+      });
       socket.on("Connected", function(){
         term.output_ext("Connected to io server");
       })
