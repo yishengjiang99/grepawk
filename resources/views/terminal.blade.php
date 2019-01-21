@@ -379,7 +379,6 @@
         // }, 'fast');
         window.scrollTo(0, getDocHeight_());
         $(cmdLine_).focus()
-        
       }
 
       function outputImageLink(imageUrl) {
@@ -550,7 +549,7 @@
           _parse_api_response(ret);
         },
         output_ext: function(string) {
-          output(string)
+          outputHtml(string)
         },
         processNewCommand: function(cmd) {
           processNewCommand_(cmd);
