@@ -11,7 +11,7 @@ class FileController extends HomeController
     //
 
     public function upload(Request $request){
-	$this->checkSession();
+	    $this->checkSession();
         Log::critical("upload1 api called");
         $fs=$this->fs;
 
@@ -33,7 +33,7 @@ class FileController extends HomeController
             flush();
             ob_flush();   
             $filePath=env('DROPBOX_PATH','/home/ubuntu/Dropbox')."/".$file->getClientOriginalName();
-	move_uploaded_file( $_FILES['file']['tmp_name'], $filePath);
+	        move_uploaded_file( $_FILES['file']['tmp_name'], $filePath);
             Log::critical("upload 1 saving file as $filePath");
             $output="$filePath is uploaded";
             //$table=$fs->ls("-t");
@@ -57,6 +57,8 @@ class FileController extends HomeController
         exit;
     }
     public function uploadCSV(Request $request){
+        $this->checkSession();
+
         Log::critical("upload api called");
         $fs=$this->fs;
 
@@ -83,6 +85,8 @@ class FileController extends HomeController
     }
     
     public function create(Request $request){
+        $this->checkSession();
+
         $output="";
         $error="";
         $options=null;
@@ -91,7 +95,7 @@ class FileController extends HomeController
         $filecontent=$request->input("filecontent");
         if(!$filename) $error="filename cannot be empty";
         try{
-            $fs=FileSystem::getInstance();
+            $fs=$this->fs;
             $file_path=$fs->put($filename,$filecontent);
             if($file_path){
                 $output="file $file_path created";

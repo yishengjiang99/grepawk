@@ -4,7 +4,7 @@
   "description": "filesystem",
   "main": "ws.js",
   "scripts": {
-    "start": "nodemon ./ws.js",
+    "start": "nodemon ./index.js",
     "fs": "nodemon ./fs.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,6 +16,7 @@
     "mime": "^2.4.0",
     "mime-types": "^2.1.21",
     "nodemon": "^1.18.9",
+    "socket.io": "^2.2.0",
     "ws": "^6.1.2"
   },
   "devDependencies": {

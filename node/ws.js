@@ -1,6 +1,8 @@
 const fs = require('fs')
 
 
+
+
 fs.open('/Users/yisheng/Dropbox/grepawk/notes/nodejs_jan_17.txt', 'r', (err, fd) => {
   console.log(fd)
 })

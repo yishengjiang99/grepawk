@@ -4,6 +4,10 @@ const dirname = path.resolve(__dirname);
 const base_path = path.dirname(dirname);
 const map_path = base_path+"/map/";
 const fs = require("fs");
+
+
+
+
 var world = {};
 
 async function load_dir(path){
@@ -45,7 +49,6 @@ const server = net.createServer((socket) => {
       var file_list =ls();
       var fileout=ls_output(file_list);
       socket.write(fileout);
-
     }
 
 
