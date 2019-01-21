@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\FileSystem;
 use Log;
+use Config;
 use Storage;
 class FileController extends HomeController
 {
@@ -32,7 +33,7 @@ class FileController extends HomeController
             echo "<script>parent.iframe_interface('$cbstr')</script>" ; 
             flush();
             ob_flush();   
-            $filePath=env('DROPBOX_PATH','/home/ubuntu/Dropbox')."/".$file->getClientOriginalName();
+            $filePath=base_path()."/data/".$file->getClientOriginalName();
 	        move_uploaded_file( $_FILES['file']['tmp_name'], $filePath);
             Log::critical("upload 1 saving file as $filePath");
             $output="$filePath is uploaded";

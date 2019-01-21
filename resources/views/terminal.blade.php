@@ -16,9 +16,9 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
-   <script src="https://amp.ai/libs/173cb218d12862ef.js"></script>
-
-  <script>
+  <script src="https://amp.ai/libs/173cb218d12862ef.js"></script>
+  <script src="{{$nodeurl}}/socket.io/socket.io.js"></script>
+  <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
           ret = $.parseJSON(msg);
@@ -27,26 +27,23 @@
         }
         window.terminal.parse_api_response(ret);
     }
+
+
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
-    var node_url ="{{env('jsonp_url','http://fs.grepawk.net')}}";
     var util = util || {};
     util.toArray = function(list) {
       return Array.prototype.slice.call(list || [], 0);
     };
 
-    var FileSystem = FileSystem || function(filesJson, currDir) {
-
-    }
     var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
       window.URL = window.URL || window.webkitURL;
       window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+      
       input_auto_complete_source = [];
       var cmdLine_ = document.querySelector(cmdLineContainer),
         $cmdLine_ = $(cmdLineContainer);
-
       var output_ = document.querySelector(outputContainer);
-
       var CMDS_ = [
         'ls', 'select', 'cat', 'new','upload', 'upload csv','help','select'
       ];
@@ -70,10 +67,8 @@
       var prompt_loop_answers = [];
       var prompt_context = "";
       var prompt_string = "";
+      var socket_=null;
 
-       window.addEventListener('click', function(e) {
-//         	$(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
-       }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
       cmdLine_.addEventListener('keydown', historyHandler_, false);
@@ -207,9 +202,10 @@
           var line = this.parentNode.parentNode.cloneNode(true);
           line.removeAttribute('id')
           line.classList.add('line');
+ 
           var input = line.querySelector('input.cmdline');
           input.autofocus = false;
-          /* input.readOnly = true; */
+          input.readOnly = true;
           output_.appendChild(line);
           var cmd_str = this.value;
           if (prompt_loop_mode) {
@@ -238,12 +234,12 @@
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
         var argsstr = args.join(' ');
-        amp.observe("send_cmd", { cmd: cmd, args:argsstr});
+      //  amp.observe("send_cmd", { cmd: cmd, args:argsstr});
 
         switch (cmd) {
           case 'find':
             $.ajax({
-              url:node_url+"/ls",
+              url:nodeurl+"/ls",
               jsonp:'callback',
                data:{
                  'msg':argsstr,
@@ -263,48 +259,19 @@
           case 'tail':
             if(args.length<1){
               outputError("Usage: tail [options] {filename}");
-              break;
             }
             if(args[0]=="-f"){
               if(args.length<2){
                 outputError("Usage: tail -f {filename}")
-                break;
               }else{
                 output("Tail -f on "+args[1]);
-                var eventSource = new EventSource(node_url+"/tailf/?msg="+args[1]);
-                eventSource.addEventListener('message',function(e){
-                  if(e.data=='done'){
-                    debugger;
-                    eventSource.close();
-                  }
-                  output("<br>"+e.data);
-                 // debugger;
-                },false);
-                eventSource.addEventListener('open', function(e) {
-                  if (e.readyState == EventSource.CLOSED) {
-                    output("Connection was opened")
-                  }
-                }, false)
-
-                eventSource.addEventListener('error', function(e) {
-                  if (e.readyState == EventSource.CLOSED) {
-                    output("Connection was closed")
-                  }
-                }, false)
-                // eventSource.addEventListener('error',function(e){
-                //   outputError(e.data);
-                //   debugger;
-                // });
-                // eventSource.addEventListener('done',function(e){
-                //     alert('done');
-                //     debugger;
-                // });
-                break;
+                socket_.emit("tail -f", cwd_+"/"+args[1]);
               }
             }
+            break;
             //fall through in general case
           case 'download':
-            open_dl_iframe(node_url+"/download/?msg="+argsstr+"&format="+cmd);
+            open_dl_iframe(nodeurl+"/download/?msg="+argsstr+"&format="+cmd);
             break;
           case 'new':
             parent.iframe_interface("new");
@@ -395,7 +362,6 @@
             html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
          // parent.iframe_interface("update_html",["hud-1",html]);
-//           outputHtml(html);
           
         }
         //
@@ -563,6 +529,10 @@
         if (ret.updatePrompt){
              updatePromptWithString(ret.updatePrompt);
         }
+        if (ret.cwd){
+          cwd_=ret.cwd;
+          //alert("setting cwd to "+cwd_);
+        }
       }
 
       //
@@ -575,6 +545,9 @@
         },
         setCd: function(cd) {
           set_cd(cd);
+        },
+        set_socket:function(socket){
+          socket_=socket;
         },
         parse_api_response: function(ret) {
           _parse_api_response(ret);
@@ -591,13 +564,34 @@
       }
     };
 
+
     $(function() {
+      var node_url ="{{ $nodeurl }}";
       // Initialize a new terminal object  
+
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("{{$username}}@grepawk");
       term.setCd("$");
       term.init();
       term.cmd_string("checkin");
+
+      var socket = io(node_url);
+      socket.on("Connected", function(){
+        term.output_ext("Connected to io server");
+      })
+
+      socket.on("update",function(msg){
+        term.output_ext("news: "+msg);
+      })
+
+      socket.on("_error",function(msg){
+        term.outputError(msg);
+      })
+      socket.on("data",function(data){
+        term.output_ext(data);
+      })
+      term.set_socket(socket);
+
       $("body").on('click', '.cmd_btn', function(e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
@@ -606,11 +600,13 @@
         //output("exec cmd from click: "+_cmd)
         term.cmd_string(_cmd);
       });
-      window.terminal=term;
+
+       window.terminal=term;
     });
-    $(window).unload(function(ret){
-        amp.observe("page_leave");
-    });
+
+    // $(window).unload(function(ret){
+    //     amp.observe("page_leave");
+    // });
   </script>
 </head>
 

@@ -7,7 +7,7 @@
   <iframe id='tty1' src='/terminal' height='560px' width='70%' frameborder="0" scrolling="yes"></iframe>
 </div>
 </div>
-
+<div style='width:100%;padding-bottom:100px'></div>
 <div id='new_file' class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">

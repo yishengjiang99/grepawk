@@ -10,6 +10,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Schema;
+use Config;
 use Session;
 
 class Playerr extends Model
@@ -154,8 +155,10 @@ class HomeController extends Controller
     public function terminal()
     {
         $this->checkSession();
+
         return view('terminal', ['username' => $this->username,
             'pwd' => $this->fs->getPWD(),
+            'nodeurl'=>Config::get("app.node_url")
         ]);
     }
 
@@ -607,6 +610,7 @@ class HomeController extends Controller
             "error" => $error,
             'meta' => $meta,
             'table' => $table,
+            "cwd"=>$fs->get_os_path(),
         ];
         $this->playerObj->persist_profile();
         return response()->json($ret);

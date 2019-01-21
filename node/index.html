@@ -12,12 +12,8 @@
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
     </style>
-    <script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
-    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-
-    <script>
-      var socket = io("http://localhost:4001");
-    </script>
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
         var socket = io();
@@ -29,6 +25,9 @@
         });
         socket.on('chat message', function(msg){
           $('#messages').append($('<li>').text(msg));
+        });
+        socket.on('news', function(msg){
+          $('#messages').append($('<li>').text("news "+msg.hello));
         });
       });
     </script>

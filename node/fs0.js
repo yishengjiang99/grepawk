@@ -14,6 +14,9 @@ console.log("base path is %s",base_path);
 var rd=fs.createReadStream(data_path+"/wow_sample.csv")
 var http = require('http');
 
+
+async function start() {
+
 http.createServer(function(req, res) {
   // The filename is simple the local directory and tacks on the requested url
   var filename = __dirname+req.url;
@@ -45,6 +48,8 @@ http.createServer(function(req, res) {
   readStream.on('error', function(err) {
     res.end(err);
   });
-}).listen(8080);
+})
 
-
+  http.listen(8080);
+}
+start() 
