@@ -1,33 +1,40 @@
 var app = require('express')();
+
+const { spawn } = require('child_process');
 var http = require('http');
 const fsp = require('fs').promises;
 const fs = require('fs');
 
 var path = require('path');
-var server = http.createServer(app)
-const { spawn } = require('child_process');
+var server = http.createServer(app);
 
-var io = require('socket.io')(server);
-app.get('/', function(req, res){
-  res.sendFile(__dirname + '/index.html');
+var io = require('socket.io')(server,{
+  path:'/socket.io',
+  transports:['websocket'] 
 });
+
+app.get('/', function(req, res){
+  res.end('hi')
+});
+
 server.listen(3000);
 
 io.on('connection', function (socket) {
- // io.emit('news', 'user connected');
   socket.on('message', function(msg){
     socket.emit('message', "You said:"+msg);
   });
 
   socket.on('tail -f',function(file_path){
     console.log(file_path);
+
+//    var tail = spawn("tail",['-f',file_path],{detached:true,stdio:['ignore',1,2]});
+
     var tail = spawn("tail",['-f',file_path]);
+    tail.unref()
     tail.stdout.on('data',(data)=>{
       socket.emit("data","<pre>"+data.toString()+"</pre>");
-
     })
  
-
     // file_stream.on("data",function(chunk){
     //   console.log("read ",chunk)
     // });
