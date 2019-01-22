@@ -12,6 +12,7 @@
   "dependencies": {
     "argv-parse": "^1.0.1",
     "cors": "^2.8.5",
+    "dotenv": "^6.2.0",
     "express": "^4.16.4",
     "mime": "^2.4.0",
     "mime-types": "^2.1.21",

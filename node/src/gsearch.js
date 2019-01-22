@@ -18,11 +18,14 @@ function curl_GET(url, data_str){
 }
 
 var exports = module.exports = {
-  find_youtube: function(keyword,perPage,pageToken){
+  find_youtube: function(keyword,socket,perPage,pageToken){
     perPage=perPage||25;
     pageToken=pageToken||"";
+
     var url = "https://www.googleapis.com/youtube/v3/search";
     var data_string = `part=snippet&maxResults=${perPage}&q=${keyword}&key=`+youtube_api_key;
+    socket.emit("update", `curl -G -d ${data_string} ${url}`);
+
     if(pageToken){
       data_string+=`&pageToken=${pageToken}`;
     }

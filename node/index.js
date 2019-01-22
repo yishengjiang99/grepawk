@@ -40,8 +40,8 @@ io.on('connection', function (socket) {
   });
 
   socket.on('search',function(keyword){
-    console.log("searching youtube for "+keyword);
-    gsearch.find_youtube(keyword).then((retjson)=>{
+    socket.emit("update", "searching youtube for "+keyword);
+    gsearch.find_youtube(keyword,socket).then((retjson)=>{
       console.log("result got ");
       console.log(retjson);
       socket.emit("data",JSON.stringify(retjson));    
