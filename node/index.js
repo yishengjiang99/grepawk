@@ -44,7 +44,7 @@ io.on('connection', function (socket) {
     gsearch.find_youtube(keyword,socket,5).then((ret)=>{
       console.log("result got ");
       console.log(ret);
-      socket.emit("dataObj", ret);    
+      socket.emit("dataObj", {'table':ret});    
     }).catch((err)=>{
       console.error(err);
       socket.emit("_error",JSON.stringify(err));    
