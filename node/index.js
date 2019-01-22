@@ -41,10 +41,10 @@ io.on('connection', function (socket) {
 
   socket.on('search',function(keyword){
     socket.emit("update", "searching youtube for "+keyword);
-    gsearch.find_youtube(keyword,socket).then((retjson)=>{
+    gsearch.find_youtube(keyword,socket,5).then((ret)=>{
       console.log("result got ");
-      console.log(retjson);
-      socket.emit("data",JSON.stringify(retjson));    
+      console.log(ret);
+      socket.emit("dataObj", ret);    
     }).catch((err)=>{
       console.error(err);
       socket.emit("_error",JSON.stringify(err));    

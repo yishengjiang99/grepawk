@@ -10,7 +10,6 @@ use Storage;
 class FileController extends HomeController
 {
     //
-
     public function upload(Request $request){
 	    $this->checkSession();
         Log::critical("upload1 api called");

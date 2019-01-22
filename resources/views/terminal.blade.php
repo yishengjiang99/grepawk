@@ -441,6 +441,9 @@
               });
               html += "<td>" + val_html + "</td>";
 
+            }else if(header==='thumbnail'){
+              var img_url = val;
+              html += "<td><img width=120 src='" + img_url + "'></td>";
             }else{
               html += "<td>" + val + "</td>";
 
