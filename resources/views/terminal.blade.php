@@ -234,7 +234,7 @@
       //  amp.observe("send_cmd", { cmd: cmd, args:argsstr});
 
         switch (cmd) {
-          case 'find':
+          case 'ls2':
             $.ajax({
               url:"/node/ls",
               jsonp:'callback',
@@ -598,6 +598,9 @@
 
       socket.on("_error",function(msg){
         term.outputError(msg);
+      })
+      socket.on("data",function(data){
+        term.output_ext(data);
       })
       socket.on("data",function(data){
         term.output_ext(data);
