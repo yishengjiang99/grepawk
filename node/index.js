@@ -5,6 +5,9 @@ var http = require('http');
 const fsp = require('fs').promises;
 const fs = require('fs');
 
+var gsearch = require('./src/gsearch')
+console.log(gsearch)
+
 var path = require('path');
 var server = http.createServer(app);
 
@@ -14,11 +17,14 @@ var io = require('socket.io')(server,{
 });
 
 app.get('/', function(req, res){
-  res.end('hi')
+  res.end('index')
 });
 
 server.listen(3000);
 
+    
+
+var clients = [];
 io.on('connection', function (socket) {
   socket.on('message', function(msg){
     socket.emit('message', "You said:"+msg);
@@ -26,18 +32,23 @@ io.on('connection', function (socket) {
 
   socket.on('tail -f',function(file_path){
     console.log(file_path);
-
-//    var tail = spawn("tail",['-f',file_path],{detached:true,stdio:['ignore',1,2]});
-
     var tail = spawn("tail",['-f',file_path]);
     tail.unref()
     tail.stdout.on('data',(data)=>{
       socket.emit("data","<pre>"+data.toString()+"</pre>");
     })
- 
-    // file_stream.on("data",function(chunk){
-    //   console.log("read ",chunk)
-    // });
+  });
+
+  socket.on('search',function(keyword){
+    console.log("searching youtube for "+keyword);
+    gsearch.find_youtube(keyword).then((retjson)=>{
+      console.log("result got ");
+      console.log(retjson);
+      socket.emit("data",JSON.stringify(retjson));    
+    }).catch((err)=>{
+      console.error(err);
+      socket.emit("_error",JSON.stringify(err));    
+    })
   });
 });
 

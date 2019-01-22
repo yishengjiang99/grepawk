@@ -252,7 +252,16 @@
               }
             });
             break;
-            
+          case 'tf':
+            cmd='tail';
+            var new_args=[];
+            new_args.push('-f');
+            if(args.length<1){
+                outputError("Usage: tf {filename}");
+            }
+            new_args.push(args[0]); 
+            args = new_args;
+            //fall through             
           case 'tail':
             if(args.length<1){
               outputError("Usage: tail [options] {filename}");
