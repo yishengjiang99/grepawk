@@ -252,6 +252,12 @@
               }
             });
             break;
+          case 'find':
+          if(args.length<1){
+                outputError("Usage: "+cmd+" {keyword}");
+            }
+            socket_.emit("search", args[1]);
+            break;
           case 'tf':
             cmd='tail';
             var new_args=[];
