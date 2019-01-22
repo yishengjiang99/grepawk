@@ -232,7 +232,6 @@
         args = args.splice(1); // Remove cmd from arg list.
         var argsstr = args.join(' ');
       //  amp.observe("send_cmd", { cmd: cmd, args:argsstr});
-
         switch (cmd) {
           case 'ls2':
             $.ajax({
@@ -252,11 +251,20 @@
               }
             });
             break;
+          case 'search':
           case 'find':
             if(args.length<1){
                 outputError("Usage: "+cmd+" {keyword}");
             }
             socket_.emit("search", args[0]);
+            break;
+          case 'watch':
+            if(args.length<1){
+                outputError("Usage: watch {youtube video ID}");
+            } 
+            var iframeHTML='<iframe width="560" height="315" src="http://www.youtube.com/embed/'+args[0]+'?rel=0" frameborder="0" allowfullscreen></iframe>';
+
+            outputHtml(iframeHTML);
             break;
           case 'tf':
             cmd='tail';
@@ -605,8 +613,8 @@
       socket.on("data",function(data){
         term.output_ext(data);
       })
-      socket.on("data",function(data){
-        term.output_ext(data);
+      socket.on("dataObj",function(data){
+        term.parse_api_response(data);
       })
       term.set_socket(socket);
 
