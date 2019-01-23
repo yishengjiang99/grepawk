@@ -266,6 +266,18 @@
 
             outputHtml(iframeHTML);
             break;
+          case 'cam':
+        debugger;
+            navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream){
+              var video = $("<video style='width:700px; height: 350px;' autoplay='true'></video>");
+              video.srcObject = stream;
+              
+              outputHtml(video.wrap('<div>').parent().html())
+            }).catch(function(err){
+              alert(JSON.stringify(err));
+            })
+            
+            break;
           case 'tf':
             cmd='tail';
             var new_args=[];
