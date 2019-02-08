@@ -221,7 +221,7 @@
         }
       }
 
-      function _cmd_string(cmd_str) {
+      function _cmd_string(cmd_str) { 
         var args = cmd_str.split(' ').filter(function(val, i) {
           return val;
         });
@@ -300,6 +300,7 @@
             var fullcmd = cmd + " " + args.join(" ");
             window.open("/stdin?msg=" + fullcmd);
             break;
+            
           default:
             if (cmd) {
               args.map(function(a){

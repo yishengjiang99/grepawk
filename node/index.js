@@ -4,6 +4,7 @@ const { spawn } = require('child_process');
 var http = require('http');
 const fsp = require('fs').promises;
 const fs = require('fs');
+const express=require("express");
 
 var gsearch = require('./src/gsearch')
 console.log(gsearch)
@@ -12,13 +13,14 @@ var path = require('path');
 var server = http.createServer(app);
 
 var io = require('socket.io')(server,{
-  path:'/socket.io',
-  transports:['websocket'] 
+//    path:'/socket.io',
+ // transports:['websocket'] 
 });
 
 app.get('/', function(req, res){
   res.end('index')
 });
+app.use(express.static(__dirname + "/public" ));
 
 server.listen(3000);
 

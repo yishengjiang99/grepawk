@@ -212,6 +212,8 @@ class HomeController extends Controller
         $cookies = [];
         try {
             switch ($cmd) {
+                case 'sql': $cmd='cd'; $argv1='/root/sql';
+                  //fallthrough
                 case "gitpull":
                     exec("cd " . base_path() . " && git pull", $ob);
                     $output .= implode("<br>", $ob);
