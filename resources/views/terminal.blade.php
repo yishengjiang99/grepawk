@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
   <script src="https://amp.ai/libs/173cb218d12862ef.js"></script>
-  <script src="/socket.io/socket.io.js"></script>
+  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
   <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
@@ -267,11 +267,13 @@
             outputHtml(iframeHTML);
             break;
           case 'cam':
-        debugger;
-            navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream){
+            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream){
               var video = $("<video style='width:700px; height: 350px;' autoplay='true'></video>");
               video.srcObject = stream;
-              
+              video.onloadedmetadata=function(e){
+                video.play();
+              }
+        
               outputHtml(video.wrap('<div>').parent().html())
             }).catch(function(err){
               alert(JSON.stringify(err));
