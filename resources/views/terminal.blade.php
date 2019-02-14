@@ -24,7 +24,9 @@
         }
         window.terminal.parse_api_response(ret);
     }
-
+ function resizeIframe(obj) {
+    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+  }
 
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
@@ -267,19 +269,11 @@
             outputHtml(iframeHTML);
             break;
           case 'cam':
-            navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream){
-              var video = $("<video style='width:700px; height: 350px;' autoplay='true'></video>");
-              video.srcObject = stream;
-              video.onloadedmetadata=function(e){
-                video.play();
-              }
-        
-              outputHtml(video.wrap('<div>').parent().html())
-            }).catch(function(err){
-              alert(JSON.stringify(err));
-            })
-            
+            var iframeHTML='<iframe width="560" height="315" src="/node/cam.html" frameborder="0" allowfullscreen></iframe>';
+
+            outputHtml(iframeHTML);
             break;
+            
           case 'tf':
             cmd='tail';
             var new_args=[];
@@ -425,7 +419,7 @@
       }
 
       function outputIframe(url) {
-        $("#preview_content").html('<iframe width=100% height=100% src="' + url + '"></iframe>').parent().show();
+        $("#preview_content").html('<iframe width=90% onload=\'resizeIframe(this)\' src="' + url + '"></iframe>').parent().show();
       }
 
       function open_dl_iframe(url) {
