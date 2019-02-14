@@ -13,8 +13,8 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
-  <script src="https://amp.ai/libs/173cb218d12862ef.js"></script>
-  <script src="http://localhost:3000/socket.io/socket.io.js"></script>
+  <!-- <script src="https://amp.ai/libs/173cb218d12862ef.js"></script> -->
+  <script src="/socket.io/socket.io.js"></script>
   <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){

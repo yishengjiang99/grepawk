@@ -206,7 +206,7 @@ class HomeController extends Controller
         $meta = [];
         $options = null;
         $table = null;
-        echo "<br>std msg: $msg";
+        //echo "<br>std msg: $msg";
         ob_end_clean_all();
         ob_start();
         $cookies = [];
