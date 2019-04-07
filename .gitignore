@@ -13,3 +13,4 @@ npm-debug.log
 yarn-error.log
 nohup.out
 */nohup.out
+/target/
