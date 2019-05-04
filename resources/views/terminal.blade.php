@@ -13,8 +13,9 @@
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
-  <!-- <script src="https://amp.ai/libs/173cb218d12862ef.js"></script> -->
   <script src="/socket.io/socket.io.js"></script>
+  <script src='/schedule.js'></script>
+
   <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
@@ -33,12 +34,15 @@
     var util = util || {};
     util.toArray = function(list) {
       return Array.prototype.slice.call(list || [], 0);
-    };
+    };    
 
     var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
+      
       window.URL = window.URL || window.webkitURL;
       window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-      
+      var schedule = Schedule();
+      var interpreters = [schedule];
+
       input_auto_complete_source = [];
       var cmdLine_ = document.querySelector(cmdLineContainer),
         $cmdLine_ = $(cmdLineContainer);
@@ -207,6 +211,23 @@
           input.readOnly = true;
           output_.appendChild(line);
           var cmd_str = this.value;
+
+          for(var k=0;k<interpreters.length;k++){
+            var interp = interpreters[k].interpret(cmd_str);
+            if(interp && interp!==false){
+              interp.then(res=>{
+                output(res);
+                $(".cmdline").last().val("");
+
+              }).catch(err=>{
+                outputError(res);
+                $(".cmdline").last().val("");
+              });
+              return;
+            }
+          }
+ 
+
           if (prompt_loop_mode) {
             $(".cmdline").last().val("");
             if (cmd_str === '') return;
@@ -233,6 +254,7 @@
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
         var argsstr = args.join(' ');
+
       //  amp.observe("send_cmd", { cmd: cmd, args:argsstr});
         switch (cmd) {
           case 'ls2':

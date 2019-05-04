@@ -37,8 +37,8 @@ var Queue = function (compare_fn) {
     shift_up(data.length - 1)
     map[_hashCode(d)] = 1
   }
-  var _hashCode = function(d){
-      return JSON.stringify(d);
+  var _hashCode = function (d) {
+    return JSON.stringify(d)
   }
   var _pop = function () {
     if (data.length == 0) return null
@@ -94,7 +94,7 @@ var Schedule = function () {
       var status = new Array(jobs.length).fill('unvisited')
 
       while(stack.length){
-        var todo = stack[stack.length-1];
+        var todo = stack[stack.length - 1]
 
         if (!dependency_counts[todo] || dependency_counts[todo] === 0) {
           status[todo] = 'done'
@@ -102,7 +102,7 @@ var Schedule = function () {
         }else {
           status[todo] = 'opened'
           var next = dependencies[todo][dependency_counts[todo] - 1]
-          dependency_counts[todo]--;
+          dependency_counts[todo]--
           if (status[next] == 'opened') {
             return true
           }
@@ -125,8 +125,7 @@ var Schedule = function () {
         dependencies[b].push(a)
       })
 
-      if (this.is_cyclic(i,dependencies)) return -1
-
+      if (this.is_cyclic(i, dependencies)) return -1
 
       var compare_fn = function (a, b) {
         return jobs[a] > jobs[b]
@@ -183,26 +182,76 @@ var Schedule = function () {
       jobs = []
       edges_a = []
       edges_b = []
+    },
+
+    interpret: function(cmd){
+       // cmd = cmd.substring(0,cmd.indexOf("//"));
+        cmd_list = cmd.split(" ");
+
+        if("schedule".indexOf(cmd_list[0])!==0){
+            return false;
+        }
+
+        var args1 = cmd_list[1] || "";
+        args1 = args1.toLowerCase();
+        args2 = cmd_list[2] || "";
+        switch(args1){
+            case "reset": {
+                this.reset();
+                return Promise.resolve("Schedule reset");
+            }
+            case "add": {
+                if(!args2 || isNaN(parseInt(args2))){
+                    return Promise.reject(new Error("args 2 must be numeric"));
+                }else{
+                    this.insert(args2);
+                    return Promise.resolve("Added job length "+args2);
+                }
+            }
+            case "require":{
+                if(cmd_list.length<4){
+                    return Promise.reject(new Error("Usage: schedule require job_a job_b //job b requires job a"));
+                }
+                a = parseInt(cmd_list[2]);
+                b = parseInt(cmd_list[3]);
+                if(isNaN(a) || isNaN(b)){
+                    return Promise.reject(new Error("args 2 and 3 must be integers"));
+                }
+                this.addEdge(cmd_list[2], cmd_list[3]);
+                return Promise.resolve("Job "+b+" requires job "+a);
+            }
+            case "start": {
+                if(!args2 || isNaN(parseInt(args2))){
+                    return Promise.reject(new Error("args 2 must be numeric"));
+                }else{
+                    return Promise.resolve("Job "+args2+" starts at "+this.start(args2));
+                }
+            }
+            case "finish": {
+                return Promise.resolve("schedule finishes at "+this.finish());
+            }
+
+        }
     }
   }
 }
 
-var s = Schedule()
-s.insert(1)
-s.insert(2)
-s.insert(3)
-s.addEdge(0, 1)
-s.addEdge(1, 2)
-s.start(1)
-s.finish()
+// var s = Schedule()
+// s.insert(1)
+// s.insert(2)
+// s.insert(3)
+// s.addEdge(0, 1)
+// s.addEdge(1, 2)
+// s.start(1)
+// s.finish()
 
-s.reset();
+// s.reset()
 
-for(i=0; i<10000; i++){
-    s.insert(i);
-    if(i>0) s.addEdge(i-1, i);
-}
-s.start();
+// for (i = 0; i < 10000; i++) {
+//   s.insert(i)
+//   if (i > 0) s.addEdge(i - 1, i)
+// }
+// s.start()
 
 // console.log(s.toString())
 // s.start(1)
