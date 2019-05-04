@@ -35,7 +35,10 @@ var Queue = function (compare_fn) {
   var _push = function (d) {
     data.push(d)
     shift_up(data.length - 1)
-    map[d.toString] = 1
+    map[_hashCode(d)] = 1
+  }
+  var _hashCode = function(d){
+      return JSON.stringify(d);
   }
   var _pop = function () {
     if (data.length == 0) return null
@@ -47,7 +50,7 @@ var Queue = function (compare_fn) {
     return max
   }
   var _contains = function (d) {
-    return typeof map[d.toString] !== 'undefined'
+    return typeof map[_hashCode(d)] !== 'undefined'
   }
   var _isEmpty = function () {
     return data.length == 0
@@ -92,7 +95,8 @@ var Schedule = function () {
 
       while(stack.length){
         var todo = stack[stack.length-1];
-        if (dependency_counts[todo] === 0) {
+
+        if (!dependency_counts[todo] || dependency_counts[todo] === 0) {
           status[todo] = 'done'
           stack.pop()
         }else {
@@ -135,7 +139,7 @@ var Schedule = function () {
       starts[i] = 0
 
       var iteration = 0
-      while (queue.isEmpty() == false && iteration++ < 5) {
+      while (queue.isEmpty() == false && iteration++ < 5000) {
         var u = queue.pop()
         console.log('queue pop for ' + u)
         dependencies[u] = dependencies[u] || []
@@ -191,6 +195,14 @@ s.addEdge(0, 1)
 s.addEdge(1, 2)
 s.start(1)
 s.finish()
+
+s.reset();
+
+for(i=0; i<10000; i++){
+    s.insert(i);
+    if(i>0) s.addEdge(i-1, i);
+}
+s.start();
 
 // console.log(s.toString())
 // s.start(1)
