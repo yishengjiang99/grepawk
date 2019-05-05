@@ -15,6 +15,7 @@
   <script src="/js/jquery-ui.js"></script>
   <script src="/socket.io/socket.io.js"></script>
   <script src='/schedule.js'></script>
+  <script src='/tests.js'></script>
 
   <script>    
     iframe_interface=function(msg) {
@@ -41,15 +42,12 @@
       window.URL = window.URL || window.webkitURL;
       window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
       var schedule = Schedule();
-      var interpreters = [schedule];
+      var interpreters = [Schedule(), Tests()];
 
       input_auto_complete_source = [];
       var cmdLine_ = document.querySelector(cmdLineContainer),
         $cmdLine_ = $(cmdLineContainer);
       var output_ = document.querySelector(outputContainer);
-      var CMDS_ = [
-        'ls', 'select', 'cat', 'new','upload', 'upload csv','help','select'
-      ];
 
       var fs_ = null;
       var cwd_ = null;
@@ -115,7 +113,7 @@
       }
 
       //
-      function processNewCommand_(e) {
+      async function processNewCommand_(e) {
         if(e.keyCode==32){ //space
           tab_scan_index=0;
           possible_matched_words=[];
@@ -213,12 +211,13 @@
           var cmd_str = this.value;
 
           for(var k=0;k<interpreters.length;k++){
-            var interp = interpreters[k].interpret(cmd_str);
+            var interp = await interpreters[k].interpret(cmd_str);
+            debugger;
             if(interp && interp!==false){
+
               interp.then(res=>{
                 output(res);
                 $(".cmdline").last().val("");
-
               }).catch(err=>{
                 outputError(res);
                 $(".cmdline").last().val("");

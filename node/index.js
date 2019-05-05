@@ -22,7 +22,7 @@ app.get('/', function(req, res){
 });
 app.use(express.static(__dirname + "/public" ));
 
-server.listen(3000);
+server.listen(3001);
 
     
 

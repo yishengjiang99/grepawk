@@ -9,6 +9,7 @@ var Queue = function (compare_fn) {
     }
 
     var compare = compare_fn || function (a, b) {
+
         return data[a] > data[b]
     }
 
@@ -24,9 +25,9 @@ var Queue = function (compare_fn) {
         var left = 2 * i + 1,
             right = 2 * i + 2
 
-        var largest = (compare(i, right) && right) ||
-            (compare(i, left) && left) ||
-            i
+        var largest = (right < data.length && compare(right, i) && right) ||
+            (left < data.length && compare(left, i) && left) || i;
+
         if (largest != i) {
             swap(i, largest)
             max_heapify(largest)
@@ -36,24 +37,34 @@ var Queue = function (compare_fn) {
         data.push(d)
         shift_up(data.length - 1)
         map[_hashCode(d)] = 1
+        // console.log(this.toString());
     }
     var _hashCode = function (d) {
         return JSON.stringify(d)
     }
     var _pop = function () {
-        if (data.length == 0) return null
-        var max = data[0]
+        //  if (data.length === 0) return null
+       //console.log("before swap " + data.length)
+
+        var max = data[0];
+
         swap(0, data.length - 1)
-        delete map[max]
-        data.pop()
+        //console.log("before maxheapify " + data.length)
+
+
         max_heapify(0)
+        delete map[max]
+       // console.log("before pop " + data.length)
+
+        data.pop()
+        //console.log("after pop " + data.length)
         return max
     }
     var _contains = function (d) {
         return typeof map[_hashCode(d)] !== 'undefined'
     }
     var _isEmpty = function () {
-        return data.length == 0
+        return data.length === 0
     }
 
     return {
@@ -61,7 +72,10 @@ var Queue = function (compare_fn) {
         push: _push,
         contains: _contains,
         isEmpty: _isEmpty,
-        pop: _pop
+        pop: _pop,
+        toString: function () {
+            return "\nsize " + this.data.length + "\n" + data.join(",")
+        }
     }
 }
 
@@ -81,6 +95,8 @@ var Schedule = function () {
             return jobs[i]
         },
         addEdge: function (a, b) { // b depends on a
+            a = parseInt(a);
+            b = parseInt(b);
             edges_a.push(a)
             edges_b.push(b)
         },
@@ -120,7 +136,7 @@ var Schedule = function () {
             const E = edges_a.length
 
             var visited = new Array(v).fill(false)
-            var starts = new Array(v).fill(0)
+            var agos = new Array(v).fill(0); //if we want job i to start now, how long ago each job should have started
 
             var dependencies = []
             edges_b.forEach((b, index) => { // dependencies of b
@@ -139,29 +155,33 @@ var Schedule = function () {
 
             queue.push(i)
             visited[i] = true
-            starts[i] = 0
+            agos[i] = 0
 
             var iteration = 0
-            while (queue.isEmpty() == false && iteration++ < 5000) {
+            var maxAgo = 0;
+            while (queue.isEmpty() == false && iteration++ < 5) {
                 var u = queue.pop()
-                console.log('queue pop for ' + u)
+                visited[u] = true
                 dependencies[u] = dependencies[u] || []
-                console.log(u + ' depends on ' + JSON.stringify(dependencies[u]))
-                for (index = 0; index < dependencies[u].length; index++) {
-                    a = dependencies[u][index]
-                    if (visited[a] === false) {
-                        queue.push(a)
-                        console.log(starts[a] + ' vs (' + starts[u] + ' + ' + jobs[u] + ')')
-                        if (starts[u] < starts[a] + jobs[a]) {
-                            console.log('setting ')
-                            starts[u] = starts[a] + jobs[a]
+                for (var index = 0; index < dependencies[u].length; index++) {
+
+                    let v = dependencies[u][index];
+                    if (visited[v] === false) {
+
+                        //console.log(agos[u] + ' vs (' + agos[a] + ' + ' + [a] + ')')
+                        if (agos[v] < agos[u] + jobs[v]) {
+                            agos[v] = agos[u] + jobs[v]
+                            if (agos[v] > maxAgo) {
+                                maxAgo = agos[v];
+                            }
+                            console.log("update " + v + " to start " + agos[v] + " ago ");
                         }
+                        console.log("pushing " + v + " to queue");
+                        queue.push(v)
                     }
                 }
-                visited[u] = true
             }
-            console.log(i + ' starts at ' + starts[i])
-            return starts[i]
+            return maxAgo;
         },
         finish: function () {
             var size = jobs.length
@@ -284,9 +304,9 @@ var Tests = function (subject, debug) {
             return new Promise(async (resolve, reject) => {
                 let result = await this.subject.interpret(cmd);
                 if (result === false) reject(new Error("compile error"));
-                console.log("[" + result + "] vs [" + expected + "]");
+                // console.log("[" + result + "] vs [" + expected + "]");
                 if (result === expected) {
-                    if (debug) resolve(" test " + cmd + " return " + result + " as expected");
+                    if (debug) resolve(" test '" + cmd + "' return " + result + " as expected");
                     else resolve(true);
                 } else {
                     if (debug) reject(" test " + cmd + " return unespected " + result + " expected: " + expected);
@@ -294,12 +314,45 @@ var Tests = function (subject, debug) {
                 }
             })
         },
-        interpret: async function (cmd) {
+        interpret: function (cmd) {
             if (cmd == 'test schedule') {
-                const script = "s add 1, s add 2, s start 1====0".split(", ");
+                const script =
+                    `s add 1, 
+                s add 2, 
+                s add 3, 
+                s require 0 1,
+                s start 1====1`.split(",");
+                this.subject = Schedule();
+                return this.test_script(this.subject, script);
+            } else if (cmd == 'test schedule2') {
+                const script =
+                    `s add 1, 
+              s add 2, 
+              s add 3, 
+              s require 0 1,
+              s require 1 2, 
+              s start 2====3`.split(",");
+                this.subject = Schedule();
+                return this.test_script(this.subject, script);
+            } else if (cmd === 'test sched taylor') {
+                const script =
+                    `s add 8, 
+            s add 3,
+            s add 5,
+            s finish====8,
+            s require 2 0,
+            s finish====13,
+            s require 1 0,
+            s finish====13,
+            s start 0====5,
+            s start 1====0,
+            s start 2====0,
+            s require 2 1,
+            s finish====16`.split(",");
                 this.subject = Schedule();
                 return this.test_script(this.subject, script);
             }
+
             return false;
 
         },
@@ -308,26 +361,28 @@ var Tests = function (subject, debug) {
             var success = 0;
             var stdout = [];
             var stderr = [];
-           await script.forEach(async line => {
+            await script.forEach(async line => {
+                line = line.trim()
                 try {
                     if (line.includes("====")) {
                         t = line.split("====");
+                        t[0] = t[0].trim();
                         line = {
                             cmd: t[0].trim(),
                             expected: parseInt(t[1])
                         }
                     } else {
                         line = {
-                            cmd: line,
+                            cmd: line.trim(),
                             expected: null
                         };
                     }
-                    console.log(line);
+                    console.log("[" + line.cmd + "]");
                     if (line.expected == null) {
                         object.interpret(line.cmd);
                     } else {
                         let output = await this.assert_equals(line.expected, line.cmd);
-                        console.log("out put is " + output);
+                        console.log(output);
                         if (output === false) {
                             failed++;
                             stderr.push(line.cmd + " did not compile.");
@@ -344,10 +399,12 @@ var Tests = function (subject, debug) {
                 }
             })
 
-            return Promise.resolve([success, failed, stdout, stderr]);
+            return Promise.resolve(true);
         }
     }
 }
 
 var test = Tests();
-test.interpret("test schedule").then(res => console.log(res));
+//test.interpret("test schedule")
+//test.interpret("test schedule2")
+test.interpret("test sched taylor")
