@@ -405,6 +405,6 @@ var Tests = function (subject, debug) {
 }
 
 var test = Tests();
-//test.interpret("test schedule")
-//test.interpret("test schedule2")
+test.interpret("test schedule")
+test.interpret("test schedule2")
 test.interpret("test sched taylor")
