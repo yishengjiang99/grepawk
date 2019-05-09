@@ -33,7 +33,6 @@ var Tree = function(){
             data[c+shift_from] = x;
             return true;
           }else if(data[c+shift_from] > x){
-            shfit_from = shift_from;
             break;
           }
         }
@@ -47,4 +46,13 @@ var Tree = function(){
       }
     }
   }
+  return {
+    insert:_insert
+  }
 }
+
+
+
+var t = Tree();
+t.insert(1)
+t.insert(2)

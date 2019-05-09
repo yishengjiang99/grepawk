@@ -132,20 +132,28 @@ var Schedule = function () {
         },
         start: function (i) { // single source dag, start at job i, work backward, 
             i = parseInt(i);
+            console.log(" start *** "+i);
             const v = jobs.length
             const E = edges_a.length
-
+          
             var visited = new Array(v).fill(false)
             var agos = new Array(v).fill(0); //if we want job i to start now, how long ago each job should have started
 
             var dependencies = []
+
             edges_b.forEach((b, index) => { // dependencies of b
                 a = edges_a[index]
                 dependencies[b] = dependencies[b] || []
                 dependencies[b].push(a)
             })
 
-            if (this.is_cyclic(i, dependencies)) return -1
+            var dependency_counts = new Array(jobs.length).fill(0)
+
+            Object.keys(dependencies).forEach((b) => {
+                dependency_counts[b] = dependencies[b].length
+            })
+
+           // if (this.is_cyclic(i, dependencies)) return -1
 
             var compare_fn = function (a, b) {
                 return jobs[a] > jobs[b]
@@ -156,18 +164,17 @@ var Schedule = function () {
             queue.push(i)
             visited[i] = true
             agos[i] = 0
-
-            var iteration = 0
             var maxAgo = 0;
-            while (queue.isEmpty() == false && iteration++ < 5) {
+            var status = new Array(jobs.length).fill('unvisited')
+            while (queue.isEmpty() == false) {
                 var u = queue.pop()
+                console.log("**q popped for "+u);
                 visited[u] = true
                 dependencies[u] = dependencies[u] || []
+
                 for (var index = 0; index < dependencies[u].length; index++) {
-
                     let v = dependencies[u][index];
-                    if (visited[v] === false) {
-
+                    if (visited[v] === false || dependency_counts[u]>0) {
                         //console.log(agos[u] + ' vs (' + agos[a] + ' + ' + [a] + ')')
                         if (agos[v] < agos[u] + jobs[v]) {
                             agos[v] = agos[u] + jobs[v]
@@ -176,11 +183,18 @@ var Schedule = function () {
                             }
                             console.log("update " + v + " to start " + agos[v] + " ago ");
                         }
+                        dependency_counts[u]--;
                         console.log("pushing " + v + " to queue");
                         queue.push(v)
+                    }else if(dependency_counts[v]<0 && visited[v]){
+                         return -1;  
+                    }else{
+                        queue.push(v);
                     }
                 }
             }
+            console.log(jobs);
+            console.log(dependencies);
             return maxAgo;
         },
         finish: function () {
@@ -192,6 +206,7 @@ var Schedule = function () {
             for (i = 0; i < size; i++) {
                 this.addEdge(i, dummy_indes)
             }
+            console.log(dummy_indes);
             var finish = this.start(dummy_indes)
             jobs.pop()
             edges_a = edges_a.splice(0, edge_n)
