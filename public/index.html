@@ -212,7 +212,6 @@
 
           for(var k=0;k<interpreters.length;k++){
             var interp = await interpreters[k].interpret(cmd_str);
-            debugger;
             if(interp && interp!==false){
 
               interp.then(res=>{
@@ -274,6 +273,10 @@
               }
             });
             break;
+          case 'checkin':
+              socket_.emit("checkin", args[0]);
+            break;
+
           case 'search':
           case 'find':
             if(args.length<1){
