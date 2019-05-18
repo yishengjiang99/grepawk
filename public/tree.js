@@ -2,8 +2,6 @@ var Tree = function(){
 
   //implicit 3-node array bastardization of "Heap Lab"
   //   http://www.cs.sjsu.edu/~taylor/term/spring19/CS146/ProgrammingAssignments/heapLab.shtml
-  //draft #37 for 
-  //   http://www.cs.sjsu.edu/~taylor/term/spring19/CS146/ProgrammingAssignments/23Program.shtml
   
   var data = [null,null,null];
   var map = {};                //hash_map
