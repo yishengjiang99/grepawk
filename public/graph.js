@@ -129,7 +129,8 @@ var Graph = function () {
             var compare_fn = function (a, b) {
                 return nodes[a] > nodes[b]
             }
-
+//https://www.youtube.com/watch?v=_LuIvEi_kZk&list=PLSVu1-lON6LyvT8iceopuqnmSmPiSA6wX&index=2
+//David Scot Taylor "Topological Order and Topological Sorting"
             var queue = Queue(compare_fn)
 
             queue.push(i)
@@ -295,7 +296,7 @@ var Tests = function (subject, debug) {
               s start 2====3`.split(",");
                 this.subject = Graph();
                 return this.test_script(this.subject, script);
-            } else if (cmd === 'test sched taylor') {
+            } else if (cmd === 'test sch-t') {
                 const script =
                     `s add 8, 
             s add 3,
@@ -368,4 +369,4 @@ var Tests = function (subject, debug) {
 var test = Tests();
 test.interpret("test Graph")
 test.interpret("test Graph2")
-test.interpret("test sched taylor")
+test.interpret("test sch-t")
