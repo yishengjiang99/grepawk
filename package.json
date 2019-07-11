@@ -1,0 +1,22 @@
+{
+  "name": "grepawk",
+  "version": "1.1.0",
+  "description": "remote shared vfs",
+  "main": "index.js",
+  "scripts": {
+    "test": "ls"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yishengjiang99/grepawk.git"
+  },
+  "keywords": [
+    "filesystem"
+  ],
+  "author": "Yisheng Jiang",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yishengjiang99/grepawk/issues"
+  },
+  "homepage": "http://grepawk.com"
+}
