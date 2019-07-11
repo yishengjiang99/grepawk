@@ -18,5 +18,8 @@
   "bugs": {
     "url": "https://github.com/yishengjiang99/grepawk/issues"
   },
-  "homepage": "http://grepawk.com"
+  "homepage": "http://grepawk.com",
+  "dependencies": {
+    "ws": "^7.1.0"
+  }
 }
