@@ -1,0 +1,18 @@
+<html>
+<body>
+
+</body>
+<script>
+
+const socket = new WebSocket("ws://localhost:8081");
+socket.onopen = function(event){
+  socket.send("ls");
+}
+
+socket.onmessage = function(event){
+ document.write("<pre>"+event.data+"<pre>");
+  console.log(event);
+}
+
+</script>
+</html>
