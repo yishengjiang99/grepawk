@@ -50,7 +50,7 @@
         </ul>
     </div>
 </nav>
-<main role='main' class='container'>
+<main role='main'>
 @yield('content')
 </main>
 </body>

@@ -118,6 +118,8 @@ return [
     | will not be safe. Please do this before deploying an application!
     |
     */
+    'node_url'=>env('NODE_URL','http://fs.grepawk.net'),
+    'DROPBOX_PATH'=>env('DROPBOX_PATH','/home/ubuntu/Dropbox'),
 
     'key' => env('APP_KEY'),
 

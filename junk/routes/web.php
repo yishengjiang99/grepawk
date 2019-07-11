@@ -45,7 +45,9 @@ Route::get('/file/{name}', function($name){
 Route::view('/file/new', 'newfile');
 
 Route::post("/file/new", function(){    
+
 });
+
 Auth::routes();
 
 Route::get('/home', 'HomeController@index')->name('home');
@@ -63,14 +65,14 @@ Route::get('/weather', function(){
 use App\Events\ServerEvent;
 
 Route::get('/ping', function(){
-    event(new ServerEvent("Ping"));
+    event(new ServerEvent(['output'=>'Server Update: hello']));
 });
 
 
 Route::view('/pusher', 'pusher');
-
+Route::view('/twitch', 'twitch');
+Route::get('/fullscreen','HomeController@terminal');
 Route::get('/terminal','HomeController@terminal');
-
 Route::resource('photos', 'PhotoController')->except(['show']);
 Route::get('photos/{filename}', 'PhotoController@show');
 Route::get('stdin', 'HomeController@stdin');
@@ -79,6 +81,5 @@ Route::post("photos/create","PhotoController@create");
 Route::post("files/new","FileController@create");
 Route::post("files/upload","FileController@upload");
 Route::post("files/upload/csv","FileController@upload");
-
 Route::get("files/upload","FileController@upload");
 

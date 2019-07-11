@@ -1,18 +1,23 @@
 <html>
-
 <head>
   <title>cmd</title>
-  <link href="{{ asset('css/cmd.css') }}" rel="stylesheet">
-  <link href="{{ asset('css/modal.css') }}" rel="stylesheet">
+  <link href="/css/cmd.css" rel="stylesheet">
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
-<style>
-
-</style>
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <style>
+  pre{
+    background-color:black;
+    color:white;
+  }
+  </style>
+  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
   <script src="/js/jquery-ui.js"></script>
-  <script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script src='/schedule.js'></script>
+  <script src='/tests.js'></script>
+
+  <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
           ret = $.parseJSON(msg);
@@ -21,50 +26,28 @@
         }
         window.terminal.parse_api_response(ret);
     }
+ function resizeIframe(obj) {
+    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+  }
+
     //adapted from https://codepen.io/anon/pen/gZGpBZ
 
     var util = util || {};
     util.toArray = function(list) {
       return Array.prototype.slice.call(list || [], 0);
-    };
-    var FileSystem = FileSystem || function(filesJson, currDir) {
+    };    
 
-    }
     var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
+      
       window.URL = window.URL || window.webkitURL;
       window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+      var schedule = Schedule();
+      var interpreters = [Schedule(), Tests()];
+
       input_auto_complete_source = [];
       var cmdLine_ = document.querySelector(cmdLineContainer),
         $cmdLine_ = $(cmdLineContainer);
-
-      $cmdLine_.autocomplete({
-        autoFocus: true,
-        source: input_auto_complete_source,
-        minLength: 1,
-        select: function(event, ui) {
-          //var _val = ui.item && ui.item.cmd || this.value;
-          $cmdLine_.val(ui.item && ui.item.cmd || this.value);
-          if (event.keyCode == 7) { //tab
-            event.preventDefault();
-            $(this).focus();
-          }
-          if (event.keyCode == 9) { //tab
-            event.preventDefault();
-            $(this).focus();
-          }
-          //event.preventDefault();
-        }
-      }).autocomplete("instance")._renderItem = function(ul, item) {
-        return $("<li>")
-          .append("<div>" + item.cmd + "<br>" + item.display + "</div>")
-          .appendTo(ul);
-      };
-
       var output_ = document.querySelector(outputContainer);
-
-      const CMDS_ = [
-        'ls', 'cat', 'search', 'shout', 'say'
-      ];
 
       var fs_ = null;
       var cwd_ = null;
@@ -75,7 +58,7 @@
       var histtemp_ = 0;
       var username_ = "guest";
       var cd_ = "/public";
-      var input_auto_complete_source = ['help'];
+      var input_auto_complete_source = [];
       var option_select = [];
       var activePrompt = null;
       var prompt_select = [];
@@ -85,10 +68,8 @@
       var prompt_loop_answers = [];
       var prompt_context = "";
       var prompt_string = "";
+      var socket_=null;
 
-      // window.addEventListener('click', function(e) {
-      //   $(e.target).is("input") || $(e.target).is("input") || cmdLine_.focus();
-      // }, false);
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
       cmdLine_.addEventListener('keydown', historyHandler_, false);
@@ -99,6 +80,9 @@
       }
 
       //
+      var tab_scan_index=0;
+      var possible_matched_words=[];
+      var tab_complete_last_word='';
       function historyHandler_(e) {
         if (history_.length) {
           if (e.keyCode == 38 || e.keyCode == 40) {
@@ -129,13 +113,86 @@
       }
 
       //
-      function processNewCommand_(e) {
-        if (e.keyCode == 9) { // tab
+      async function processNewCommand_(e) {
+        if(e.keyCode==32){ //space
+          tab_scan_index=0;
+          possible_matched_words=[];
+        }
+        else if (e.keyCode == 9) { // tab
           e.preventDefault();
+          var word_parts = this.value.split(" ");
+          if(this.value[this.value.length-1]===' '){ //starting new words
+            word_parts.push("");
+          } 
 
-          //return;
-          // Implement tab suggest.
+          if(word_parts.length==0) return;
+        
+          var tab_complete_source;
+          if(word_parts.length==1){
+            tab_complete_source = CMDS_;
+          }else{
+            tab_complete_source = input_auto_complete_source
+          }
+
+          var current_word = word_parts[word_parts.length-1];
+          var matched_words=[];
+          var matched_length=[];
+          var max_distance=current_word.length;
+          var closest_substring=current_word;
+
+          if(tab_scan_index>0 && possible_matched_words.length && tab_complete_last_word==current_word){
+            matched_words=possible_matched_words;
+          }else{
+            tab_complete_source.forEach(function(word,i){
+              console.log(word + " vs "+current_word)
+              if(word.startsWith(current_word)){
+                matched_words.push(word);
+              }
+            })
+          }
+   
+          if(matched_words.length==0){
+            //outputError("No matched file/folder name");
+            tab_scan_index=0;
+            
+          }else if(matched_words.length==1){
+            //("replacing "+ word_parts[word_parts.length-1]+" with "+matched_words[0]);
+            word_parts[word_parts.length-1]=matched_words[0];
+            var newstr=word_parts.join(" ");
+            this.value=newstr+ " ";
+            tab_scan_index=0;
+          }else{
+            var output_str ="";
+            matched_words.forEach(function(word,i){
+               if(i===tab_scan_index){
+                output_str+="<b>"+word+"</b>&emsp;";
+               }else{
+                output_str+=word+"&emsp;";
+               }
+
+            })
+            output(output_str);
+            
+            var suggested_str = matched_words[tab_scan_index++];
+            word_parts[word_parts.length-1]=suggested_str;
+            possible_matched_words=matched_words;
+            tab_complete_last_word=this.value;
+
+            this.value=word_parts.join(" ");
+            // if($(this).parent().find(".ending").length>0){
+            //   $(this).parent().find(".ending")[0].html(suggested_str);
+            // }else{
+            //   $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
+            // }
+            //$("#ending").last().html(suggested_str)
+          }
+          return;
         } else if (e.keyCode == 13) { // enter
+          if(this.value[this.value.length-1]==="\\"){
+            $(this).parent().append("<textarea id=newline_tf></textarea>");
+            $("#newline_tf").focus();
+            return;
+          }
           // Save shell history.
           if (this.value) {
             history_[history_.length] = this.value;
@@ -146,11 +203,30 @@
           var line = this.parentNode.parentNode.cloneNode(true);
           line.removeAttribute('id')
           line.classList.add('line');
+ 
           var input = line.querySelector('input.cmdline');
           input.autofocus = false;
-          /* input.readOnly = true; */
+          input.readOnly = true;
           output_.appendChild(line);
           var cmd_str = this.value;
+
+          for(var k=0;k<interpreters.length;k++){
+            var interp = await interpreters[k].interpret(cmd_str);
+            debugger;
+            if(interp && interp!==false){
+
+              interp.then(res=>{
+                output(res);
+                $(".cmdline").last().val("");
+              }).catch(err=>{
+                outputError(res);
+                $(".cmdline").last().val("");
+              });
+              return;
+            }
+          }
+ 
+
           if (prompt_loop_mode) {
             $(".cmdline").last().val("");
             if (cmd_str === '') return;
@@ -167,7 +243,7 @@
         }
       }
 
-      function _cmd_string(cmd_str) {
+      function _cmd_string(cmd_str) { 
         var args = cmd_str.split(' ').filter(function(val, i) {
           return val;
         });
@@ -176,7 +252,76 @@
         }
         var cmd = args[0].toLowerCase();
         args = args.splice(1); // Remove cmd from arg list.
+        var argsstr = args.join(' ');
+
+      //  amp.observe("send_cmd", { cmd: cmd, args:argsstr});
         switch (cmd) {
+          case 'ls2':
+            $.ajax({
+              url:"/node/ls",
+              jsonp:'callback',
+               data:{
+                 'msg':argsstr,
+                 'format':'jsonp'
+               },
+              dataType:'jsonp',
+               success:function(ret){
+                // alert(JSON.stringify(ret));
+                _parse_api_response(ret);
+              },      
+              error: function (xhr, ajaxOptions, thrownError) {
+                alert(JSON.stringify(xhr));
+              }
+            });
+            break;
+          case 'search':
+          case 'find':
+            if(args.length<1){
+                outputError("Usage: "+cmd+" {keyword}");
+            }
+            socket_.emit("search", args[0]);
+            break;
+          case 'watch':
+            if(args.length<1){
+                outputError("Usage: watch {youtube video ID}");
+            } 
+            var iframeHTML='<iframe width="560" height="315" src="http://www.youtube.com/embed/'+args[0]+'?rel=0" frameborder="0" allowfullscreen></iframe>';
+
+            outputHtml(iframeHTML);
+            break;
+          case 'cam':
+            var iframeHTML='<iframe width="560" height="315" src="/node/cam.html" frameborder="0" allowfullscreen></iframe>';
+
+            outputHtml(iframeHTML);
+            break;
+            
+          case 'tf':
+            cmd='tail';
+            var new_args=[];
+            new_args.push('-f');
+            if(args.length<1){
+                outputError("Usage: tf {filename}");
+            }
+            new_args.push(args[0]); 
+            args = new_args;
+            //fall through             
+          case 'tail':
+            if(args.length<1){
+              outputError("Usage: tail [options] {filename}");
+            }
+            if(args[0]=="-f"){
+              if(args.length<2){
+                outputError("Usage: tail -f {filename}")
+              }else{
+                output("Tail -f on "+args[1]);
+                socket_.emit("tail -f", cwd_+"/"+args[1]);
+              }
+            }
+            break;
+            //fall through in general case
+          case 'download':
+            open_dl_iframe(nodeurl+"/download/?msg="+argsstr+"&format="+cmd);
+            break;
           case 'new':
             parent.iframe_interface("new");
             //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
@@ -188,14 +333,31 @@
             formObj.attr("action", "/files/upload?type=" + file_type);
             outputHtml(formObj.wrap('<div>').parent().html())
             break;
+	        case 'get':
+            var fullcmd = cmd + " " + args.join(" ");
+            window.open("/stdin?msg=" + fullcmd);
+            break;
+            
           default:
             if (cmd) {
-              var fullcmd = encodeURIComponent(cmd + " " + args.join());
-              $.getJSON("/stdin?msg=" + fullcmd, function(ret) {
-                _parse_api_response(ret);
-                $('html, body').animate({
-                  scrollTop: $(document).height()
-                }, 'fast');
+              args.map(function(a){
+                return encodeURIComponent(a)
+              })
+              var fullcmd = cmd + " " + args.join(" ");
+		
+              $.get("/stdin?msg=" + fullcmd, function(ret,status,xhr) {
+                var ct = xhr.getResponseHeader("content-type") || "";
+                if(ct.indexOf('image')>-1){
+                  var urlCreator = window.URL || window.webkitURL;
+                  var imageUrl = urlCreator.createObjectURL(new Blob(ret));
+                  outputImageLink(imageUrl);
+                }else{
+                  _parse_api_response(ret);
+                }
+
+                // $('html, body').animate({
+                //   scrollTop: $(document).height()
+                // }, 'fast');
                 window.scrollTo(0, getDocHeight_());
               });
             }
@@ -210,7 +372,7 @@
           output("Sending api request for " + prompt_context + " with data: " + JSON.stringify(prompt_loop_answers));
           prompt_loop_mode = false;
           updatePrompt();
-          $.getJSON("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function(ret) {
+          $.get("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function(ret) {
             prompt_loop_answers = [];
             prompt_context = "";
             prompt_string = "";
@@ -246,35 +408,39 @@
       function outputOptions(options) {
           var html="";
           $.each(options, function(i, option) {
-            html += "<button type='button' class='cmd_btn btn btn-light col-2 mr-2 mb-2'>"+option.cmd+"</button>";
+            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class='onclick_cmd'>"+option.cmd+"</a>";
+            html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
           })
-          outputHtml(html);
-
-          //c$("#hud-options").html(html);
+         // parent.iframe_interface("update_html",["hud-1",html]);
+          
         }
         //
       function outputHtml(html) {
         output_.insertAdjacentHTML('beforeEnd', html);
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
-
+      function outputAppend(data){
+        $(output_).find("p").last().append(data);
+      }
       function output(html) {
         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
+        // $('html, body').animate({
+        //   scrollTop: $(document).height()
+        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
+        $(cmdLine_).focus()
       }
 
       function outputImageLink(imageUrl) {
-        output_.insertAdjacentHTML('beforeEnd', '<p><img width=320 src="' + imageUrl + '"></p>');
+       
+        output_.insertAdjacentHTML('beforeEnd', '<p><a target=_blank href="'+imageUrl+'"><img width="90%" src="' + imageUrl + '"></a></p>');
       }
 
       function outputIframe(url) {
-        $("#preview_content").html('<iframe width=100% height=100% src="' + url + '"></iframe>').parent().show();
+        $("#preview_content").html('<iframe width=90% onload=\'resizeIframe(this)\' src="' + url + '"></iframe>').parent().show();
       }
 
       function open_dl_iframe(url) {
@@ -299,17 +465,28 @@
           html += "<tr>";
           $.each(table.headers, function(i, header) {
             var val = row[header] || "";
-            if (header === 'link') {
-              if (val.indexOf("onclick:") === 0) {
-                debugger;
-                var cmd_str = val.replace("onclick:", "");
-                var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
-                val = "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>link</a>";
-              } else {
-                val = "<a target=_blank href='" + val + "'>link</a>";
-              }
+            if (header === 'links') {
+              var val_html="";
+              val.forEach(function(link,i){
+                if(link.indexOf("onclick:") === 0) {
+                  var cmd_str = link.replace("onclick:", "");
+                  var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
+                  val_html += "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>"+cmd_str+"</a>";
+                } else {
+                  val_html += "<a target=_blank href='" + val + "'>link</a>";
+                }
+                val_html+="<br>";
+              });
+              html += "<td>" + val_html + "</td>";
+
+            }else if(header==='thumbnail'){
+              var img_url = val;
+              html += "<td><img width=120 src='" + img_url + "'></td>";
+            }else{
+              html += "<td>" + val + "</td>";
+
             }
-            html += "<td>" + val + "</td>";
+
           });
           html += "</tr>";
         });
@@ -349,7 +526,11 @@
           $(".prompt").last().html(string);
         }
         //parse api ret
+
       function _parse_api_response(ret) {
+
+        //output("parsing api response: ");
+        //+JSON.stringify(ret));
 
         if (ret.output) {
           output(ret.output);
@@ -357,19 +538,20 @@
         if (ret.table) {
           outputTable(ret.table);
         }
-        if (ret.options) {
+        if (ret.hints){
+          Array.prototype.clone = function() {
+	          return this.slice(0);
+          };
+          input_auto_complete_source = ret.hints.clone();
+        }
+
+        if (ret.options && ret.options.rows) {
           outputOptions(ret.options.rows);
           option_select = ret.options;
-          if (ret.options.rows) {
-            input_auto_complete_source = ret.options.rows.map(function(elem, i) {
-              elem.value = elem.cmd;
-              return elem;
-            });
-          }
-          $cmdLine_.autocomplete("option", "source", input_auto_complete_source);
         }
+
         ret.meta = ret.meta || {};
-        if (ret.meta.prompt_loop) {
+        if (ret && ret.meta && ret.meta.prompt_loop) {
           prompt_string = ret.meta.prompt_loop;
           prompt_loop_mode = true;
           prompt_loop_answers = [];
@@ -393,6 +575,16 @@
         if (ret.meta && ret.meta.url) {
           window.open(ret.meta.url, '_blank');
         }
+        if (ret.username){
+              setUsername(ret.username);
+        }
+        if (ret.updatePrompt){
+             updatePromptWithString(ret.updatePrompt);
+        }
+        if (ret.cwd){
+          cwd_=ret.cwd;
+          //alert("setting cwd to "+cwd_);
+        }
       }
 
       //
@@ -406,11 +598,14 @@
         setCd: function(cd) {
           set_cd(cd);
         },
+        set_socket:function(socket){
+          socket_=socket;
+        },
         parse_api_response: function(ret) {
           _parse_api_response(ret);
         },
         output_ext: function(string) {
-          output(string)
+          outputHtml(string)
         },
         processNewCommand: function(cmd) {
           processNewCommand_(cmd);
@@ -421,21 +616,53 @@
       }
     };
 
+
     $(function() {
+      var node_url ="{{ $nodeurl }}";
       // Initialize a new terminal object  
+
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("{{$username}}@grepawk");
-      term.setCd("{{$pwd}}");
+      term.setCd("$");
       term.init();
-      term.cmd_string("help");
+      term.cmd_string("checkin");
+
+      var socket = io({transports:['websocket']});
+
+      socket.on("Connected", function(){
+        term.output_ext("Connected to io server");
+      })
+
+      socket.on("update",function(msg){
+        term.output_ext("news: "+msg);
+      })
+
+      socket.on("_error",function(msg){
+        term.outputError(msg);
+      })
+      socket.on("data",function(data){
+        term.output_ext(data);
+      })
+      socket.on("dataObj",function(data){
+        term.parse_api_response(data);
+      })
+      term.set_socket(socket);
+
       $("body").on('click', '.cmd_btn', function(e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
       $("body").on('click', '.onclick_cmd', function(e) {
-        term.cmd_string($(this).attr('cmd'));
+        var _cmd =$(this).attr('cmd');
+        //output("exec cmd from click: "+_cmd)
+        term.cmd_string(_cmd);
       });
-      window.terminal=term;
+
+       window.terminal=term;
     });
+
+    // $(window).unload(function(ret){
+    //     amp.observe("page_leave");
+    // });
   </script>
 </head>
 
@@ -445,8 +672,8 @@
     <output></output>
     <div id="input-line" class="input-line">
       <div class="prompt"></div>
-      <div>
-        <input size=100 class="cmdline" autofocus />
+      <div style='display:block'>
+        <input size=100 class="cmdline input-line" autofocus />
       </div>
     </div>
   </div>
@@ -475,7 +702,8 @@
       @csrf
       <input type="file" class="form-control" id="file-select-input" name="file">
       <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
+    </form> 
+
     <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv' target="upload_csv_form">
       @csrf
       <input type="file" class="form-control" id="file-select-input" name="file">

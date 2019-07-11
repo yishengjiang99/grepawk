@@ -1,3 +1,457 @@
+commit c220d15c1bd3b1c299ef48fcba73f271f36db48a
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 21:09:18 2019 -0800
+
+    ..
+
+commit 26706b299b4d70395ce465dcd596306abc5793ca
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 20:18:48 2019 -0800
+
+    debug
+
+commit 6342952494ccd134e2d8b2bb3099d3f54ce9e91b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 20:15:47 2019 -0800
+
+    fix
+
+commit 55d9a424a97e644afa208bedb1cc3679eac5a9e7
+Merge: 038e1f9 40b0b4c
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 11 04:11:30 2019 +0000
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit 038e1f924ffcb07885d676cb2015b07af80cc7f9
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 11 04:11:23 2019 +0000
+
+    asfdfdsa
+
+commit 40b0b4c3c08719b12069d76cfdd9eff0e07cdb97
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 20:10:03 2019 -0800
+
+    fix
+
+commit 4028d5d57e812e5731887ca5c3f6606882b2fa41
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 19:29:56 2019 -0800
+
+     update
+
+commit c6d6bda71dccee6933133624742295f6933f21bf
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 18:48:32 2019 -0800
+
+    update
+
+commit fdff51709781083f874ee29dfe9fa0b571697a26
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 11 02:29:35 2019 +0000
+
+    folders
+
+commit 57bce57a1911f364917303b72ab146529bc72b28
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 17:53:07 2019 -0800
+
+    fix
+
+commit 0ebfa538ec89c172d09fb4ee7fa949c8db6d0a48
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 16:25:49 2019 -0800
+
+    fix bug
+
+commit 3ad6ed610493ec86d4914b98d501594e53edc16e
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 15:14:39 2019 -0800
+
+    ffadsf
+
+commit 42e706a8326c925d578b8c7f8229483cacb81eee
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 14:27:28 2019 -0800
+
+    ..
+
+commit 5762ff5662f3d066317871a354b9d088f871ae78
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 14:10:16 2019 -0800
+
+    loot
+
+commit deb2016200a0bb8cc0b4de6f5ab71681b25c736e
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 14:07:59 2019 -0800
+
+    bug fixes
+
+commit a846ce6c423671288cb2e560891a93c23dd5c38e
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 12:52:49 2019 -0800
+
+    fix errors
+
+commit 7779adffbb8347cba777b2b759b9d6a80028458e
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 12:11:06 2019 -0800
+
+    fix
+
+commit 31854ac486e795c677c6754cc046c132f0166763
+Merge: 629dbad 1d910ea
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 11:29:52 2019 -0800
+
+    fix
+
+commit 629dbadd49839964683c4689e7a43e9931a992b9
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 11:26:25 2019 -0800
+
+    fix
+
+commit 1d910ea651912b2da8ff726e43223d43ca8d6033
+Merge: 404bc4b 5d4dafb
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Thu Jan 10 18:37:23 2019 +0000
+
+    push
+
+commit 404bc4bed481e042ff524ea716db947b01ca916c
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Thu Jan 10 18:36:51 2019 +0000
+
+    fix
+
+commit 5d4dafb6462eff6355b5e52c540d47d9bcd54a77
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 10:15:15 2019 -0800
+
+    chat
+
+commit f3860893053e3b2a1399c68d07152d10961a88fd
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Thu Jan 10 04:06:13 2019 -0800
+
+    fix
+
+commit 442385006779dedc00761ff3bff060946aa91c06
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 23:59:55 2019 -0800
+
+    ...
+
+commit f4003e4fe28ef4d001d27126d8989ce4650b825c
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 20:37:12 2019 -0800
+
+    ..
+
+commit a7a04a440b2901d95a922bb24de93c66ed76a96b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 18:12:44 2019 -0800
+
+    ghetto css
+
+commit 8605af6f1ac89daf2163914cf9b3947534c0914b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 18:08:04 2019 -0800
+
+    saver prog
+
+commit 4c39aa5f6a16afc99a8a80202345a8780c065f34
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 17:42:00 2019 -0800
+
+    ....
+
+commit fa4f9c06b3e42e10a1eab188d92f3d6ce1835e28
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 16:42:04 2019 -0800
+
+    ..
+
+commit f04c77e575c9102c52260037015359b17e3fce4e
+Merge: 9e1a863 1220cec
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 14:22:10 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit 9e1a8635e37367019fe36afc46d3effb7ef10282
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 14:22:05 2019 -0800
+
+    save prog
+
+commit 1220cec1666f71e672506c3f860fc9ffbfeffb7c
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Wed Jan 9 20:43:23 2019 +0000
+
+    landing page
+
+commit b29fea7ef110561f43c92ca3336f7f8bd1cdd60f
+Merge: e439be6 eb372da
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Wed Jan 9 20:29:30 2019 +0000
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit e439be60955d2aa116723ca22c2a20f1ca497407
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Wed Jan 9 20:29:23 2019 +0000
+
+    added twitch channel
+
+commit eb372da74715a79b084695192a383c943d89fe84
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 11:11:55 2019 -0800
+
+    sql select, auto tab suggest
+
+commit 77adba17a86aa044e0bd684e6fe7f4f54c4d880c
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 09:44:40 2019 -0800
+
+    fix some backend
+
+commit b77e9746f972a86a9b6537dd8f62b7801c812503
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 08:48:42 2019 -0800
+
+    ui changes
+
+commit a3a20ef96ec77a28a75200593d604128c2840699
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 05:52:26 2019 -0800
+
+    save prog
+
+commit 28030bad8797ee22c4ae33b7cb8e18d04798ee9d
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 05:28:35 2019 -0800
+
+    auto complete. node js template
+
+commit 09d7931be3ad6e0c4dcbd26c275960094a91f97d
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Wed Jan 9 04:31:09 2019 -0800
+
+    ..
+
+commit 8287e0c63292e293911e9c37e87e6d21f4db958a
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Tue Jan 8 17:03:22 2019 -0800
+
+    ..
+
+commit e3c9410a5036d51b61d03e3346abea81a896d3d1
+Merge: ede57dd 49852a5
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Tue Jan 8 12:41:49 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit ede57dd3f3b1133542d5e1d63a26fc9544601193
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Tue Jan 8 12:41:44 2019 -0800
+
+    fi9x
+
+commit 49852a50057b8d167dd452c717efe769128fa763
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Tue Jan 8 17:51:06 2019 +0000
+
+    remove debug
+
+commit 867ebefa72ce8dd72a1bc2551a754bf276dfbc87
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Tue Jan 8 09:38:25 2019 -0800
+
+    landing page
+
+commit 0926725afe3ded2a6c0ce3cc0974a9b20c1ebbe1
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 23:22:44 2019 -0800
+
+    bug fix
+
+commit a13f2f7f52bb86ee15cda24f1c892cbd1a3f1620
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 20:59:08 2019 -0800
+
+    save prog
+
+commit 9f88f6dcc2aacefb67e36ae633704fd839fcb1bf
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Tue Jan 8 04:27:53 2019 +0000
+
+    fixerror
+
+commit d0d0063442c045935dd3c6a6c07a961b02bea4a0
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 20:24:27 2019 -0800
+
+    fix bug
+
+commit aa1a848d8690c309805aedc7be7d282f7fbe1c37
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 16:32:57 2019 -0800
+
+    fix ui
+
+commit ef56913163419d2c4dafa3ce48db1ae0d7a7c299
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 15:32:45 2019 -0800
+
+    hello
+
+commit 6ca91972928c8b470c541552004a7bede2ba0b25
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 12:23:30 2019 -0800
+
+    some more ui fixes
+
+commit f45b74942e3cc502de33d17480880d33a7bcfce7
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 11:34:35 2019 -0800
+
+    fix ui
+
+commit 4a813bccad555e2320c8fb60d3401e23bd52d146
+Merge: dbbaf42 0ab175f
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 10:42:51 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit dbbaf425e55cdfa700b45b38fb4f37c4177f7aaa
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 10:42:46 2019 -0800
+
+    fix bugs
+
+commit 0ab175fc53d1bcef1788fad91b7b30da852b34cb
+Author: yishengjiang99 <yisheng.jiang@gmail.com>
+Date:   Mon Jan 7 00:50:40 2019 -0800
+
+    Update README.md
+
+commit e632f89a83bb287420c0fd06973c1f419e9611fc
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 18:16:37 2019 -0800
+
+    UI fix
+
+commit a5ace5c0f505a65e715531e4ff61eae1c35ecb42
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 16:35:39 2019 -0800
+
+    ls for all
+
+commit 41ec0445c55c386e8ecbd96afe294e2a8749c7ea
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 16:27:17 2019 -0800
+
+    insert/select
+
+commit b766a06b4c1d4a6b07ffc2b14bb89a7c27eade5b
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 14:57:22 2019 -0800
+
+    create table and insert rows from prompt
+
+commit cb141d0f86cccb6017c8947ccf06c7939baf70ec
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 10:33:50 2019 -0800
+
+    remove (dangerous) debug
+
+commit 6181373b7eec787a897a1e1f028d77ff7e4bf797
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 10:31:53 2019 -0800
+
+    type ls to get started
+
+commit 82d406b8130e19dcf6685e1c918937da5c6f2b72
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sun Jan 6 10:30:11 2019 -0800
+
+    fix bugs
+
+commit 71ab952d987da205ae603b83cb2695f116c2fa7d
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sat Jan 5 22:32:29 2019 -0800
+
+    latest attempt at OOP-ish coding
+
+commit c6c90f416defe34d1315b59a54ec821b02f6804a
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sat Jan 5 18:15:33 2019 -0800
+
+    save prog
+
+commit 2dec2cba3c954a00f42682e18c1ad0db251d8af0
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sat Jan 5 17:51:18 2019 -0800
+
+    autocomplete
+
+commit be8a7ed6134e9783424c0f883d7fb99ed1cb4c34
+Merge: 7c831ac 78454ee
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sat Jan 5 15:45:21 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit 7c831acef34d3d6e129475ea0d7772f5077c4178
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Sat Jan 5 15:45:17 2019 -0800
+
+    cols
+
+commit 78454eeabff164fdfda5d56c7f6231c4e9651334
+Merge: 41efcab e4d11b5
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 21:22:17 2019 +0000
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit 41efcab12b3761e739781d92319058873a3e79be
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 21:22:13 2019 +0000
+
+    fix
+
+commit e4d11b5a45b6b042bff9d09c0f0894ecc77e8473
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 13:21:41 2019 -0800
+
+    ui fix
+
+commit 2ad5a57d80f3b2c9d94080ecdd9c4352ddf9fc41
+Merge: f7b2f47 be7b9ef
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 13:05:53 2019 -0800
+
+    Merge branch 'master' of github.com:yishengjiang99/grepawk
+
+commit f7b2f47f817df124d26a341f5df93a38207ee9b1
+Author: Yisheng Jiang <yisheng.jiang@gmail.com>
+Date:   Fri Jan 4 13:05:48 2019 -0800
+
+    ui display
+
+commit be7b9ef228abb298ac0c410f2a01402f656490e3
+Author: Yisheng @ grepawk_prod on aws <grepawk_prod>
+Date:   Fri Jan 4 20:45:29 2019 +0000
+
+    updated prod
+
 commit b13ea5eee6c9d9e5677f3c3dadfe5929195c1490
 Author: Yisheng Jiang <yisheng.jiang@gmail.com>
 Date:   Fri Jan 4 12:44:40 2019 -0800

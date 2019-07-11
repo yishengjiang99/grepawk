@@ -1,13 +1,13 @@
 @extends('layouts.app')
 @section('content')
 
-<div class='container'>
-   <div id='hud-top' class='bg-light' style='height:10px;top:63px'>sssss</div>
-   <div><iframe id='tty1' src="{{ url('/terminal') }}" height='640px' width='100%' frameborder="0" scrolling="yes"></iframe></div>
-   <div id='hud-options' class='container bg-light' style='height:32px'></div>
+<div class=row>   
+<div class='col-lg-10 offset-lg-2' style='margin-top:2em'>
+  <a href='/fullscreen' target='_blank'>Full Screen HD</a><br>
+  <iframe id='tty1' src='/terminal' height='560px' width='70%' frameborder="0" scrolling="yes"></iframe>
 </div>
-
-
+</div>
+<div style='width:100%;padding-bottom:100px'></div>
 <div id='new_file' class="modal" tabindex="-1" role="dialog">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
@@ -41,12 +41,17 @@
 
 <script>
  function iframe_interface(cmd,args){
-    debugger;
+    if(typeof cmd==='object' && cmd.update){
+        tty1.contentWindow.iframe_interface(cmd.update);
+    }
     if(cmd=="new"){
         $("#new_file").show();
     }
     if(cmd=="update_options"){
        $("#hud-options").html(args);
+    }
+    if(cmd=='update_html'){
+      $("#"+args[0]).html(args[1]);
     }
     if(cmd=='debug'){
        $("#debugger").append("<p>"+args+"<p>");
@@ -54,15 +59,7 @@
  }
 
  $(document).ready(function(){
-   //  var tty1_stdin=null;
-   //  var tty1 = document.getElementById('tty1');
-   //  var iframeDoc = tty1.contentDocument || iframe.contentWindow.document;
-   //  $(iframeDoc).ready(function(e){
-   //    alert('iframe ready');
-   //    tty1_stdin=tty1.contentWindow.iframe_interface;
-   //    debugger;
-   //  })
-
+   window.tty1 = document.getElementById('tty1');
    $("#new-file-submit").click(function(e){
       var postdata=$("#new_file_form").serialize();
       $.post("/files/new",postdata,function(retObj){
@@ -71,6 +68,12 @@
 
       })
    });
+   $("body").on('click', '.onclick_cmd', function(e) {
+        var _cmd =$(this).attr('cmd');
+        //output("exec cmd from click: "+_cmd)
+        tty1.contentWindow.terminal.cmd_string(_cmd);
+        e.preventDefault();
+      });
  })
 </script>
 @endsection

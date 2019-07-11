@@ -6,10 +6,17 @@
 
         <title>Grepawk</title>
         <script src="../js/app.js"></script>
-
-        <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.js" crossorigin="anonymous"></script>
+      
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+        
+<meta name="csrf-token" content="{{ csrf_token() }}">
     </head>
-    <body>
+    <body class='container-fluid'>
         <div class="flex-center position-ref full-height">
             @if (Route::has('login'))
                 <div class="top-right links">
@@ -26,26 +33,22 @@
             @endif
 
             <div class="content">
-<h3>GrepAwk 2.0</h3>
 <p>
-GrepAwk.net is a web service that generalizes several storage methods on a filesystem-style interface.
-<p>
-You can <a href='/register'>Register</a> or <a href='/login'>Login</a> with the email 'guest@grepawk.net' and password 'welcome'.
+GrepAwk.net is an MMORP-FS. A Massively-Multiuser Online Remote Proactive File System.
 </p>
-
-<p>If you are logged in, you can try the product at <a href='/home'>here</a></p>
-
-<h3>Recent Changes</h3>
-<div>
-<textarea cols=80 rows=30>
-@include("gitlog");
-</textarea>
-<br>
-<a target=_blank href='https://github.com/yishengjiang99/grepawk/commits/master'>
-https://github.com/yishengjiang99/grepawk/commits/master
-</a>
+<p>
+<a href='/fullscreen' target='_blank'>Full Screen HD</a>
+ 
+  <div class='col-lg-12' style='margin-top:25px'><iframe height=0 id='tty1' src="{{ url('/terminal') }}" height='500px' width='90%' frameborder="0" scrolling="yes"></iframe></div>
+</p>
+<h4>Live development stream:</h4>
+<div class=container>
+ <div class='row'>
+  <iframe class=col-md-12 src='/twitch' frameborder=0 scrolling=no width=854 height=480>
+  </iframe>
 </div>
-            </div>
+</div>
+</p>
         </div>
     </body>
 <script>
