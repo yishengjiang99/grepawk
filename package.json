@@ -2,7 +2,7 @@
   "name": "grepawk",
   "version": "1.1.0",
   "description": "remote shared vfs",
-  "main": "index.js",
+  "main": "ws.js",
   "scripts": {
     "test": "ls"
   },
@@ -20,6 +20,8 @@
   },
   "homepage": "http://grepawk.com",
   "dependencies": {
-    "ws": "^7.1.0"
+    "nodemon": "^1.19.1",
+    "ws": "^7.1.0",
+    "xterm": "^3.14.5"
   }
 }

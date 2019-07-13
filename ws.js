@@ -7,12 +7,18 @@ console.log("listening on "+port)
 
 wss.on('connection', ws => {
   ws.on('message', message => {
-    var cmd = spawn(message);
-    cmd.unref();
-    cmd.stdout.on('data',(data)=>{
-      console.log(data.toString('utf8'));
-      ws.send(data.toString('utf8'));
-    })
+    try{
+      message = message.trim();
+      var cmd = spawn(message);
+
+      cmd.unref();
+      cmd.stdout.on('data',(data)=>{
+        console.log(data.toString('utf8'));
+        ws.send(data.toString('utf8'));
+      })
+    }catch(err){
+      ws.send(err.message);
+    }
   })
   ws.send('hi!')
 })
