@@ -21,6 +21,7 @@
   "homepage": "http://grepawk.com",
   "dependencies": {
     "nodemon": "^1.19.1",
+    "pg": "^7.11.0",
     "ws": "^7.1.0",
     "xterm": "^3.14.5"
   }
