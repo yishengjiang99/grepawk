@@ -7,7 +7,7 @@
   </style>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-
+  <script src='js/user.js'></script>
   <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
@@ -41,8 +41,6 @@
       var history_ = [];
       var histpos_ = 0;
       var histtemp_ = 0;
-      var username_ = "guest";
-      var cd_ = "/public";
       var input_auto_complete_source = [];
       var option_select = [];
       var activePrompt = null;
@@ -54,7 +52,8 @@
       var prompt_context = "";
       var prompt_string = "";
       var socket=null;
-
+      var user = User();
+      var uuid = user.get_uuid();
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
       cmdLine_.focus();
@@ -439,10 +438,6 @@
         );
       }
 
-      function set_cd(cd) {
-        cd_ = cd;
-        updatePrompt();
-      }
 
       function setUsername(username) {
         username_ = username;
@@ -453,7 +448,7 @@
         if (prompt_loop_mode && prompt_string) {
           updatePromptWithString(prompt_string);
         } else {
-          updatePromptWithString('[' + username_ + ']:' + cd_);
+          updatePromptWithString('[' + username_ + ']:');
         }
       }
 
@@ -495,9 +490,6 @@
         if (ret.error) {
           outputError(ret.error);
         }
-        if (ret.cd) {
-          set_cd(ret.cd);
-        }
         if (ret.meta && ret.meta.prompts) {
           outputPrompts(ret.meta.prompts);
         }
@@ -529,15 +521,16 @@
           output('<br><br>'); 
 
           socket = new WebSocket("ws://localhost:8081");
+          socket.onopen = e =>{
+            socket.send("check-in "+uuid);
+          }
+
           socket.onmessage=function(event){
             output("<pre>"+event.data+"</pre>");
           }
         },
         setUsername: function(username) {
           setUsername(username);
-        },
-        setCd: function(cd) {
-          set_cd(cd);
         },
         set_socket:function(socket){
           socket=socket;
@@ -564,7 +557,6 @@
 
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("guest");
-      term.setCd("$");
       term.init();
       term.cmd_string("checkin");
 
