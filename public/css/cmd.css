@@ -14,6 +14,14 @@ body {
   font-size: 11pt;
   font-family: Inconsolata, monospace;
 }
+.terminal{
+    padding:10px;
+}
+pre{
+    background-color: black !important;
+    color: white !important;
+  }
+
 .terminal-container {
   background-color: black;
   color: white;

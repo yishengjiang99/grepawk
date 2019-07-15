@@ -30,14 +30,16 @@ wss.on('connection', (ws, request) => {
                 case 'check-in':
                     const uuid = args[0];
                     user = await db.get_user(uuid);
+                    user.username='guest';
                     console.log(user);
                     users[uuid] = {
                         ws: ws,
                         user: user
                     }
                     cwd = root_path + user.cwd;
+                    ws.send(JSON.stringify({userInfo:user}));
                     Object.values(users).forEach(_user => {
-                      _user.ws.send("user "+user.uuid+" arrived");
+                      _user.ws.send("stdout: user "+user.uuid+" arrived");
                     });
                     break;
                 case 'cd':
@@ -47,17 +49,17 @@ wss.on('connection', (ws, request) => {
                 case 'pwd':
                     ws.send(cwd);
                     break;
+                case 'ls':                    
                 case 'echo':
                 case 'mkdir':
                 case 'cat':
                 case 'touch':
-                case 'ls':
                     console.log(cwd);
                     exec(message, {
                         cwd: cwd
                     }, (err, stdout, stderr) => {
                         if (err) ws.send("error: " + err.message);
-                        else ws.send(stdout);
+                        else ws.send("stdout: "+stdout);
                     });
                     break;
                 default:
@@ -69,5 +71,4 @@ wss.on('connection', (ws, request) => {
             ws.send(err.message);
         }
     })
-    ws.send('hi!')
 })

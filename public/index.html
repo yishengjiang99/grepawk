@@ -1,13 +1,10 @@
 <html>
 <head>
   <title>cmd</title>
-  <link href="/css/cmd.css" rel="stylesheet">
-  <style>
-
-  </style>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src='js/user.js'></script>
+  <link href="/css/cmd.css" rel="stylesheet">
   <script>    
     iframe_interface=function(msg) {
         if(typeof msg ==='string'){
@@ -53,6 +50,7 @@
       var prompt_string = "";
       var socket=null;
       var user = User();
+      var userInfo;
       var uuid = user.get_uuid();
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
@@ -259,7 +257,7 @@
             outputHtml(iframeHTML);
             break;
           case 'cam':
-            var iframeHTML='<iframe width="560" height="315" src="/node/cam.html" frameborder="0" allowfullscreen></iframe>';
+            var iframeHTML='<iframe width="560" height="315" src="/cam.html" frameborder="0" allowfullscreen></iframe>';
 
             outputHtml(iframeHTML);
             break;         
@@ -447,8 +445,9 @@
       function updatePrompt() {
         if (prompt_loop_mode && prompt_string) {
           updatePromptWithString(prompt_string);
-        } else {
-          updatePromptWithString('[' + username_ + ']:');
+        } else if(userInfo){
+          var p = '[' + userInfo.username + ']:' + userInfo.cwd + '|xp:' +userInfo.xp;
+          updatePromptWithString(p);
         }
       }
 
@@ -512,6 +511,10 @@
           cwd_=ret.cwd;
           //alert("setting cwd to "+cwd_);
         }
+        if(ret.userInfo){
+          userInfo = ret.userInfo;
+          updatePrompt();
+        }
       }
 
       //
@@ -519,14 +522,17 @@
         init: function() {
           output('Welcome to grep|awk 2.0');
           output('<br><br>'); 
-
           socket = new WebSocket("ws://localhost:8081");
           socket.onopen = e =>{
             socket.send("check-in "+uuid);
           }
-
           socket.onmessage=function(event){
-            output("<pre>"+event.data+"</pre>");
+            if(event.data.startsWith("stdout: ")){
+              var stdout = event.data.replace("stdout: ","");
+              output("<pre>"+stdout+"</pre>");
+            }else{
+               _parse_api_response(JSON.parse(event.data));
+            }
           }
         },
         setUsername: function(username) {
@@ -558,8 +564,6 @@
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("guest");
       term.init();
-      term.cmd_string("checkin");
-
 
       $("body").on('click', '.cmd_btn', function(e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
@@ -622,5 +626,11 @@
     <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
   </div>
 </body>
-
+<script>
+ $(document).ready(function(){
+   $('body').click(e=>{
+    $(".cmdline").focus();
+ })
+}); 
+</script>
 </html>
