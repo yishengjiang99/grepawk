@@ -522,7 +522,8 @@
         init: function() {
           output('Welcome to grep|awk 2.0');
           output('<br><br>'); 
-          socket = new WebSocket("ws://localhost:8081");
+	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'ws://'+window.location.hostname+'/ws';
+          socket = new WebSocket(node_ws_url);
           socket.onopen = e =>{
             socket.send("check-in "+uuid);
           }
