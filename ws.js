@@ -1,5 +1,6 @@
+require('dotenv').config()
 const WebSocket = require('ws')
-const port = process.env.port || 8081
+const port = process.env.ws_port || 8081
 const wss = new WebSocket.Server({
     port: port
 })
@@ -48,15 +49,25 @@ wss.on('connection', (ws, request) => {
                     } 
 
                     var cd_parts = args[0].split("/");
-                    var current_pwd = user.cwd.split
-
-                    cwd += "/"+args[0];
-                    db.update_user(user.uuid, 'cwd', cwd.replace(root_path, ''));
+                    var current_pwd = user.cwd.split("/");
+                    cd_parts.forEach((elem, index)=>{
+                      if(elem=='..'){
+                        if(current_pwd.length>0) current_pwd.pop();
+                      }else{
+                        current_pwd.push(elem);
+                      }
+                    });
+                    user.cwd = current_pwd.join("/");
+                    cwd = root_path+"/"+user.cwd;
+                    db.update_user(user.uuid, 'cwd', user.cwd);
+                    ws.send(JSON.stringify({userInfo:user}));
                     break;
                 case 'pwd':
+                    
                     ws.send(cwd);
                     break;
-                case 'ls':                    
+                case 'ls':  
+                case 'git':                  
                 case 'echo':
                 case 'mkdir':
                 case 'cat':
