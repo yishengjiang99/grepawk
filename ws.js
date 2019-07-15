@@ -20,7 +20,6 @@ wss.on('connection', (ws, request) => {
     ws.on('message', async message => {
         try {
             var cwd = user ? root_path + user.cwd : root_path;
-
             message = message.trim();
             var t = message.split(" ");
             if (t === "") return;
@@ -43,6 +42,14 @@ wss.on('connection', (ws, request) => {
                     });
                     break;
                 case 'cd':
+                    if(args.length<1){
+                      ws.send("Usage: cd [directory]");
+                      break;
+                    } 
+
+                    var cd_parts = args[0].split("/");
+                    var current_pwd = user.cwd.split
+
                     cwd += "/"+args[0];
                     db.update_user(user.uuid, 'cwd', cwd.replace(root_path, ''));
                     break;
