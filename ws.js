@@ -9,7 +9,9 @@ const {
     spawn,
     execSync
 } = require('child_process');
+
 const db = require("./lib/db");
+const xfs = require("./lib/xfs");
 
 console.log("listening on " + port)
 
@@ -24,8 +26,8 @@ wss.on('connection', (ws, request) => {
             message = message.trim();
             var t = message.split(" ");
             if (t === "") return;
-            const cmd = t[0];
-            const args = t.length > 1 ? t.splice(1) : [];
+            var cmd = t[0];
+            var args = t.length > 1 ? t.splice(1) : [];
             switch (cmd) {
                 case 'check-in':
                     const uuid = args[0];
@@ -61,12 +63,24 @@ wss.on('connection', (ws, request) => {
                     cwd = root_path+"/"+user.cwd;
                     db.update_user(user.uuid, 'cwd', user.cwd);
                     ws.send(JSON.stringify({userInfo:user}));
+                    xfs.describe(cwd).then(desc=>{
+                      ws.send("stdout: "+desc);
+                    }).catch(err=>{
+                      throw err;
+                    });
                     break;
+                    //break;
                 case 'pwd':
                     
                     ws.send(cwd);
                     break;
+                case 'node':  
                 case 'ls':  
+               xfs.describe(cwd).then(desc=>{        
+                      ws.send("stdout: "+desc);
+                    }).catch(err=>{ 
+                      throw err;
+                    });
                 case 'git':                  
                 case 'echo':
                 case 'mkdir':
