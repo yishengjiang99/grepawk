@@ -252,7 +252,7 @@
             if(args.length<1){
                 outputError("Usage: watch {youtube video ID}");
             } 
-            var iframeHTML='<iframe width="560" height="315" src="http://www.youtube.com/embed/'+args[0]+'?rel=0" frameborder="0" allowfullscreen></iframe>';
+            var iframeHTML='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+args[0]+'?rel=0" frameborder="0" allowfullscreen></iframe>';
 
             outputHtml(iframeHTML);
             break;
@@ -522,7 +522,7 @@
         init: function() {
           output('Welcome to grep|awk 2.0');
           output('<br><br>'); 
-	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'ws://'+window.location.hostname+'/ws';
+	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'wss://'+window.location.hostname+'/ws';
           socket = new WebSocket(node_ws_url);
           socket.onopen = e =>{
             socket.send("check-in "+uuid);
