@@ -1,0 +1,11 @@
+[Unit]
+Description=ws.js
+
+[Service]
+Type=simple
+User=yisheng
+ExecStart=/usr/bin/node /home/yisheng/grepawk/ws.js
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
