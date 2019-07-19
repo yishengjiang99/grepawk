@@ -26,9 +26,14 @@ wss.on('connection', (ws, request) => {
     var user;
     ws.on('message', async message => {
         try {
+
             if (user && user.uuid && spawned_procs[user.uuid]) {
-              console.log("PROC");
-              console.log(spawned_procs[user.uuid]);
+                if(message==='esc'){
+                    spawned_procs[user.uuid].kill('SIGINT');
+                    delete(spawned_procs[user.uuid]);
+                }
+                console.log("PROC");
+                console.log(spawned_procs[user.uuid]);
                 const stdin = spawned_procs[user.uuid].stdin;
                 stdin.write(message);
                 return;
@@ -45,23 +50,37 @@ wss.on('connection', (ws, request) => {
                 case 'ps':
                 case 'node':
                 case 'nano':
-                    console.log("SPAWN "+cmd+" "+args.join(" "));
-                    const sub_proc = spawn(cmd, args);
-                    if (user && user.uuid) {
-                        spawned_procs[user.uuid] = sub_proc;
+                case 'head':
+                case 'tail':
+
+                    try {
+                        console.log("SPAWN " + cmd + " " + args.join(" "));
+                        const sub_proc = spawn(cmd, args, {
+                            cwd: cwd
+                        });
+                        if (user && user.uuid) {
+                            spawned_procs[user.uuid] = sub_proc;
+                        }
+                        if (sub_proc) {
+                            ws.send("set-spawn-mode-on");
+                        }
+                        sub_proc.stdout.on("data", data => {
+                            console.log(data);
+                            ws.send("stdout: " + data.toString('utf-8'));
+                        });
+                        sub_proc.stderr.on("data", data => {
+                            ws.send("stderr: " + data.toString('utf-8'));
+                        });
+                        sub_proc.on("close", () => {
+                            console.log("subproc closee");
+                            delete spawned_procs[user.uuid];
+                            ws.send("set-spawn-mode-off");
+                        });
+                        sub_proc.unref();
+
+                    } catch (err) {
+                        ws.send("stderr: " + err.message);
                     }
-                    if (sub_proc) {
-                        ws.send("set-spawn-mode-on");
-                    }
-                    sub_proc.stdout.on("data", data => {
-                        console.log(data);
-                        ws.send("stdout: " + data.toString('utf-8'));
-                    });
-                    sub_proc.on("close", () => {
-                      console.log("subproc closee");
-                        delete spawned_procs[user.uuid];
-                        ws.send("set-spawn-mode-off");
-                    });
                     break;
                 case 'check-in':
                     const uuid = args[0];
@@ -82,10 +101,9 @@ wss.on('connection', (ws, request) => {
                     quests.send_quests(user, ws);
                     console.log(user.quests);
                     xfs.send_description(cwd, ws);
-                    xfs.auto_complete_hints(cwd,ws);
+                    xfs.auto_complete_hints(cwd, ws);
                     break;
                 case 'cd':
-
                     if (args.length < 1) {
                         ws.send("Usage: cd [directory]");
                         break;
@@ -107,18 +125,19 @@ wss.on('connection', (ws, request) => {
                     }));
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
-                    quests.send_quests(user,ws);
-                 
-                    xfs.auto_complete_hints(cwd,ws);
+                    quests.send_quests(user, ws);
+
+                    xfs.auto_complete_hints(cwd, ws);
                     break;
                     //break;
                 case 'pwd':
-                    ws.send(cwd);
+                    console.log("user.cwd " + user.cwd);
+                    ws.send("stdout: " + user.cwd);
                     break;
                 case 'ls':
                     xfs.send_description(cwd, ws);
-                    quests.send_quests(user,ws);
-                    xfs.auto_complete_hints(cwd,ws);
+                    quests.send_quests(user, ws);
+                    xfs.auto_complete_hints(cwd, ws);
                 case 'echo':
                 case 'mkdir':
                 case 'cat':
@@ -128,12 +147,12 @@ wss.on('connection', (ws, request) => {
                         cwd: cwd
                     }, (err, stdout, stderr) => {
                         if (err) ws.send("error: " + err.message);
-                        else {  
+                        else {
                             ws.send("stdout: " + stdout);
                             quests.check_quest_completion(message, user, ws);
-                        }   
+                        }
                     });
-                    xfs.auto_complete_hints(cwd,ws);
+                    xfs.auto_complete_hints(cwd, ws);
                     break;
                 default:
                     ws.send(message);

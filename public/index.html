@@ -101,6 +101,12 @@
 
       //
       async function processNewCommand_(e) {
+        if(e.keyCode == 37){
+          socket.send("esc");
+        }
+        if(e.keyCode==67 && (e.metaKey || e.ctrKey)){
+          socket.send("esc");
+        }
         if(e.keyCode==32){ //space
           tab_scan_index=0;
           possible_matched_words=[];
@@ -241,10 +247,6 @@
         var argsstr = args.join(' ');
 
         switch (cmd) {
-          case 'checkin':
-                output('...')
-            break;
-
           case 'search':
           case 'find':
             if(args.length<1){
@@ -265,20 +267,6 @@
 
             outputHtml(iframeHTML);
             break;         
-          case 'tail':
-            if(args.length<1){
-              outputError("Usage: tail [options] {filename}");
-            }
-            if(args[0]=="-f"){
-              if(args.length<2){
-                outputError("Usage: tail -f {filename}")
-              }else{
-                output("Tail -f on "+args[1]);
-                socket.send("tail -f", cwd_+"/"+args[1]);
-              }
-            }
-            break;
-            //fall through in general case
           case 'download':
             open_dl_iframe(nodeurl+"/download/?msg="+argsstr+"&format="+cmd);
             break;
@@ -293,7 +281,6 @@
             formObj.attr("action", "/files/upload?type=" + file_type);
             outputHtml(formObj.wrap('<div>').parent().html())
             break;
-
           default:
             socket.send(cmd+" "+argsstr);
             break;
@@ -447,7 +434,10 @@
       }
 
       function updatePrompt() {
-        if (prompt_loop_mode && prompt_string) {
+        if(in_proc_mode){
+          updatePromptWithString("> ");
+        }
+        else if (prompt_loop_mode && prompt_string) {
           updatePromptWithString(prompt_string);
         } else if(userInfo){
           var p = '[' + userInfo.username + ']:' + userInfo.cwd + '|xp:' +userInfo.xp;
@@ -526,7 +516,7 @@
         init: function() {
           output('Welcome to grep|awk 2.0');
           output('<br><br>'); 
-	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'wss://'+window.location.hostname+'/ws';
+      	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'wss://'+window.location.hostname+'/ws';
           socket = new WebSocket(node_ws_url);
           socket.onopen = e =>{
             socket.send("check-in "+uuid);
@@ -535,6 +525,17 @@
             if(event.data.startsWith("stdout: ")){
               var stdout = event.data.replace("stdout: ","");
               output("<pre>"+stdout+"</pre>");
+            }else if(event.data.startsWith("stderr: ")){
+           
+              var stderr = event.data.replace("stderr: ","");
+              outputError(stderr);
+            }else if(event.data=='set-spawn-mode-on'){
+              in_proc_mode = true;
+              debugger;
+              updatePrompt();
+            }else if(event.data=='set-spawn-mode-off'){
+              in_proc_mode = false;
+              updatePrompt();
             }else{
                _parse_api_response(JSON.parse(event.data));
             }
