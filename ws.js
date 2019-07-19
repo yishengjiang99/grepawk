@@ -117,7 +117,10 @@ wss.on('connection', (ws, request) => {
                         throw err;
                     });
                     quests.list(user).then(quests => {
-                        ws.send("stdout: " + JSON.stringify(quests));
+                        quests.forEach((quest,index)=>{
+                           ws.send("stdout: Quest: <b>"+quest.description+"</b> "+quest.xp_reward+"xp");
+                        });
+                        //ws.send("stdout: " + JSON.stringify(quests));
                     }).catch(err => {
                         throw err
                     });
