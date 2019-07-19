@@ -9,6 +9,7 @@ const {
     spawn,
     execSync
 } = require('child_process');
+const utf8 = require('utf8');
 
 const db = require("./lib/db");
 const xfs = require("./lib/xfs");
@@ -17,19 +18,49 @@ const quests = require("./lib/quests");
 console.log("listening on " + port)
 
 var users = {};
+var spawned_procs = {};
+
 const root_path = __dirname + "/world";
 
 wss.on('connection', (ws, request) => {
     var user;
     ws.on('message', async message => {
         try {
+            if (user && user.uuid && spawned_procs[user.uuid]) {
+              console.log("PROC");
+              console.log(spawned_procs[user.uuid]);
+                const stdin = spawned_procs[user.uuid].stdin;
+                stdin.write(message);
+
+                return;
+            }
             var cwd = user ? root_path + user.cwd : root_path;
             message = message.trim();
             var t = message.split(" ");
             if (t === "") return;
             var cmd = t[0];
             var args = t.length > 1 ? t.splice(1) : [];
+
             switch (cmd) {
+                case 'node':
+                case 'nano':
+                    const sub_proc = spawn(cmd, args);
+                    if (user && user.uuid) {
+                        spawned_procs[user.uuid] = sub_proc;
+                    }
+                    if (sub_proc) {
+                        ws.send("set-spawn-mode-on");
+                    }
+                    sub_proc.stdout.on("data", data => {
+                        console.log(data);
+                        ws.send("stdout: " + data.toString('utf-8'));
+                    });
+                    sub_proc.on("close", () => {
+                      console.log("subproc closee");
+                        delete spawned_proc[user.uuid];
+                        ws.send("set-spawn-mode-off");
+                    });
+                    break;
                 case 'check-in':
                     const uuid = args[0];
                     user = await db.get_user(uuid);
@@ -46,13 +77,13 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         _user.ws.send("stdout: user " + user.uuid + " arrived");
                     });
+                    xfs.auto_complete_hints(cwd,ws);
                     break;
                 case 'cd':
                     if (args.length < 1) {
                         ws.send("Usage: cd [directory]");
                         break;
                     }
-
                     var cd_parts = args[0].split("/");
                     var current_pwd = user.cwd.split("/");
                     cd_parts.forEach((elem, index) => {
@@ -73,22 +104,24 @@ wss.on('connection', (ws, request) => {
                     }).catch(err => {
                         throw err;
                     });
+                    xfs.auto_complete_hints(cwd,ws);
                     break;
                     //break;
                 case 'pwd':
-
                     ws.send(cwd);
                     break;
-                case 'node':
                 case 'ls':
                     xfs.describe(cwd).then(desc => {
                         ws.send("stdout: " + desc);
                     }).catch(err => {
                         throw err;
                     });
-                    quests.list(user).then(quests=>{
-                      ws.send("stdout: "+JSON.stringify(quests));
-                    }).catch(err=>{throw err});
+                    quests.list(user).then(quests => {
+                        ws.send("stdout: " + JSON.stringify(quests));
+                    }).catch(err => {
+                        throw err
+                    });
+                    xfs.auto_complete_hints(cwd,ws);
                 case 'git':
                 case 'echo':
                 case 'mkdir':
@@ -101,6 +134,7 @@ wss.on('connection', (ws, request) => {
                         if (err) ws.send("error: " + err.message);
                         else ws.send("stdout: " + stdout);
                     });
+                    xfs.auto_complete_hints(cwd,ws);
                     break;
                 default:
                     ws.send(message);

@@ -52,6 +52,7 @@
       var user = User();
       var userInfo;
       var uuid = user.get_uuid();
+      var in_proc_mode = false;
 
       cmdLine_.addEventListener('click', inputTextClick_, false);
       cmdLine_.focus();
@@ -67,6 +68,9 @@
       var possible_matched_words=[];
       var tab_complete_last_word='';
       function historyHandler_(e) {
+        if (in_proc_mode && socket){
+          
+        }
         if (history_.length) {
           if (e.keyCode == 38 || e.keyCode == 40) {
             if (history_[histpos_]) {
