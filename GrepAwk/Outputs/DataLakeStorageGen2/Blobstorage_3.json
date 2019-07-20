@@ -1,0 +1,24 @@
+{
+    "Name": "greptest",
+    "DataSourceType": "Blob Storage",
+    "BlobStorageProperties": {
+        "StorageAccounts": [
+            {
+                "AccountName": "grepawk2",
+                "AccountKey": null
+            }
+        ],
+        "Container": "container",
+        "PathPattern": "",
+        "DateFormat": "yyyy/MM/dd",
+        "TimeFormat": "HH"
+    },
+    "DataSourceCredentialDomain": "e68ad52f-dc02-493e-8921-c7b8e81470b9.StreamAnalystics",
+    "Serialization": {
+        "Type": "Json",
+        "Encoding": "UTF8",
+        "FieldDelimiter": null,
+        "Format": "LineSeparated"
+    },
+    "ScriptType": "Output"
+}

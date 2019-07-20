@@ -1,0 +1,75 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ASAApiVersion": {
+            "value": "2017-04-01-preview"
+        },
+        "StreamAnalyticsJobName": {
+            "value": "GrepAwk"
+        },
+        "Location": {
+            "value": "Central US"
+        },
+        "OutputStartMode": {
+            "value": "JobStartTime"
+        },
+        "OutputStartTime": {
+            "value": "2019-01-01T00:00:00Z"
+        },
+        "DataLocale": {
+            "value": "en-US"
+        },
+        "OutputErrorPolicy": {
+            "value": "Stop"
+        },
+        "EventsLateArrivalMaxDelayInSeconds": {
+            "value": 5
+        },
+        "EventsOutOfOrderMaxDelayInSeconds": {
+            "value": 0
+        },
+        "EventsOutOfOrderPolicy": {
+            "value": "Adjust"
+        },
+        "StreamingUnits": {
+            "value": 3
+        },
+        "CompatibilityLevel": {
+            "value": "1.1"
+        },
+        "Input_IoTHub_2_iotHubNamespace": {
+            "value": "grepawkhub"
+        },
+        "Input_IoTHub_2_consumerGroupName": {
+            "value": "$Default"
+        },
+        "Input_IoTHub_2_endpoint": {
+            "value": "messages/events"
+        },
+        "Input_IoTHub_2_sharedAccessPolicyName": {
+            "value": "iothubowner"
+        },
+        "Input_IoTHub_2_sharedAccessPolicyKey": {
+            "value": null
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_Storage1_accountName": {
+            "value": "grepawk2"
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_Storage1_accountKey": {
+            "value": null
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_container": {
+            "value": "container"
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_pathPattern": {
+            "value": ""
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_dateFormat": {
+            "value": "yyyy/MM/dd"
+        },
+        "Output_DataLakeStorageGen2/Blobstorage_3_timeFormat": {
+            "value": "HH"
+        }
+    }
+}
