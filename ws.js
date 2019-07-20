@@ -7,20 +7,24 @@ const wss = new WebSocket.Server({
 const {
     exec,
     spawn,
-    execSync
 } = require('child_process');
 const utf8 = require('utf8');
 
 const db = require("./lib/db");
 const xfs = require("./lib/xfs");
 const quests = require("./lib/quests");
+const gsearch = require("./lib/gsearch");
 
 console.log("listening on " + port)
+console.log(process.env.GOOGLE_API_KEY);
 
 var users = {};
 var spawned_procs = {};
 
 const root_path = __dirname + "/world";
+const send_json_resonse = function (ws, json) {
+    ws.send(JSON.stringify(json));
+}
 
 wss.on('connection', (ws, request) => {
     var user;
@@ -28,7 +32,7 @@ wss.on('connection', (ws, request) => {
         try {
 
             if (user && user.uuid && spawned_procs[user.uuid]) {
-                if(message==='esc'){
+                if (message === 'esc') {
                     spawned_procs[user.uuid].kill('SIGINT');
                     delete(spawned_procs[user.uuid]);
                 }
@@ -46,13 +50,36 @@ wss.on('connection', (ws, request) => {
             var args = t.length > 1 ? t.splice(1) : [];
 
             switch (cmd) {
+                case 'search':
+                    if (args.length < 1) {
+                        ws.send("stderr: Usage: search <keyword>");
+                        return;
+                    }
+                    keyword = args[0];
+                    pageToken = args[1] || "";
+                    gsearch.find_youtube(keyword, 5, pageToken).then((ret) => {
+                        send_json_resonse(ws, {
+                            table: ret
+                        });
+                        if (ret.nextPage) {
+                            send_json_resonse(ws, {
+                                link: {
+                                    url: `onclick: search ${keyword} ${ret.nextPage}`,
+                                    text: 'more'
+                                }
+                            });
+                        }
+                    }).catch((err) => {
+                        console.error(err);
+                        ws.send("stderr: sssss" + err.message);
+                    })
+                    break;
                 case 'git':
                 case 'ps':
                 case 'node':
                 case 'nano':
                 case 'head':
                 case 'tail':
-
                     try {
                         console.log("SPAWN " + cmd + " " + args.join(" "));
                         const sub_proc = spawn(cmd, args, {

@@ -1,642 +1,674 @@
 <html>
+
 <head>
-  <title>cmd</title>
-  <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src='js/user.js'></script>
-  <link href="/css/cmd.css" rel="stylesheet">
-  <script>    
-    iframe_interface=function(msg) {
-        if(typeof msg ==='string'){
-          ret = $.parseJSON(msg);
-        }else{
-          ret=msg;
-        }
-        window.terminal.parse_api_response(ret);
-    }
- function resizeIframe(obj) {
-    obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
-  }
-
-    //adapted from https://codepen.io/anon/pen/gZGpBZ
-
-    var util = util || {};
-    util.toArray = function(list) {
-      return Array.prototype.slice.call(list || [], 0);
-    };    
-
-    var Terminal = Terminal || function(cmdLineContainer, outputContainer) {
-      
-      window.URL = window.URL || window.webkitURL;
-      window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
-      var interpreters = [];
-      input_auto_complete_source = [];
-      var cmdLine_ = document.querySelector(cmdLineContainer),
-        $cmdLine_ = $(cmdLineContainer);
-      var output_ = document.querySelector(outputContainer);
-
-      var history_ = [];
-      var histpos_ = 0;
-      var histtemp_ = 0;
-      var input_auto_complete_source = [];
-      var option_select = [];
-      var activePrompt = null;
-      var prompt_select = [];
-      var more_options_index = -1;
-      var full_options_mode = false;
-      var prompt_loop_mode = false;
-      var prompt_loop_answers = [];
-      var prompt_context = "";
-      var prompt_string = "";
-      var socket=null;
-      var user = User();
-      var userInfo;
-      var uuid = user.get_uuid();
-      var in_proc_mode = false;
-
-      cmdLine_.addEventListener('click', inputTextClick_, false);
-      cmdLine_.focus();
-      cmdLine_.addEventListener('keydown', historyHandler_, false);
-      cmdLine_.addEventListener('keydown', processNewCommand_, false);
-
-      function inputTextClick_(e) {
-        this.value = this.value;
-      }
-
-      //
-      var tab_scan_index=0;
-      var possible_matched_words=[];
-      var tab_complete_last_word='';
-      function historyHandler_(e) {
-        if (in_proc_mode && socket){
-          
-        }
-        if (history_.length) {
-          if (e.keyCode == 38 || e.keyCode == 40) {
-            if (history_[histpos_]) {
-              history_[histpos_] = this.value;
+    <title>cmd</title>
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src='js/user.js'></script>
+    <link href="/css/cmd.css" rel="stylesheet">
+    <script>
+        iframe_interface = function (msg) {
+            if (typeof msg === 'string') {
+                ret = $.parseJSON(msg);
             } else {
-              histtemp_ = this.value;
+                ret = msg;
             }
-          }
+            window.terminal.parse_api_response(ret);
+        }
 
-          if (e.keyCode == 38) { // up
-            histpos_--;
-            if (histpos_ < 0) {
-              histpos_ = 0;
+        function resizeIframe(obj) {
+            obj.style.height = obj.contentWindow.document.body.scrollHeight + 'px';
+        }
+
+        //adapted from https://codepen.io/anon/pen/gZGpBZ
+
+        var util = util || {};
+        util.toArray = function (list) {
+            return Array.prototype.slice.call(list || [], 0);
+        };
+
+        var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
+
+            window.URL = window.URL || window.webkitURL;
+            window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+            var interpreters = [];
+            input_auto_complete_source = [];
+            var cmdLine_ = document.querySelector(cmdLineContainer),
+                $cmdLine_ = $(cmdLineContainer);
+            var output_ = document.querySelector(outputContainer);
+
+            var history_ = [];
+            var histpos_ = 0;
+            var histtemp_ = 0;
+            var input_auto_complete_source = [];
+            var option_select = [];
+            var activePrompt = null;
+            var prompt_select = [];
+            var more_options_index = -1;
+            var full_options_mode = false;
+            var prompt_loop_mode = false;
+            var prompt_loop_answers = [];
+            var prompt_context = "";
+            var prompt_string = "";
+            var socket = null;
+            var user = User();
+            var userInfo;
+            var uuid = user.get_uuid();
+            var in_proc_mode = false;
+
+            cmdLine_.addEventListener('click', inputTextClick_, false);
+            cmdLine_.focus();
+            cmdLine_.addEventListener('keydown', historyHandler_, false);
+            cmdLine_.addEventListener('keydown', processNewCommand_, false);
+
+            function inputTextClick_(e) {
+                this.value = this.value;
             }
-          } else if (e.keyCode == 40) { // down
-            histpos_++;
-            if (histpos_ > history_.length) {
-              histpos_ = history_.length;
-            }
-          }
 
-          if (e.keyCode == 38 || e.keyCode == 40) {
-            this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
-            this.value = this.value; // Sets cursor to end of input.
-          }
-        }
-      }
+            //
+            var tab_scan_index = 0;
+            var possible_matched_words = [];
+            var tab_complete_last_word = '';
 
-      //
-      async function processNewCommand_(e) {
-        if(e.keyCode == 37){
-          socket.send("esc");
-        }
-        if(e.keyCode==67 && (e.metaKey || e.ctrKey)){
-          socket.send("esc");
-        }
-        if(e.keyCode==32){ //space
-          tab_scan_index=0;
-          possible_matched_words=[];
-        }
-        else if (e.keyCode == 9) { // tab
-          e.preventDefault();
-          var word_parts = this.value.split(" ");
-          if(this.value[this.value.length-1]===' '){ //starting new words
-            word_parts.push("");
-          } 
+            function historyHandler_(e) {
+                if (in_proc_mode && socket) {
 
-          if(word_parts.length==0) return;
-        
-          var tab_complete_source;
-          if(word_parts.length==1){
-            tab_complete_source = CMDS_;
-          }else{
-            tab_complete_source = input_auto_complete_source
-          }
-
-          var current_word = word_parts[word_parts.length-1];
-          var matched_words=[];
-          var matched_length=[];
-          var max_distance=current_word.length;
-          var closest_substring=current_word;
-
-          if(tab_scan_index>0 && possible_matched_words.length && tab_complete_last_word==current_word){
-            matched_words=possible_matched_words;
-          }else{
-            tab_complete_source.forEach(function(word,i){
-              console.log(word + " vs "+current_word)
-              if(word.startsWith(current_word)){
-                matched_words.push(word);
-              }
-            })
-          }
-   
-          if(matched_words.length==0){
-            //outputError("No matched file/folder name");
-            tab_scan_index=0;
-            
-          }else if(matched_words.length==1){
-            //("replacing "+ word_parts[word_parts.length-1]+" with "+matched_words[0]);
-            word_parts[word_parts.length-1]=matched_words[0];
-            var newstr=word_parts.join(" ");
-            this.value=newstr+ " ";
-            tab_scan_index=0;
-          }else{
-            var output_str ="";
-            matched_words.forEach(function(word,i){
-               if(i===tab_scan_index){
-                output_str+="<b>"+word+"</b>&emsp;";
-               }else{
-                output_str+=word+"&emsp;";
-               }
-
-            })
-            output(output_str);
-            
-            var suggested_str = matched_words[tab_scan_index++];
-            word_parts[word_parts.length-1]=suggested_str;
-            possible_matched_words=matched_words;
-            tab_complete_last_word=this.value;
-
-            this.value=word_parts.join(" ");
-            if($(this).parent().find(".ending").length>0){
-              $(this).parent().find(".ending")[0].html(suggested_str);
-            }else{
-              $(this).parent().append('<span class="ending" style="color: gray" >'+suggested_str+'</span>')
-            }
-            $("#ending").last().html(suggested_str)
-          }
-          return;
-        } else if (e.keyCode == 13) { // enter
-          if(this.value[this.value.length-1]==="\\"){
-            $(this).parent().append("<textarea id=newline_tf></textarea>");
-            $("#newline_tf").focus();
-            return;
-          }
-          // Save shell history.
-          if (this.value) {
-            history_[history_.length] = this.value;
-            histpos_ = history_.length;
-          }
-
-          // Duplicate current input and append to output section.
-          var line = this.parentNode.parentNode.cloneNode(true);
-          line.removeAttribute('id')
-          line.classList.add('line');
- 
-          var input = line.querySelector('input.cmdline');
-          input.autofocus = false;
-          input.readOnly = true;
-          output_.appendChild(line);
-          var cmd_str = this.value;
-
-          for(var k=0;k<interpreters.length;k++){
-            var interp = await interpreters[k].interpret(cmd_str);
-            if(interp && interp!==false){
-
-              interp.then(res=>{
-                output(res);
-                $(".cmdline").last().val("");
-              }).catch(err=>{
-                outputError(res);
-                $(".cmdline").last().val("");
-              });
-              return;
-            }
-          }
- 
-
-          if (prompt_loop_mode) {
-            $(".cmdline").last().val("");
-            if (cmd_str === '') return;
-            if (cmd_str === 'q' || cmd_str === "Q") {
-              prompt_loop_complete();
-            } else {
-              prompt_loop_answers.push(cmd_str);
-              output("Added " + cmd_str);
-            }
-            return;
-          }
-          _cmd_string(cmd_str);
-          $(".cmdline").last().val("");
-        }
-      }
-
-      function _cmd_string(cmd_str) { 
-        var args = cmd_str.split(' ').filter(function(val, i) {
-          return val;
-        });
-        if (args.length === 0) {
-          return;
-        }
-        var cmd = args[0].toLowerCase();
-        args = args.splice(1); // Remove cmd from arg list.
-        var argsstr = args.join(' ');
-
-        switch (cmd) {
-          case 'search':
-          case 'find':
-            if(args.length<1){
-                outputError("Usage: "+cmd+" {keyword}");
-            }
-            socket.send("search", args[0]);
-            break;
-          case 'watch':
-            if(args.length<1){
-                outputError("Usage: watch {youtube video ID}");
-            } 
-            var iframeHTML='<iframe width="560" height="315" src="https://www.youtube.com/embed/'+args[0]+'?rel=0" frameborder="0" allowfullscreen></iframe>';
-
-            outputHtml(iframeHTML);
-            break;
-          case 'cam':
-            var iframeHTML='<iframe width="560" height="315" src="/cam.html" frameborder="0" allowfullscreen></iframe>';
-
-            outputHtml(iframeHTML);
-            break;         
-          case 'download':
-            open_dl_iframe(nodeurl+"/download/?msg="+argsstr+"&format="+cmd);
-            break;
-          case 'new':
-            parent.iframe_interface("new");
-            //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
-            break;
-          case 'upload':
-            file_type = args[0] || "";
-            var formObj = $("#new_file_upload_form").clone();
-            formObj.attr("accept", "*." + file_type);
-            formObj.attr("action", "/files/upload?type=" + file_type);
-            outputHtml(formObj.wrap('<div>').parent().html())
-            break;
-          default:
-            socket.send(cmd+" "+argsstr);
-            break;
-        }
-        $('html, body').animate({
-          scrollTop: $(document).height()
-        }, 'fast');
-        window.scrollTo(0, getDocHeight_());
-      }
-
-      function prompt_loop_complete() {
-          output("Sending api request for " + prompt_context + " with data: " + JSON.stringify(prompt_loop_answers));
-          prompt_loop_mode = false;
-          updatePrompt();
-          $.get("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function(ret) {
-            prompt_loop_answers = [];
-            prompt_context = "";
-            prompt_string = "";
-            _parse_api_response(ret);
-          })
-        }
-        //
-      function formatColumns_(entries) {
-        var maxName = entries[0].name;
-        util.toArray(entries).forEach(function(entry, i) {
-          if (entry.name.length > maxName.length) {
-            maxName = entry.name;
-          }
-        });
-
-        var height = entries.length <= 3 ?
-          'height: ' + (entries.length * 15) + 'px;' : '';
-
-        // 12px monospace font yields ~7px screen width.
-        var colWidth = maxName.length * 7;
-
-        return ['<div class="ls-files" style="-webkit-column-width:',
-          colWidth, 'px;', height, '">'
-        ];
-      }
-
-      function outputPrompts(prompts) {
-        $.each(prompts, function(i, prompt) {
-          updatePromptWithString("What is the " + prompt + "? >");
-        });
-      }
-
-      function outputOptions(options) {
-          var html="";
-          $.each(options, function(i, option) {
-            var onclick_cmd="<a href='#' cmd='"+option.cmd+"' class='onclick_cmd'>"+option.cmd+"</a>";
-            html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>"+onclick_cmd+"</button></p>";
-          })
-         // parent.iframe_interface("update_html",["hud-1",html]);
-          
-        }
-        //
-      function outputHtml(html) {
-        output_.insertAdjacentHTML('beforeEnd', html);
-        // $('html, body').animate({
-        //   scrollTop: $(document).height()
-        // }, 'fast');
-        window.scrollTo(0, getDocHeight_());
-      }
-      function outputAppend(data){
-        $(output_).find("p").last().append(data);
-      }
-      function output(html) {
-        output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-        // $('html, body').animate({
-        //   scrollTop: $(document).height()
-        // }, 'fast');
-        window.scrollTo(0, getDocHeight_());
-        $(cmdLine_).focus()
-      }
-
-      function outputImageLink(imageUrl) {
-       
-        output_.insertAdjacentHTML('beforeEnd', '<p><a target=_blank href="'+imageUrl+'"><img width="90%" src="' + imageUrl + '"></a></p>');
-      }
-
-      function outputIframe(url) {
-        $("#preview_content").html('<iframe width=90% onload=\'resizeIframe(this)\' src="' + url + '"></iframe>').parent().show();
-      }
-
-      function open_dl_iframe(url) {
-        $("#file_download_1").attr("src", url);
-      }
-
-      function outputError(html) {
-        output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
-      }
-
-      function outputTable(table) {
-        var html = '<table border=1 bordercolor="white">';
-        if (table.headers) {
-          html += "<thead>";
-          html += "<tr>";
-          $.each(table.headers, function(i, header) {
-            html += "<th>" + header + "</th>";
-          });
-          html += "</tr></thead>";
-        }
-        $.each(table.rows, function(index, row) {
-          html += "<tr>";
-          $.each(table.headers, function(i, header) {
-            var val = row[header] || "";
-            if (header === 'links') {
-              var val_html="";
-              val.forEach(function(link,i){
-                if(link.indexOf("onclick:") === 0) {
-                  var cmd_str = link.replace("onclick:", "");
-                  var onclick = "term.processNewCommand(\"" + cmd_str + "\")";
-                  val_html += "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" + cmd_str + "'>"+cmd_str+"</a>";
-                } else {
-                  val_html += "<a target=_blank href='" + val + "'>link</a>";
                 }
-                val_html+="<br>";
-              });
-              html += "<td>" + val_html + "</td>";
+                if (history_.length) {
+                    if (e.keyCode == 38 || e.keyCode == 40) {
+                        if (history_[histpos_]) {
+                            history_[histpos_] = this.value;
+                        } else {
+                            histtemp_ = this.value;
+                        }
+                    }
 
-            }else if(header==='thumbnail'){
-              var img_url = val;
-              html += "<td><img width=120 src='" + img_url + "'></td>";
-            }else{
-              html += "<td>" + val + "</td>";
+                    if (e.keyCode == 38) { // up
+                        histpos_--;
+                        if (histpos_ < 0) {
+                            histpos_ = 0;
+                        }
+                    } else if (e.keyCode == 40) { // down
+                        histpos_++;
+                        if (histpos_ > history_.length) {
+                            histpos_ = history_.length;
+                        }
+                    }
 
+                    if (e.keyCode == 38 || e.keyCode == 40) {
+                        this.value = history_[histpos_] ? history_[histpos_] : histtemp_;
+                        this.value = this.value; // Sets cursor to end of input.
+                    }
+                }
             }
 
-          });
-          html += "</tr>";
+            //
+            async function processNewCommand_(e) {
+                if (e.keyCode == 37) {
+                    socket.send("esc");
+                }
+                if (e.keyCode == 67 && (e.metaKey || e.ctrKey)) {
+                    socket.send("esc");
+                }
+                if (e.keyCode == 32) { //space
+                    tab_scan_index = 0;
+                    possible_matched_words = [];
+                } else if (e.keyCode == 9) { // tab
+                    e.preventDefault();
+                    var word_parts = this.value.split(" ");
+                    if (this.value[this.value.length - 1] === ' ') { //starting new words
+                        word_parts.push("");
+                    }
+
+                    if (word_parts.length == 0) return;
+
+                    var tab_complete_source;
+                    if (word_parts.length == 1) {
+                        tab_complete_source = CMDS_;
+                    } else {
+                        tab_complete_source = input_auto_complete_source
+                    }
+
+                    var current_word = word_parts[word_parts.length - 1];
+                    var matched_words = [];
+                    var matched_length = [];
+                    var max_distance = current_word.length;
+                    var closest_substring = current_word;
+
+                    if (tab_scan_index > 0 && possible_matched_words.length && tab_complete_last_word ==
+                        current_word) {
+                        matched_words = possible_matched_words;
+                    } else {
+                        tab_complete_source.forEach(function (word, i) {
+                            console.log(word + " vs " + current_word)
+                            if (word.startsWith(current_word)) {
+                                matched_words.push(word);
+                            }
+                        })
+                    }
+
+                    if (matched_words.length == 0) {
+                        //outputError("No matched file/folder name");
+                        tab_scan_index = 0;
+
+                    } else if (matched_words.length == 1) {
+                        //("replacing "+ word_parts[word_parts.length-1]+" with "+matched_words[0]);
+                        word_parts[word_parts.length - 1] = matched_words[0];
+                        var newstr = word_parts.join(" ");
+                        this.value = newstr + " ";
+                        tab_scan_index = 0;
+                    } else {
+                        var output_str = "";
+                        matched_words.forEach(function (word, i) {
+                            if (i === tab_scan_index) {
+                                output_str += "<b>" + word + "</b>&emsp;";
+                            } else {
+                                output_str += word + "&emsp;";
+                            }
+
+                        })
+                        output(output_str);
+
+                        var suggested_str = matched_words[tab_scan_index++];
+                        word_parts[word_parts.length - 1] = suggested_str;
+                        possible_matched_words = matched_words;
+                        tab_complete_last_word = this.value;
+
+                        this.value = word_parts.join(" ");
+                        if ($(this).parent().find(".ending").length > 0) {
+                            $(this).parent().find(".ending")[0].html(suggested_str);
+                        } else {
+                            $(this).parent().append('<span class="ending" style="color: gray" >' +
+                                suggested_str + '</span>')
+                        }
+                        $("#ending").last().html(suggested_str)
+                    }
+                    return;
+                } else if (e.keyCode == 13) { // enter
+                    if (this.value[this.value.length - 1] === "\\") {
+                        $(this).parent().append("<textarea id=newline_tf></textarea>");
+                        $("#newline_tf").focus();
+                        return;
+                    }
+                    // Save shell history.
+                    if (this.value) {
+                        history_[history_.length] = this.value;
+                        histpos_ = history_.length;
+                    }
+
+                    // Duplicate current input and append to output section.
+                    var line = this.parentNode.parentNode.cloneNode(true);
+                    line.removeAttribute('id')
+                    line.classList.add('line');
+
+                    var input = line.querySelector('input.cmdline');
+                    input.autofocus = false;
+                    input.readOnly = true;
+                    output_.appendChild(line);
+                    var cmd_str = this.value;
+
+                    for (var k = 0; k < interpreters.length; k++) {
+                        var interp = await interpreters[k].interpret(cmd_str);
+                        if (interp && interp !== false) {
+
+                            interp.then(res => {
+                                output(res);
+                                $(".cmdline").last().val("");
+                            }).catch(err => {
+                                outputError(res);
+                                $(".cmdline").last().val("");
+                            });
+                            return;
+                        }
+                    }
+
+
+                    if (prompt_loop_mode) {
+                        $(".cmdline").last().val("");
+                        if (cmd_str === '') return;
+                        if (cmd_str === 'q' || cmd_str === "Q") {
+                            prompt_loop_complete();
+                        } else {
+                            prompt_loop_answers.push(cmd_str);
+                            output("Added " + cmd_str);
+                        }
+                        return;
+                    }
+                    _cmd_string(cmd_str);
+                    $(".cmdline").last().val("");
+                }
+            }
+
+            function _cmd_string(cmd_str) {
+                var args = cmd_str.split(' ').filter(function (val, i) {
+                    return val;
+                });
+                if (args.length === 0) {
+                    return;
+                }
+                var cmd = args[0].toLowerCase();
+                args = args.splice(1); // Remove cmd from arg list.
+                var argsstr = args.join(' ');
+
+                switch (cmd) {
+                    case 'watch':
+                        if (args.length < 1) {
+                            outputError("Usage: watch {youtube video ID}");
+                        }
+                        var iframeHTML = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' +
+                            args[0] + '?rel=0" frameborder="0" allowfullscreen></iframe>';
+                        outputHtml(iframeHTML);
+                        break;
+                    case 'cam':
+                        var iframeHTML =
+                            '<iframe width="560" height="315" src="/cam.html" frameborder="0" allowfullscreen></iframe>';
+
+                        outputHtml(iframeHTML);
+                        break;
+                    case 'download':
+                        open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
+                        break;
+                    case 'new':
+                        parent.iframe_interface("new");
+                        //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
+                        break;
+                    case 'upload':
+                        file_type = args[0] || "";
+                        var formObj = $("#new_file_upload_form").clone();
+                        formObj.attr("accept", "*." + file_type);
+                        formObj.attr("action", "/files/upload?type=" + file_type);
+                        outputHtml(formObj.wrap('<div>').parent().html())
+                        break;
+                    default:
+                        socket.send(cmd + " " + argsstr);
+                        break;
+                }
+                $('html, body').animate({
+                    scrollTop: $(document).height()
+                }, 'fast');
+                window.scrollTo(0, getDocHeight_());
+            }
+
+            function prompt_loop_complete() {
+                output("Sending api request for " + prompt_context + " with data: " + JSON.stringify(
+                    prompt_loop_answers));
+                prompt_loop_mode = false;
+                updatePrompt();
+                $.get("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function (
+                    ret) {
+                    prompt_loop_answers = [];
+                    prompt_context = "";
+                    prompt_string = "";
+                    _parse_api_response(ret);
+                })
+            }
+            //
+            function formatColumns_(entries) {
+                var maxName = entries[0].name;
+                util.toArray(entries).forEach(function (entry, i) {
+                    if (entry.name.length > maxName.length) {
+                        maxName = entry.name;
+                    }
+                });
+
+                var height = entries.length <= 3 ?
+                    'height: ' + (entries.length * 15) + 'px;' : '';
+
+                // 12px monospace font yields ~7px screen width.
+                var colWidth = maxName.length * 7;
+
+                return ['<div class="ls-files" style="-webkit-column-width:',
+                    colWidth, 'px;', height, '">'
+                ];
+            }
+
+            function outputPrompts(prompts) {
+                $.each(prompts, function (i, prompt) {
+                    updatePromptWithString("What is the " + prompt + "? >");
+                });
+            }
+
+            function outputOptions(options) {
+                var html = "";
+                $.each(options, function (i, option) {
+                    var onclick_cmd = "<a href='#' cmd='" + option.cmd + "' class='onclick_cmd'>" + option
+                        .cmd + "</a>";
+                    html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>" + onclick_cmd +
+                        "</button></p>";
+                })
+                // parent.iframe_interface("update_html",["hud-1",html]);
+
+            }
+            //
+            function outputHtml(html) {
+                output_.insertAdjacentHTML('beforeEnd', html);
+                // $('html, body').animate({
+                //   scrollTop: $(document).height()
+                // }, 'fast');
+                window.scrollTo(0, getDocHeight_());
+            }
+
+            function outputAppend(data) {
+                $(output_).find("p").last().append(data);
+            }
+
+            function output(html) {
+                output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
+                // $('html, body').animate({
+                //   scrollTop: $(document).height()
+                // }, 'fast');
+                window.scrollTo(0, getDocHeight_());
+                $(cmdLine_).focus()
+            }
+
+            function outputImageLink(imageUrl) {
+
+                output_.insertAdjacentHTML('beforeEnd', '<p><a target=_blank href="' + imageUrl +
+                    '"><img width="90%" src="' + imageUrl + '"></a></p>');
+            }
+
+            function outputIframe(url) {
+                $("#preview_content").html('<iframe width=90% onload=\'resizeIframe(this)\' src="' + url +
+                    '"></iframe>').parent().show();
+            }
+
+            function open_dl_iframe(url) {
+                $("#file_download_1").attr("src", url);
+            }
+
+            function outputError(html) {
+                output_.insertAdjacentHTML('beforeEnd', '<p style="color:red">' + html + '</p>');
+            }
+
+            function outputTable(table) {
+                var html = '<table border=1 bordercolor="white">';
+                if (table.headers) {
+                    html += "<thead>";
+                    html += "<tr>";
+                    $.each(table.headers, function (i, header) {
+                        html += "<th>" + header + "</th>";
+                    });
+                    html += "</tr></thead>";
+                }
+                $.each(table.rows, function (index, row) {
+                    html += "<tr>";
+                    $.each(table.headers, function (i, header) {
+                        var val = row[header] || "";
+                        if (header === 'links') {
+                            var val_html = "";
+                            val.forEach(function (link, i) {
+                                if (link.indexOf("onclick:") === 0) {
+                                    var cmd_str = link.replace("onclick:", "");
+                                    var onclick = "term.processNewCommand(\"" + cmd_str +
+                                        "\")";
+                                    val_html +=
+                                        "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" +
+                                        cmd_str + "'>" + cmd_str + "</a>";
+                                } else {
+                                    val_html += "<a target=_blank href='" + val +
+                                        "'>link</a>";
+                                }
+                                val_html += "<br>";
+                            });
+                            html += "<td>" + val_html + "</td>";
+
+                        } else if (header === 'thumbnail') {
+                            var img_url = val;
+                            html += "<td><img width=120 src='" + img_url + "'></td>";
+                        } else {
+                            html += "<td>" + val + "</td>";
+
+                        }
+
+                    });
+                    html += "</tr>";
+                });
+                html += "</table>";
+                outputHtml("<div style='max-height:400px;overflow-y:scroll'>" + html + "</div>");
+            }
+
+            // Cross-browser impl to get document's height.
+            function getDocHeight_() {
+                var d = document;
+                return Math.max(
+                    Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
+                    Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
+                    Math.max(d.body.clientHeight, d.documentElement.clientHeight)
+                );
+            }
+
+
+            function setUsername(username) {
+                username_ = username;
+                updatePrompt();
+            }
+
+            function updatePrompt() {
+                if (in_proc_mode) {
+                    updatePromptWithString("> ");
+                } else if (prompt_loop_mode && prompt_string) {
+                    updatePromptWithString(prompt_string);
+                } else if (userInfo) {
+                    var p = '[' + userInfo.username + ']:' + userInfo.cwd + '|xp:' + userInfo.xp;
+                    updatePromptWithString(p);
+                }
+            }
+
+            function updatePromptWithString(string) {
+                $(".prompt").last().html(string);
+            }
+            //parse api ret
+
+            function _parse_api_response(ret) {
+                if (ret.output) {
+                    output(ret.output);
+                }
+                if (ret.table) {
+                    outputTable(ret.table);
+                }
+                if (ret.hints) {
+                    Array.prototype.clone = function () {
+                        return this.slice(0);
+                    };
+                    input_auto_complete_source = ret.hints.clone();
+                }
+
+                if (ret.options && ret.options.rows) {
+                    outputOptions(ret.options.rows);
+                    option_select = ret.options;
+                }
+
+                ret.meta = ret.meta || {};
+                if (ret && ret.meta && ret.meta.prompt_loop) {
+                    prompt_string = ret.meta.prompt_loop;
+                    prompt_loop_mode = true;
+                    prompt_loop_answers = [];
+                    prompt_context = ret.meta.prompt_context;
+                }
+                if (ret.error) {
+                    outputError(ret.error);
+                }
+                if (ret.meta && ret.meta.prompts) {
+                    outputPrompts(ret.meta.prompts);
+                }
+                if (ret.meta && ret.meta.download_link) {
+                    open_dl_iframe(ret.meta.download_link);
+                }
+                if (ret.meta && ret.meta.image_link) {
+                    outputImageLink(ret.meta.image_link);
+                }
+                if (ret.meta && ret.meta.url) {
+                    window.open(ret.meta.url, '_blank');
+                }
+                if (ret.username) {
+                    setUsername(ret.username);
+                }
+                if (ret.updatePrompt) {
+                    updatePromptWithString(ret.updatePrompt);
+                }
+                if (ret.cwd) {
+                    cwd_ = ret.cwd;
+                    //alert("setting cwd to "+cwd_);
+                }
+                if (ret.link) {
+                    var url = ret.link.url;
+                    const text = ret.link.text || "link";
+                    var val_html="";
+                    if (url.indexOf("onclick:") === 0) {
+                        var cmd_str = url.replace("onclick:", "");
+                        var onclick = "term.processNewCommand(\"" + cmd_str +
+                            "\")";
+                        val_html +=
+                            "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" +
+                            cmd_str + "'>" + text + "</a>";
+                    } else {
+                        val_html += "<a target=_blank href='" + url +
+                            "'>" + text + "</a>";
+                    }
+                    outputHtml(val_html);
+                }
+                if (ret.userInfo) {
+                    userInfo = ret.userInfo;
+                    updatePrompt();
+                }
+            }
+
+            //
+            return {
+                init: function () {
+                    output('Welcome to grep|awk 2.0');
+                    output('<br><br>');
+                    var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' :
+                        'wss://' + window.location.hostname + '/ws';
+                    socket = new WebSocket(node_ws_url);
+                    socket.onopen = e => {
+                        socket.send("check-in " + uuid);
+                    }
+                    socket.onmessage = function (event) {
+                        if (event.data.startsWith("stdout: ")) {
+                            var stdout = event.data.replace("stdout: ", "");
+                            output("<pre>" + stdout + "</pre>");
+                        } else if (event.data.startsWith("stderr: ")) {
+
+                            var stderr = event.data.replace("stderr: ", "");
+                            outputError(stderr);
+                        } else if (event.data == 'set-spawn-mode-on') {
+                            in_proc_mode = true;
+                            debugger;
+                            updatePrompt();
+                        } else if (event.data == 'set-spawn-mode-off') {
+                            in_proc_mode = false;
+                            updatePrompt();
+                        } else {
+                            _parse_api_response(JSON.parse(event.data));
+                        }
+                    }
+                },
+                setUsername: function (username) {
+                    setUsername(username);
+                },
+                set_socket: function (socket) {
+                    socket = socket;
+                },
+                parse_api_response: function (ret) {
+                    _parse_api_response(ret);
+                },
+                output_ext: function (string) {
+                    outputHtml(string)
+                },
+                processNewCommand: function (cmd) {
+                    processNewCommand_(cmd);
+                },
+                cmd_string: function (str) {
+                    _cmd_string(str);
+                }
+            }
+        };
+
+
+        $(function () {
+            var node_url = "http://localhost:3000";
+            // Initialize a new terminal object  
+
+            var term = new Terminal('#input-line .cmdline', '#container output');
+            term.setUsername("guest");
+            term.init();
+
+            $("body").on('click', '.cmd_btn', function (e) {
+                term.cmd_string($(this).find('a').first().attr('cmd'));
+            });
+            $("body").on('click', '.onclick_cmd', function (e) {
+                var _cmd = $(this).attr('cmd');
+                term.cmd_string(_cmd);
+            });
+
+            window.terminal = term;
         });
-        html += "</table>";
-        outputHtml("<div style='max-height:400px;overflow-y:scroll'>" + html + "</div>");
-      }
 
-      // Cross-browser impl to get document's height.
-      function getDocHeight_() {
-        var d = document;
-        return Math.max(
-          Math.max(d.body.scrollHeight, d.documentElement.scrollHeight),
-          Math.max(d.body.offsetHeight, d.documentElement.offsetHeight),
-          Math.max(d.body.clientHeight, d.documentElement.clientHeight)
-        );
-      }
-
-
-      function setUsername(username) {
-        username_ = username;
-        updatePrompt();
-      }
-
-      function updatePrompt() {
-        if(in_proc_mode){
-          updatePromptWithString("> ");
-        }
-        else if (prompt_loop_mode && prompt_string) {
-          updatePromptWithString(prompt_string);
-        } else if(userInfo){
-          var p = '[' + userInfo.username + ']:' + userInfo.cwd + '|xp:' +userInfo.xp;
-          updatePromptWithString(p);
-        }
-      }
-
-      function updatePromptWithString(string) {
-          $(".prompt").last().html(string);
-        }
-        //parse api ret
-
-      function _parse_api_response(ret) {
-
-        //output("parsing api response: ");
-        //+JSON.stringify(ret));
-
-        if (ret.output) {
-          output(ret.output);
-        }
-        if (ret.table) {
-          outputTable(ret.table);
-        }
-        if (ret.hints){
-          Array.prototype.clone = function() {
-	          return this.slice(0);
-          };
-          input_auto_complete_source = ret.hints.clone();
-        }
-
-        if (ret.options && ret.options.rows) {
-          outputOptions(ret.options.rows);
-          option_select = ret.options;
-        }
-
-        ret.meta = ret.meta || {};
-        if (ret && ret.meta && ret.meta.prompt_loop) {
-          prompt_string = ret.meta.prompt_loop;
-          prompt_loop_mode = true;
-          prompt_loop_answers = [];
-          prompt_context = ret.meta.prompt_context;
-        }
-        if (ret.error) {
-          outputError(ret.error);
-        }
-        if (ret.meta && ret.meta.prompts) {
-          outputPrompts(ret.meta.prompts);
-        }
-        if (ret.meta && ret.meta.download_link) {
-          open_dl_iframe(ret.meta.download_link);
-        }
-        if (ret.meta && ret.meta.image_link) {
-          outputImageLink(ret.meta.image_link);
-        }
-        if (ret.meta && ret.meta.url) {
-          window.open(ret.meta.url, '_blank');
-        }
-        if (ret.username){
-              setUsername(ret.username);
-        }
-        if (ret.updatePrompt){
-             updatePromptWithString(ret.updatePrompt);
-        }
-        if (ret.cwd){
-          cwd_=ret.cwd;
-          //alert("setting cwd to "+cwd_);
-        }
-        if(ret.userInfo){
-          userInfo = ret.userInfo;
-          updatePrompt();
-        }
-      }
-
-      //
-      return {
-        init: function() {
-          output('Welcome to grep|awk 2.0');
-          output('<br><br>'); 
-      	  var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' : 'wss://'+window.location.hostname+'/ws';
-          socket = new WebSocket(node_ws_url);
-          socket.onopen = e =>{
-            socket.send("check-in "+uuid);
-          }
-          socket.onmessage=function(event){
-            if(event.data.startsWith("stdout: ")){
-              var stdout = event.data.replace("stdout: ","");
-              output("<pre>"+stdout+"</pre>");
-            }else if(event.data.startsWith("stderr: ")){
-           
-              var stderr = event.data.replace("stderr: ","");
-              outputError(stderr);
-            }else if(event.data=='set-spawn-mode-on'){
-              in_proc_mode = true;
-              debugger;
-              updatePrompt();
-            }else if(event.data=='set-spawn-mode-off'){
-              in_proc_mode = false;
-              updatePrompt();
-            }else{
-               _parse_api_response(JSON.parse(event.data));
-            }
-          }
-        },
-        setUsername: function(username) {
-          setUsername(username);
-        },
-        set_socket:function(socket){
-          socket=socket;
-        },
-        parse_api_response: function(ret) {
-          _parse_api_response(ret);
-        },
-        output_ext: function(string) {
-          outputHtml(string)
-        },
-        processNewCommand: function(cmd) {
-          processNewCommand_(cmd);
-        },
-        cmd_string: function(str) {
-          _cmd_string(str);
-        }
-      }
-    };
-
-
-    $(function() {
-      var node_url ="http://localhost:3000";
-      // Initialize a new terminal object  
-
-      var term = new Terminal('#input-line .cmdline', '#container output');
-      term.setUsername("guest");
-      term.init();
-
-      $("body").on('click', '.cmd_btn', function(e) {
-        term.cmd_string($(this).find('a').first().attr('cmd'));
-      });
-      $("body").on('click', '.onclick_cmd', function(e) {
-        var _cmd =$(this).attr('cmd');
-        term.cmd_string(_cmd);
-      });
-
-       window.terminal=term;
-    });
-  </script>
+    </script>
 </head>
 
-<body  style='background-color:black;color:white;'>
-<div class='position-relative'>
-  <div id="container">
-    <output></output>
-    <div id="input-line" class="input-line">
-      <div class="prompt"></div>
-      <div style='display:block'>
-        <input size=100 class="cmdline input-line" autofocus />
-      </div>
+<body style='background-color:black;color:white;'>
+    <div class='position-relative'>
+        <div id="container">
+            <output></output>
+            <div id="input-line" class="input-line">
+                <div class="prompt"></div>
+                <div style='display:block'>
+                    <input size=100 class="cmdline input-line" autofocus />
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 </body>
 
 
-  <div id='forms-section' style='display:none'>
+<div id='forms-section' style='display:none'>
     <form id='new_file_form'>
-      <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA">      <div class="form-group">
-        <label for="file-name-input">File Name</label>
-        <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
-      </div>
-      <div class="form-group">
-        <label for="file-content-input">File Content</label>
-        <TextArea type="text" name='filecontent' class="form-control" id="file-content-input" placeholder="Another input"></TextArea>
-      </div>
-      <div class="form-group">
-        <div class="offset-sm-2 col-sm-10">
-          <button id='new-file-submit' class="btn btn-primary">Create</button>
+        <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA">
+        <div class="form-group">
+            <label for="file-name-input">File Name</label>
+            <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
         </div>
-      </div>
+        <div class="form-group">
+            <label for="file-content-input">File Content</label>
+            <TextArea type="text" name='filecontent' class="form-control" id="file-content-input"
+                placeholder="Another input"></TextArea>
+        </div>
+        <div class="form-group">
+            <div class="offset-sm-2 col-sm-10">
+                <button id='new-file-submit' class="btn btn-primary">Create</button>
+            </div>
+        </div>
     </form>
-    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
-      <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA">      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form> 
-
-    <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv' target="upload_csv_form">
-      <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA">      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
+    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload'
+        target="uploadTrg">
+        <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA"> <input type="file"
+            class="form-control" id="file-select-input" name="file">
+        <input type="submit" class="form-control" name="submitBtn" value="Upload" />
     </form>
-  </div>
 
-  <div id='iframes' style='display:none'>
+    <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
+        target="upload_csv_form">
+        <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA"> <input type="file"
+            class="form-control" id="file-select-input" name="file">
+        <input type="submit" class="form-control" name="submitBtn" value="Upload" />
+    </form>
+</div>
+
+<div id='iframes' style='display:none'>
     <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
     <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
     <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-  </div>
+</div>
 </body>
 <script>
- $(document).ready(function(){
-   $('body').click(e=>{
-    $(".cmdline").focus();
- })
-}); 
+    $(document).ready(function () {
+        $('body').click(e => {
+            $(".cmdline").focus();
+        })
+    });
+
 </script>
+
 </html>
