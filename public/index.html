@@ -5,6 +5,8 @@
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src='js/user.js'></script>
+  <script src='js/file.js'></script>
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="css/cmd.css" rel="stylesheet">
   <script>
@@ -250,12 +252,7 @@
             var formId =`file-${generateUUID()}`;
             var inputField = `<input type='file' id='${formId}' name='file' />`;
             outputHtml(inputField);
-            $("#"+formId).change(event=>{
-              var file = event.target.file[0];
-              var rh = file.stream();
-              
-              debugger;
-            })
+            VfsClient.uploader(formId);
             break;
           default:
             socket.send(cmd + " " + argsstr);

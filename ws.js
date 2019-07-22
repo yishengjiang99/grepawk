@@ -160,7 +160,7 @@ wss.on('connection', (ws, request) => {
                     ws.send("stdout: " + user.cwd);
                     break;
                 case 'ls':
-                    xfs.send_description(cwd, ws);
+                    //xfs.send_description(cwd, ws);
                     quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
                 case 'echo':
