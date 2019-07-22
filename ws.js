@@ -110,7 +110,7 @@ wss.on('connection', (ws, request) => {
                     break;
                 case 'check-in':
                     const uuid = args[0];
-                    user = await db.get_user(uuid,request.connection.remoteAddress);
+                    user = await db.get_user(uuid,request.headers['x-forwarded-for'] || request.connection.remoteAddress);
                     console.log(user);
                     users[uuid] = {
                         ws: ws,

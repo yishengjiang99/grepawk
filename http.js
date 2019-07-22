@@ -1,7 +1,9 @@
 
 const express = require('express')
 const app = express()
-const httpport = 3000
+const httpport = 8080
+
+app.set('base', '/node');
 
 app.get('/', (req, res) => res.send(200))
 app.get('/:query', (req, res) => {
