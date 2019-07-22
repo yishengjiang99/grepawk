@@ -27,6 +27,7 @@ const send_json_resonse = function (ws, json) {
 
 wss.on('connection', (ws, request) => {
     var user;
+    console.log(request.connection.remoteAddress);
     ws.on('message', async message => {
         try {
             if (user && user.uuid && spawned_procs[user.uuid]) {
@@ -109,8 +110,7 @@ wss.on('connection', (ws, request) => {
                     break;
                 case 'check-in':
                     const uuid = args[0];
-                    user = await db.get_user(uuid);
-                    user.username = 'guest';
+                    user = await db.get_user(uuid,request.connection.remoteAddress);
                     console.log(user);
                     users[uuid] = {
                         ws: ws,
@@ -121,7 +121,7 @@ wss.on('connection', (ws, request) => {
                         userInfo: user
                     }));
                     Object.values(users).forEach(_user => {
-                        _user.ws.send("stdout: user " + user.uuid + " arrived");
+                        _user.ws.send("stdout: user " + user.username + " arrived");
                     });
                     quests.send_quests(user, ws);
                     console.log(user.quests);
