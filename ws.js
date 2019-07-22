@@ -128,6 +128,11 @@ wss.on('connection', (ws, request) => {
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     break;
+                case 'shout':
+                    Object.values(users).forEach(_user => {
+                        _user.ws.send("stdout: " + user.username + " shouts '"+args.join(" ")+"'");
+                    });
+                    break;
                 case 'cd':
                     if (args.length < 1) {
                         ws.send("Usage: cd [directory]");
