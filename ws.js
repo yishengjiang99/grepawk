@@ -16,7 +16,6 @@ const quests = require("./lib/quests");
 const gsearch = require("./lib/gsearch");
 
 console.log("listening on " + port)
-console.log(process.env.GOOGLE_API_KEY);
 
 var users = {};
 var spawned_procs = {};
@@ -30,7 +29,6 @@ wss.on('connection', (ws, request) => {
     var user;
     ws.on('message', async message => {
         try {
-
             if (user && user.uuid && spawned_procs[user.uuid]) {
                 if (message === 'esc') {
                     spawned_procs[user.uuid].kill('SIGINT');
@@ -191,3 +189,5 @@ wss.on('connection', (ws, request) => {
         }
     })
 })
+
+require("./http.js");
