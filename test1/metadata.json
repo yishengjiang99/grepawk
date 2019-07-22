@@ -1,0 +1,1 @@
+[{"isLocal":false,"inputName":"IoTHub_2","inputFile":"/usr/local/var/www/blog/GrepAwk/Inputs/IoTHub_2.json","columns":[{"name":"messageId"},{"name":"deviceId"},{"name":"temperature"},{"name":"humidity"}]}]

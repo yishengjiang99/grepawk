@@ -11,17 +11,20 @@ body {
   margin: 0;
 }
 body {
-  font-size: 11pt;
-  font-family: Inconsolata, monospace;
+  font-size: 14pt;
+  font-family: courier-new, courier, monospace;
 }
 .terminal{
     padding:10px;
 }
+
 pre{
     background-color: black !important;
     color: white !important;
   }
-
+.embded-img{
+  max-width:90%;
+}
 .terminal-container {
   background-color: black;
   color: white;

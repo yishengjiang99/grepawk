@@ -5,7 +5,8 @@
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
   <script src='js/user.js'></script>
-  <link href="/css/cmd.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link href="css/cmd.css" rel="stylesheet">
   <script>
     iframe_interface = function (msg) {
       if (typeof msg === 'string') {
@@ -41,15 +42,6 @@
       var histpos_ = 0;
       var histtemp_ = 0;
       var input_auto_complete_source = [];
-      var option_select = [];
-      var activePrompt = null;
-      var prompt_select = [];
-      var more_options_index = -1;
-      var full_options_mode = false;
-      var prompt_loop_mode = false;
-      var prompt_loop_answers = [];
-      var prompt_context = "";
-      var prompt_string = "";
       var socket = null;
       var user = User();
       var userInfo;
@@ -218,19 +210,6 @@
               return;
             }
           }
-
-
-          if (prompt_loop_mode) {
-            $(".cmdline").last().val("");
-            if (cmd_str === '') return;
-            if (cmd_str === 'q' || cmd_str === "Q") {
-              prompt_loop_complete();
-            } else {
-              prompt_loop_answers.push(cmd_str);
-              output("Added " + cmd_str);
-            }
-            return;
-          }
           _cmd_string(cmd_str);
           $(".cmdline").last().val("");
         }
@@ -259,7 +238,6 @@
           case 'cam':
             var iframeHTML =
               '<iframe width="560" height="315" src="/cam.html" frameborder="0" allowfullscreen></iframe>';
-
             outputHtml(iframeHTML);
             break;
           case 'download':
@@ -267,14 +245,17 @@
             break;
           case 'new':
             parent.iframe_interface("new");
-            //outputHtml($("#new_file_form").clone().wrap('<div>').parent().html())
             break;
           case 'upload':
-            file_type = args[0] || "";
-            var formObj = $("#new_file_upload_form").clone();
-            formObj.attr("accept", "*." + file_type);
-            formObj.attr("action", "/files/upload?type=" + file_type);
-            outputHtml(formObj.wrap('<div>').parent().html())
+            var formId =`file-${generateUUID()}`;
+            var inputField = `<input type='file' id='${formId}' name='file' />`;
+            outputHtml(inputField);
+            $("#"+formId).change(event=>{
+              var file = event.target.file[0];
+              var rh = file.stream();
+              
+              debugger;
+            })
             break;
           default:
             socket.send(cmd + " " + argsstr);
@@ -283,47 +264,10 @@
         $('html, body').animate({
           scrollTop: $(document).height()
         }, 'fast');
+
         window.scrollTo(0, getDocHeight_());
       }
 
-      function prompt_loop_complete() {
-        output("Sending api request for " + prompt_context + " with data: " + JSON.stringify(
-          prompt_loop_answers));
-        prompt_loop_mode = false;
-        updatePrompt();
-        $.get("/stdin?msg=" + prompt_context + "&data=" + JSON.stringify(prompt_loop_answers), function (
-          ret) {
-          prompt_loop_answers = [];
-          prompt_context = "";
-          prompt_string = "";
-          _parse_api_response(ret);
-        })
-      }
-      //
-      function formatColumns_(entries) {
-        var maxName = entries[0].name;
-        util.toArray(entries).forEach(function (entry, i) {
-          if (entry.name.length > maxName.length) {
-            maxName = entry.name;
-          }
-        });
-
-        var height = entries.length <= 3 ?
-          'height: ' + (entries.length * 15) + 'px;' : '';
-
-        // 12px monospace font yields ~7px screen width.
-        var colWidth = maxName.length * 7;
-
-        return ['<div class="ls-files" style="-webkit-column-width:',
-          colWidth, 'px;', height, '">'
-        ];
-      }
-
-      function outputPrompts(prompts) {
-        $.each(prompts, function (i, prompt) {
-          updatePromptWithString("What is the " + prompt + "? >");
-        });
-      }
 
       function outputOptions(options) {
         var html = "";
@@ -333,15 +277,11 @@
           html += "<p><button type='button' class='cmd_btn col-6 btn-light mr-2'>" + onclick_cmd +
             "</button></p>";
         })
-        // parent.iframe_interface("update_html",["hud-1",html]);
 
       }
       //
       function outputHtml(html) {
         output_.insertAdjacentHTML('beforeEnd', html);
-        // $('html, body').animate({
-        //   scrollTop: $(document).height()
-        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
       }
 
@@ -351,17 +291,13 @@
 
       function output(html) {
         output_.insertAdjacentHTML('beforeEnd', '<p>' + html + '</p>');
-        // $('html, body').animate({
-        //   scrollTop: $(document).height()
-        // }, 'fast');
         window.scrollTo(0, getDocHeight_());
         $(cmdLine_).focus()
       }
 
       function outputImageLink(imageUrl) {
-
         output_.insertAdjacentHTML('beforeEnd', '<p><a target=_blank href="' + imageUrl +
-          '"><img width="90%" src="' + imageUrl + '"></a></p>');
+          '"><img src="' + imageUrl + '"></a></p>');
       }
 
       function outputIframe(url) {
@@ -443,10 +379,8 @@
       function updatePrompt() {
         if (in_proc_mode) {
           updatePromptWithString("> ");
-        } else if (prompt_loop_mode && prompt_string) {
-          updatePromptWithString(prompt_string);
         } else if (userInfo) {
-          var p = '[' + userInfo.username + ']:' + userInfo.cwd + '|xp:' + userInfo.xp;
+          var p = userInfo.username + '|' + userInfo.cwd + '|xp:' + userInfo.xp;
           updatePromptWithString(p);
         }
       }
@@ -476,23 +410,14 @@
         }
 
         ret.meta = ret.meta || {};
-        if (ret && ret.meta && ret.meta.prompt_loop) {
-          prompt_string = ret.meta.prompt_loop;
-          prompt_loop_mode = true;
-          prompt_loop_answers = [];
-          prompt_context = ret.meta.prompt_context;
-        }
         if (ret.error) {
           outputError(ret.error);
-        }
-        if (ret.meta && ret.meta.prompts) {
-          outputPrompts(ret.meta.prompts);
         }
         if (ret.meta && ret.meta.download_link) {
           open_dl_iframe(ret.meta.download_link);
         }
-        if (ret.meta && ret.meta.image_link) {
-          outputImageLink(ret.meta.image_link);
+        if (ret.img) {
+          outputImageLink(ret.img);
         }
         if (ret.meta && ret.meta.url) {
           window.open(ret.meta.url, '_blank');
@@ -505,7 +430,6 @@
         }
         if (ret.cwd) {
           cwd_ = ret.cwd;
-          //alert("setting cwd to "+cwd_);
         }
         if (ret.link) {
           var url = ret.link.url;
@@ -529,7 +453,8 @@
           updatePrompt();
         }
       }
-      var connectSocketIfNotOpen = function () {
+
+      function connectSocketIfNotOpen() {
         return new Promise((resolve, reject) => {
           if (socket && socket.readyState === WebSocket.OPEN) {
             resolve();
@@ -537,8 +462,8 @@
           }
           if (socket && socket.readyState === WebSocket.CONNECTING) {
             output("Connecting..");
-             resolve();
-             return;
+            resolve();
+            return;
           }
           var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' :
             'wss://' + window.location.hostname + '/ws';
@@ -547,22 +472,18 @@
             socket.send("check-in " + uuid);
             resolve();
           }
-          setTimeout(()=>{
+          setTimeout(() => {
             reject(new Error("connection timed outt"));
-          },5000);
+          }, 5000);
         })
-
       }
-
-
-      //
       return {
         init: async function () {
           output('Welcome to grep|awk 2.0');
           output('<br><br>');
-          try{
+          try {
             await connectSocketIfNotOpen();
-          }catch(e){
+          } catch (e) {
             outputError(e.message);
             return;
           }
@@ -614,7 +535,6 @@
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("guest");
       term.init();
-
       $("body").on('click', '.cmd_btn', function (e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
@@ -641,46 +561,6 @@
     </div>
   </div>
 </body>
-
-
-<div id='forms-section' style='display:none'>
-  <form id='new_file_form'>
-    <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA">
-    <div class="form-group">
-      <label for="file-name-input">File Name</label>
-      <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
-    </div>
-    <div class="form-group">
-      <label for="file-content-input">File Content</label>
-      <TextArea type="text" name='filecontent' class="form-control" id="file-content-input"
-        placeholder="Another input"></TextArea>
-    </div>
-    <div class="form-group">
-      <div class="offset-sm-2 col-sm-10">
-        <button id='new-file-submit' class="btn btn-primary">Create</button>
-      </div>
-    </div>
-  </form>
-  <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload' target="uploadTrg">
-    <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA"> <input type="file"
-      class="form-control" id="file-select-input" name="file">
-    <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-  </form>
-
-  <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
-    target="upload_csv_form">
-    <input type="hidden" name="_token" value="lIJqhZcNMe2a3JKbjKkZWpYvU9M68bB5v1zfjJUA"> <input type="file"
-      class="form-control" id="file-select-input" name="file">
-    <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-  </form>
-</div>
-
-<div id='iframes' style='display:none'>
-  <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-  <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-  <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-</div>
-</body>
 <script>
   $(document).ready(function () {
     $('body').click(e => {
@@ -689,4 +569,4 @@
   });
 </script>
 
-</html>\
+</html>
