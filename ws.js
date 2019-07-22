@@ -154,6 +154,7 @@ wss.on('connection', (ws, request) => {
                     console.log(user.quests);
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
+                    ws.send("checkedin");
                     break;
                 case 'shout':
                     Object.values(users).forEach(_user => {

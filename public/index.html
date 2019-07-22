@@ -467,7 +467,6 @@
           socket = new WebSocket(node_ws_url);
           socket.onopen = e => {
             socket.send("check-in " + uuid);
-            socket.send("ls -l");
             resolve();
           }
           setTimeout(() => {
@@ -486,6 +485,7 @@
             return;
           }
           socket.onmessage = function (event) {
+
             if (event.data.startsWith("stdout: ")) {
               var stdout = event.data.replace("stdout: ", "");
               output("<pre>" + stdout + "</pre>");
@@ -499,7 +499,9 @@
             } else if (event.data == 'set-spawn-mode-off') {
               in_proc_mode = false;
               updatePrompt();
-            } else {
+            } else if (event.data=='checkedin'){
+              socket.send("ls -l");
+            }else {
               _parse_api_response(JSON.parse(event.data));
             }
           }
