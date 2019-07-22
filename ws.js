@@ -1,5 +1,10 @@
 require('dotenv').config()
 const WebSocket = require('ws')
+const HttpRequest = require('request');
+
+const fs = require('fs');
+const path = require("path");
+
 const port = process.env.ws_port || 8081
 const wss = new WebSocket.Server({
     port: port
@@ -73,10 +78,33 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: sssss" + err.message);
                     })
                     break;
+                 
+                case 'wget':
+                    if(args.length!==1){
+                        ws.send("strderr: Usage: wget $url")
+                    }
+                    var filename = path.basename(args[0]);
+                    const file = fs.createWriteStream(cwd+"/"+filename);
+                    const url = args[0].replace("https","http"); //server-to-server
+
+                    ws.send("stdout: fetching "+url+" to "+filename);
+                    HttpRequest.get(url).on("response",_response=>{
+                        ws.send("stdout: file got");
+                        console.log(_response);
+                        var stream = _response.pipe(file);
+                        ws.send("stdout: downloading..");
+                        stream.on("finish",()=>{
+                            ws.send("stdout: downloaded file to "+filename);
+                        })
+
+                    });
+
+                    break;
+                    //request('http://google.com/doodle.png').pipe(fs.createWriteStream('doodle.png'))
+
                 case 'git':
                 case 'ps':
-                case 'node':
-                case 'nano':
+                case 'node':                    
                 case 'head':
                 case 'tail':
                     try {
@@ -184,6 +212,7 @@ wss.on('connection', (ws, request) => {
                     });
                     xfs.auto_complete_hints(cwd, ws);
                     break;
+                
                 default:
                     ws.send(message);
                     break;
