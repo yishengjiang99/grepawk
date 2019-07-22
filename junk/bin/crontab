@@ -1,1 +1,0 @@
-/usr/sbin/screencapture /Users/yisheng/Dropbox/screenshots/screenshot_$(date +%s).jpg
