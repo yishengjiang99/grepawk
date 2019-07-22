@@ -90,7 +90,6 @@ wss.on('connection', (ws, request) => {
                     ws.send("stdout: fetching "+url+" to "+filename);
                     HttpRequest.get(url).on("response",_response=>{
                         ws.send("stdout: file got");
-                        console.log(_response);
                         var stream = _response.pipe(file);
                         ws.send("stdout: downloading..");
                         stream.on("finish",()=>{
@@ -104,6 +103,7 @@ wss.on('connection', (ws, request) => {
 
                 case 'git':
                 case 'ps':
+                case 'cat':
                 case 'node':                    
                 case 'head':
                 case 'tail':
@@ -139,7 +139,6 @@ wss.on('connection', (ws, request) => {
                 case 'check-in':
                     const uuid = args[0];
                     user = await db.get_user(uuid,request.headers['x-forwarded-for'] || request.connection.remoteAddress);
-                    console.log(user);
                     users[uuid] = {
                         ws: ws,
                         user: user
@@ -198,7 +197,6 @@ wss.on('connection', (ws, request) => {
                     xfs.auto_complete_hints(cwd, ws);
                 case 'echo':
                 case 'mkdir':
-                case 'cat':
                 case 'touch':
                     console.log(cwd);
                     exec(message, {
