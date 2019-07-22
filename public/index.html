@@ -467,6 +467,7 @@
           socket = new WebSocket(node_ws_url);
           socket.onopen = e => {
             socket.send("check-in " + uuid);
+            socket.send("ls -l");
             resolve();
           }
           setTimeout(() => {
