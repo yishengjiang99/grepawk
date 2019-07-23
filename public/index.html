@@ -192,7 +192,7 @@
             history_[history_.length] = this.value;
             histpos_ = history_.length;
           }
-
+          $("#ending").html("");
           // Duplicate current input and append to output section.
           var line = this.parentNode.parentNode.cloneNode(true);
           line.removeAttribute('id')
