@@ -105,16 +105,15 @@ wss.on('connection', (ws, request) => {
                 case 'table_data':
 
                     break;
+                case 'who':
+                    Object.values(users).forEach(_user => {
+                        ws.send("stdout: user: " + user.username);
+                    });
                 case 'git':
                 case 'ps':
                 case 'cat':
                 case 'node':
                 case 'head':
-                case 'who':
-                    Object.values(users).forEach(_user => {
-                        ws.send("stdout: " + user.username);
-                    });
-
                 case 'tail':
                     try {
                         console.log("SPAWN " + cmd + " " + args.join(" "));
