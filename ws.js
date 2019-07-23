@@ -102,10 +102,10 @@ wss.on('connection', (ws, request) => {
                     //request('http://google.com/doodle.png').pipe(fs.createWriteStream('doodle.png'))
 
                 case 'create_table':
-                    ws.send("stdout: "+args[0]);
+                    ws.send("stdout: Creating table with "+args.join(" "));
                     break;
                 case 'table_data':
-                    ws.send("stdout: "+args[0]);
+                   
                     break;
                 case 'git':
                 case 'ps':
@@ -156,7 +156,6 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         _user.ws.send("stdout: user " + user.username + " arrived");
                     });
-          //          quests.send_quests(user, ws);
                     console.log(user.quests);
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
