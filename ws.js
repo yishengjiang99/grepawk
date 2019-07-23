@@ -110,6 +110,7 @@ wss.on('connection', (ws, request) => {
                 case 'cat':
                 case 'node':
                 case 'head':
+                case 'who': 
                 case 'tail':
                     try {
                         console.log("SPAWN " + cmd + " " + args.join(" "));
