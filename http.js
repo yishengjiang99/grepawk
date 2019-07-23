@@ -3,6 +3,8 @@ const app = express()
 const httpport = 8080
 var bodyParser = require('body-parser')
 const db =require("./lib/db");
+const xfs =require("./lib/xfs");
+
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Origin", "YOUR-DOMAIN.TLD"); // update to match the domain you will make the request from
@@ -13,13 +15,14 @@ app.use(function (req, res, next) {
 app.use(bodyParser.json());
 
 
-app.post('/table/meta', (req, res) => {
+// app.post('/table/meta', (req, res) => {
 
-    console.log(req.body.ss);
-    debugger;
-    // res.send(JSON.stringify(req.params));
-    res.end(JSON.stringify(req.body.ss));
-})
+//     console.log(req.body.ss);
+//     debugger;
+//     // res.send(JSON.stringify(req.params));
+//     res.end(JSON.stringify(req.body.ss));
+// })
+app.post('/file/upload', xfs.upload_handler);
 
 app.get('/:query', (req, res) => {
     res.end(req.params.query);

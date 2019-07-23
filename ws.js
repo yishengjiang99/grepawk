@@ -47,6 +47,7 @@ wss.on('connection', (ws, request) => {
                 return;
             }
             var cwd = user ? root_path + user.cwd : root_path;
+            var containerName = cwd.replace(root_path + "/", "");
             message = message.trim();
             var t = message.split(" ");
             if (t === "") return;
@@ -78,39 +79,36 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: sssss" + err.message);
                     })
                     break;
-                 
+
                 case 'wget':
-                    if(args.length!==1){
+                    if (args.length !== 1) {
                         ws.send("strderr: Usage: wget $url")
                     }
                     var filename = path.basename(args[0]);
-                    const file = fs.createWriteStream(cwd+"/"+filename);
-                    const url = args[0].replace("https","http"); //server-to-server
+                    const file = fs.createWriteStream(cwd + "/" + filename);
 
-                    ws.send("stdout: fetching "+url+" to "+filename);
-                    HttpRequest.get(url).on("response",_response=>{
+                    const url = args[0].replace("https", "http"); //server-to-server
+                    ws.send("stdout: fetching " + url + " to " + filename);
+                    HttpRequest.get(url).on("response", _response => {
                         ws.send("stdout: file got");
-                        var stream = _response.pipe(file);
+                        var fh = xfs.get_blob_stream(cwd,filename);
+                        var stream = _response.pipe(fh);
                         ws.send("stdout: downloading..");
-                        stream.on("finish",()=>{
-                            ws.send("stdout: downloaded file to "+filename);
+                        stream.on("finish", () => {
+                            ws.send("stdout: downloaded file to " + filename);
                         })
-
                     });
-
                     break;
-                    //request('http://google.com/doodle.png').pipe(fs.createWriteStream('doodle.png'))
-
                 case 'create_table':
-                    ws.send("stdout: Creating table with "+args.join(" "));
+                    ws.send("stdout: Creating table with " + args.join(" "));
                     break;
                 case 'table_data':
-                   
+
                     break;
                 case 'git':
                 case 'ps':
                 case 'cat':
-                case 'node':                    
+                case 'node':
                 case 'head':
                 case 'tail':
                     try {
@@ -144,7 +142,7 @@ wss.on('connection', (ws, request) => {
                     break;
                 case 'check-in':
                     const uuid = args[0];
-                    user = await db.get_user(uuid,request.headers['x-forwarded-for'] || request.connection.remoteAddress);
+                    user = await db.get_user(uuid, request.headers['x-forwarded-for'] || request.connection.remoteAddress);
                     users[uuid] = {
                         ws: ws,
                         user: user
@@ -163,7 +161,7 @@ wss.on('connection', (ws, request) => {
                     break;
                 case 'shout':
                     Object.values(users).forEach(_user => {
-                        _user.ws.send("stdout: " + user.username + " shouts '"+args.join(" ")+"'");
+                        _user.ws.send("stdout: " + user.username + " shouts '" + args.join(" ") + "'");
                     });
                     break;
                 case 'cd':
@@ -189,7 +187,6 @@ wss.on('connection', (ws, request) => {
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
                     quests.send_quests(user, ws);
-
                     xfs.auto_complete_hints(cwd, ws);
                     break;
                     //break;
@@ -197,12 +194,20 @@ wss.on('connection', (ws, request) => {
                     console.log("user.cwd " + user.cwd);
                     ws.send("stdout: " + user.cwd);
                     break;
+                case 'mkdir':
+                    if (args.length != 1) {
+                        ws.send("stderr: Usage: mkdir <foldername>")
+                        return;
+                    }
+                    xfs.init_pwd_container_if_neccessary(cwd + "/" + args[0]).then(containerName => {
+                        ws.send("stdout: " + containerName + " created");
+                    }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
                     //xfs.send_description(cwd, ws);
                     quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
+                    xfs.list_files_table(cwd, ws);
                 case 'echo':
-                case 'mkdir':
                 case 'touch':
                     console.log(cwd);
                     exec(message, {
@@ -216,14 +221,14 @@ wss.on('connection', (ws, request) => {
                     });
                     xfs.auto_complete_hints(cwd, ws);
                     break;
-                
+
                 default:
                     ws.send(message);
                     break;
             }
         } catch (err) {
             console.log(err);
-            ws.send(err.message);
+            ws.send("stderr: "+err.message);
         }
     })
 })
