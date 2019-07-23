@@ -76,11 +76,11 @@ wss.on('connection', (ws, request) => {
                         }
                     }).catch((err) => {
                         console.error(err);
-                        ws.send("stderr: sssss" + err.message);
+                        ws.send("stderr: " + err.message);
                     })
                     break;
                 case 'vcat':
-                    xfs.stream_blob(cwd, args[0],ws);
+                    xfs.stream_blob(cwd, args[0], ws);
                     break;
                 case 'wget':
                     if (args.length !== 1) {
@@ -91,7 +91,7 @@ wss.on('connection', (ws, request) => {
                     ws.send("stdout: fetching " + url + " to " + filename);
                     HttpRequest.get(url).on("response", _response => {
                         ws.send("stdout: file got");
-                        var fh = xfs.get_blob_stream(cwd,filename);
+                        var fh = xfs.get_blob_stream(cwd, filename);
                         var stream = _response.pipe(fh);
                         ws.send("stdout: downloading..");
                         stream.on("finish", () => {
@@ -110,7 +110,11 @@ wss.on('connection', (ws, request) => {
                 case 'cat':
                 case 'node':
                 case 'head':
-                case 'who': 
+                case 'who':
+                    Object.values(users).forEach(_user => {
+                        ws.send("stdout: " + user.username);
+                    });
+
                 case 'tail':
                     try {
                         console.log("SPAWN " + cmd + " " + args.join(" "));
@@ -165,7 +169,7 @@ wss.on('connection', (ws, request) => {
                         _user.ws.send("stdout: " + user.username + " shouts '" + args.join(" ") + "'");
                     });
                     break;
-                 
+
                 case 'cd':
                     if (args.length < 1) {
                         ws.send("Usage: cd [directory]");
@@ -195,7 +199,7 @@ wss.on('connection', (ws, request) => {
                     //break;
                 case 'pwd':
                     console.log("user.cwd " + user.cwd);
-                    
+
                     ws.send("stdout: " + (user.cwd || 'root'));
                     break;
                 case 'mkdir':
@@ -232,7 +236,7 @@ wss.on('connection', (ws, request) => {
             }
         } catch (err) {
             console.log(err);
-            ws.send("stderr: "+err.message);
+            ws.send("stderr: " + err.message);
         }
     })
 })
