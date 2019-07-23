@@ -79,13 +79,15 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: sssss" + err.message);
                     })
                     break;
-
+                case 'vcat':
+                    xfs.stream_blob(cwd, args[0],ws);
+                    break;
                 case 'wget':
                     if (args.length !== 1) {
                         ws.send("strderr: Usage: wget $url")
                     }
                     var filename = path.basename(args[0]);
-                    const file = fs.createWriteStream(cwd + "/" + filename);
+                   // const file = fs.createWriteStream(cwd + "/" + filename);
 
                     const url = args[0].replace("https", "http"); //server-to-server
                     ws.send("stdout: fetching " + url + " to " + filename);
@@ -164,6 +166,7 @@ wss.on('connection', (ws, request) => {
                         _user.ws.send("stdout: " + user.username + " shouts '" + args.join(" ") + "'");
                     });
                     break;
+                 
                 case 'cd':
                     if (args.length < 1) {
                         ws.send("Usage: cd [directory]");
