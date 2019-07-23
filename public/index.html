@@ -4,10 +4,11 @@
   <title>cmd</title>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
   <script src='js/user.js'></script>
-  <script src='js/file.js'></script>
 
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
+    integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="css/cmd.css" rel="stylesheet">
   <script>
     iframe_interface = function (msg) {
@@ -29,6 +30,11 @@
     util.toArray = function (list) {
       return Array.prototype.slice.call(list || [], 0);
     };
+
+    var node_url = window.location.hostname == 'localhost' ?
+      "http://localhost:8080" : "https://node.grepwk.com";
+
+
 
     var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 
@@ -249,10 +255,27 @@
             parent.iframe_interface("new");
             break;
           case 'upload':
-            var formId =`file-${generateUUID()}`;
-            var inputField = `<input type='file' id='${formId}' name='file' />`;
+            var formId = `file-${generateUUID()}`;
+            var inputField = `<input type='file' id='${formId}' name='file' />` +
+              `<br><input type='submit' id='${formId}_submit' />`
             outputHtml(inputField);
-            VfsClient.uploader(formId);
+            var file;
+            document.getElementById(formId).addEventListener("change", function (e) {
+              if (!e.target.files[0]) return;
+              file = e.target.files[0];
+              Papa.parse(file, {
+                header: false,
+                dynamicTyping: true,
+                preview:10,
+                complete: function(result){
+                   socket.send("create_table "+JSON.stringify(result.meta.fields));
+                   displayHTMLTable(result);
+                   result.data.forEach(row=>{
+                     socket.send("table_data "+JSON.stringify(row));
+                   })
+                }
+              });
+            }, false);
             break;
           default:
             socket.send(cmd + " " + argsstr);
@@ -265,6 +288,25 @@
         window.scrollTo(0, getDocHeight_());
       }
 
+      function displayHTMLTable(results) {
+        var table = "<table border=1 bordercolor='white'>";
+        var data = results.data;
+
+        for (i = 0; i < data.length; i++) {
+          table += "<tr>";
+          var row = data[i];
+          var cells = row.join(",").split(",");
+
+          for (j = 0; j < cells.length; j++) {
+            table += "<td>";
+            table += cells[j];
+            table += "</th>";
+          }
+          table += "</tr>";
+        }
+        table += "</table>";
+        outputHtml(table);
+      }
 
       function outputOptions(options) {
         var html = "";
@@ -463,7 +505,8 @@
             return;
           }
           var node_ws_url = window.location.hostname === 'localhost' ? 'ws://localhost:8081' :
-            'wss://' + window.location.hostname + '/ws';
+            window.location.hostname == 'dev.grepawk.com' ? 'ws://dev.grepawk.com:8081' : 'wss://' + window
+            .location.hostname + '/ws';
           socket = new WebSocket(node_ws_url);
           socket.onopen = e => {
             socket.send("check-in " + uuid);
@@ -499,9 +542,9 @@
             } else if (event.data == 'set-spawn-mode-off') {
               in_proc_mode = false;
               updatePrompt();
-            } else if (event.data=='checkedin'){
+            } else if (event.data == 'checkedin') {
               socket.send("ls -l");
-            }else {
+            } else {
               _parse_api_response(JSON.parse(event.data));
             }
           }
@@ -529,12 +572,13 @@
 
 
     $(function () {
-      var node_url = "http://localhost:3000";
+
       // Initialize a new terminal object  
 
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("guest");
       term.init();
+
       $("body").on('click', '.cmd_btn', function (e) {
         term.cmd_string($(this).find('a').first().attr('cmd'));
       });
