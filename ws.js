@@ -87,8 +87,6 @@ wss.on('connection', (ws, request) => {
                         ws.send("strderr: Usage: wget $url")
                     }
                     var filename = path.basename(args[0]);
-                   // const file = fs.createWriteStream(cwd + "/" + filename);
-
                     const url = args[0].replace("https", "http"); //server-to-server
                     ws.send("stdout: fetching " + url + " to " + filename);
                     HttpRequest.get(url).on("response", _response => {
@@ -187,6 +185,7 @@ wss.on('connection', (ws, request) => {
                     ws.send(JSON.stringify({
                         userInfo: user
                     }));
+                    xfs.list_files_table(cwd, ws);
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
                     quests.send_quests(user, ws);
@@ -195,7 +194,8 @@ wss.on('connection', (ws, request) => {
                     //break;
                 case 'pwd':
                     console.log("user.cwd " + user.cwd);
-                    ws.send("stdout: " + user.cwd);
+                    
+                    ws.send("stdout: " + (user.cwd || 'root'));
                     break;
                 case 'mkdir':
                     if (args.length != 1) {
