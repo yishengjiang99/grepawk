@@ -80,6 +80,8 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: " + err.message);
                     })
                     break;
+                case 'download':
+                    xfs.download_blob(cwd, args[0], ws);
                 case 'vcat':
                     xfs.stream_blob(cwd, args[0], ws);
                     break;

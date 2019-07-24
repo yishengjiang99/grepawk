@@ -8,6 +8,12 @@
         <video src="" id="video" style="width:700px; height: 350px;" autoplay="true"></video>
         <canvas style="display:none;" id="preview"></canvas>
         <div id="logger"></div>
+        
+      <div><button id = "btnGetTracks">get tracks</button></div> 
+      <div><button id = "btnRemoveAudioTrack">removeTrack() - audio
+         </button></div> 
+      <div><button id = "btnRemoveVideoTrack">removeTrack() - video
+         </button></div> 
     </body>
 <script type="text/javascript">
     var canvas = document.getElementById("preview");
@@ -40,9 +46,16 @@
         //socket.emit('stream',canvas.toDataURL('image/webp'));
     }
 
+    var _stream;
     $(function(){
-        navigator.mediaDevices.getUserMedia({video: true, audio: false}).then(function(stream){
-          
+         
+        $("#btnGetTracks").click(()=>{
+          var tracks = _stream.getTracks();
+          console.log(tracks);
+          logger(_stream.getAudioTracks());
+        });
+        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream){
+            _stream=stream;
             video.srcObject = stream;
 
         }).catch(function(err){

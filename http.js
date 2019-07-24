@@ -25,6 +25,7 @@ app.use(bodyParser.json());
 // })
 
 app.post('/files/upload', xfs.upload_handler);
+app.post
 
 app.get('/:query', (req, res) => {
     res.end(req.params.query);
