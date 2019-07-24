@@ -13,7 +13,6 @@
   <script>
     iframe_interface = function (msg) {
       if (msg == 'uploaded') {
-        alert("woot");
         $("#new_file_upload_form").remove();
         window.terminal.output_ext("Upload complete");
         window.terminal.cmd_str("ls -l");
@@ -265,9 +264,8 @@
             var formObj = $("#new_file_upload_form").clone();
             if (file_type) formObj.attr("accept", "*." + file_type);
             formObj.attr("action", node_url + "/files/upload?type=" + file_type);
+            formObj.append(`<input type='hidden' name='uuid' value='${localStorage.uuid}' />`);
             outputHtml(formObj.wrap('<div>').parent().html())
-            formObj.append(`<input type='hidden' name='uuid' value='${user.uuid}' />`);
-            formObj.append(`<input type='hidden' name='cwp' value='${user.cwp}' />`);
 
             var file;
             document.getElementById("file-select-input").addEventListener("change", function (e) {
