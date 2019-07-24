@@ -6,6 +6,7 @@ const db =require("./lib/db");
 const xfs =require("./lib/xfs");
 
 
+app.use('/', express.static('public'))
 
 app.use(function (req, res, next) {
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -22,7 +23,8 @@ app.use(bodyParser.json());
 //     // res.send(JSON.stringify(req.params));
 //     res.end(JSON.stringify(req.body.ss));
 // })
-app.post('/file/upload', xfs.upload_handler);
+
+app.post('/files/upload', xfs.upload_handler);
 
 app.get('/:query', (req, res) => {
     res.end(req.params.query);
