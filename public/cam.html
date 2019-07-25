@@ -1,20 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-            
-	<script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
-    </head>
-    <body>
-        <video src="" id="video" style="width:700px; height: 350px;" autoplay="true"></video>
-        <canvas style="display:none;" id="preview"></canvas>
-        <div id="logger"></div>
-        
-      <div><button id = "btnGetTracks">get tracks</button></div> 
-      <div><button id = "btnRemoveAudioTrack">removeTrack() - audio
-         </button></div> 
-      <div><button id = "btnRemoveVideoTrack">removeTrack() - video
-         </button></div> 
-    </body>
+
+<head>
+
+    <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+    <script src="js/webrtc_client.js"></script>
+</head>
+
+<body>
+       
+    <video src="" id="my_video" style="width:700px; height: 350px;" autoplay playsinline></video>
+    <video src="" id="their_video" style="width:700px; height: 350px;" autoplay playsinline></video>
+
+    <canvas style="display:none;" id="preview"></canvas>
+
+    <div id="logger"></div>
+</body>
 <script type="text/javascript">
     var canvas = document.getElementById("preview");
     var context = canvas.getContext('2d');
@@ -25,47 +28,14 @@
     context.width = canvas.width;
     context.height = canvas.height;
 
-    var video = document.getElementById("video");
-
-
-    function logger(msg){
-        $('#logger').text(msg);
-    }
-
-    function loadCamera(stream){
-        video.srcObject = (window.URL ? URL : webkitURL).createObjectURL(stream);
-        logger("Camera connected");
-    }
-
-    function loadFail(){
-        logger("Camera not connected");
-    }
-
-    function viewVideo(video,context){
-        context.drawImage(video,0,0,context.width,context.height);
-        //socket.emit('stream',canvas.toDataURL('image/webp'));
-    }
-
-    var _stream;
-    $(function(){
-         
-        $("#btnGetTracks").click(()=>{
-          var tracks = _stream.getTracks();
-          console.log(tracks);
-          logger(_stream.getAudioTracks());
-        });
-        navigator.mediaDevices.getUserMedia({video: true, audio: true}).then(function(stream){
-            _stream=stream;
-            video.srcObject = stream;
-
-        }).catch(function(err){
-          alert(JSON.stringify(err));
-        })
-
-        setInterval(function(){
-            viewVideo(video,context);
-        },5);
+    $(function () { 
+        var client = WebRTC_Client();
+        var uuid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        client.login(uuid).then(function(){
+            client.join(uuid, "default");
+        }).catch(e=>{alert(e.message)});
     });
 
 </script>
+
 </html>
