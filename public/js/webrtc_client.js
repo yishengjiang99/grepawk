@@ -7,17 +7,15 @@ var WebRTC_Client = function (options) {
       video: true,
       audio: true
    }, options);
+
    const constraints = {
       video: opts.video,
       audio: opts.audio
    }
 
-
-   var stun_url = stun_url || "stun:stun2.1.google.com:1930";
    var channel, mystream;
    var their_video_div = document.getElementById(opts.their_video);
    var my_video_div = document.getElementById(opts.my_video);
-
 
    const peerRTCConfig = {
       'iceServers': [{
@@ -34,44 +32,62 @@ var WebRTC_Client = function (options) {
             'username': '28224511:1379330808'
          }
       ],
-      optional: [{ 'DtlsSrtpKeyAgreement': true }]
+      optional: [{
+         'DtlsSrtpKeyAgreement': true
+      }]
 
    }
 
-   function gatheringStateChange() {
-      debug("\n"+myconnection.iceGatheringState);
-    }
 
+   const offerOptions = {
+      offerToReceiveAudio: 0,
+      offerToReceiveVideo: 1
+   };
 
-   function init_connection(){
+   function init_connection(isCaller) {
       var conn = new RTCPeerConnection(peerRTCConfig);
-      conn.onicegatheringstatechange = gatheringStateChange;
       conn.onicecandidateerror = console.log;
+
+      mystream.getTracks().forEach(function (track) {
+         console.log("ddating track to stream");
+         conn.addTrack(track, mystream);
+      });
+
       conn.ontrack = (e) => {
-         console.log("theircoon on add track "+e.streams.length);
          their_video_div = document.getElementById(opts.their_video);
          if (e.streams[0] && their_video_div.srcObject !== e.streams[0]) {
             their_video_div.srcObject = e.streams[0];
-            console.log('pc2 received remote stream');
-            their_video_div.play();
-          }
+         }
+      }
+      conn.onicecandidate = function (event) {
+         if (event.candidate!=null) {
+            send_message({
+               type: "candidate",
+               candidate: event.candidate
+            })
+         }
+      }
+      if (isCaller) {
+         conn.createOffer(offerOptions).then(desc => {
+            candidates = [];
+            conn.setLocalDescription(desc);
+            send_message({
+               type: 'join',
+               offer: desc,
+               channel: channel
+            });
+         })
       }
       return conn;
    }
-   var myconnection = init_connection();
-   const theirConn = init_connection();
-
-
-
-   var debug = function (msg) {
-      document.getElementById("logger").append("<p>" + msg + "</p>");
-   }
+   var myconnection;
 
    var send_message = function (msg) {
       signalConn.send(JSON.stringify(msg));
    }
 
    var signalConn;
+
    var connect = function (uuid) {
       _uuid = uuid;
       signalConn = new WebSocket(opts.signal_url);
@@ -91,9 +107,7 @@ var WebRTC_Client = function (options) {
                if (!data.success) {
                   reject(new Error("server reject"));
                }
-               mystream = await navigator.mediaDevices.getUserMedia(constraints);
-               my_video_div = document.getElementById(opts.my_video);
-               my_video_div.srcObject = mystream;
+
                resolve();
             }
          }
@@ -102,53 +116,14 @@ var WebRTC_Client = function (options) {
 
 
    var join = function (channel) {
-      var _channel = channel;
+      channel = channel;
       return new Promise(async (resolve, reject) => {
          try {
-            console.log(myconnection.iceConnectionState);
-            const offerOptions = {
-               offerToReceiveAudio: 1,
-               offerToReceiveVideo: 1
-            };
-
-            myconnection.onicecandidate = function (event) {
-               console.log("mycall on on ice ");
-
-               if (event.candidates) {
-                  send_message({
-                     type: "candidate",
-                     uuid: uuid,
-                     candate: event.dadidates[0]
-                  })
-               }
-            }
-            myconnection.onnegotiationneeded= async () => {
-               try {
-                  myconnection.createOffer(offerOptions).then(desc=>{
-                     candidates = [];
-                     myconnection.setLocalDescription(desc);
-                     send_message({
-                        type: 'join',
-                        offer: desc,
-                        channel: _channel
-                     });
-                  })
-               } catch (err) {
-                 console.error(err);
-               }
-             };
-        
-            mystream.getTracks().forEach(function(track) {
-               myconnection.addTrack(track, mystream);
-             });
-
-            myconnection.onaddstream = (e) => {
-               console.log("mycionn on add track");
-            }
-
-    
-            
-            signalConn.onmessage = handler_messages;        
+            mystream = await navigator.mediaDevices.getUserMedia(constraints);
+            my_video_div = document.getElementById(opts.my_video);
+            my_video_div.srcObject = mystream;  
+            myconnection = init_connection(true);
+            signalConn.onmessage = handler_messages;
             resolve();
          } catch (e) {
             reject(e);
@@ -163,26 +138,31 @@ var WebRTC_Client = function (options) {
       switch (data.type) {
          case "offer": //receiving call
             try {
-               myconnection = init_connection();
-               //myconnection = new RTCPeerConnection();
+               myconnection = init_connection(false);
                await myconnection.setRemoteDescription(new RTCSessionDescription(data.offer))
                var answer = await myconnection.createAnswer();
-               myconnection.setLocalDescription(answer); 
-               send_message({
-                  type: "answer",
-                  answer: answer,
-                  uuid: data.caller_id
-               })
+               myconnection.setLocalDescription(answer);
+               if (data.offer.type == 'offer') {
+                  send_message({
+                     type: "answer",
+                     answer: answer,
+                     uuid: data.caller_id
+                  })
+               }
             } catch (e) {
                throw e;
             }
             break;
          case "answer":
-             await myconnection.setLocalDescription(data.answer);
+            if(data.answer.sdp){
+               await myconnection.setRemoteDescription(data.answer);
+            }
             break;
          case "candidate":
-            await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
-           // await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
+            await myconnection.addIceCandidate(data.candidate).catch(e => {
+               console.log("Failure during addIceCandidate(): " + e.name);
+             });
+            // await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
             break;
          default:
             break;

@@ -31,30 +31,31 @@ wss.on('connection', function (connection) {
          case "login":
             db.get_user(data.uuid).then(user=>{
                user.connection = connection;
-               user.channel ='default';
+               user.channel = data.channel;
                users[user.uuid]=user;
                connection.uuid = user.uuid;
+               connection.channel = data.channel
                sendTo(connection, {
                   type: "login",
                   success: true
                });
-               channels['default'][user.uuid]=user;
+               channels[data.channel][user.uuid]=user;
             })
             break;
          case "join":
-            const uuid = connection.uuid;
+            var uuid = connection.uuid;
+            var channel = connection.channel;
             user = users[uuid];
-            if(channels[user.channel] && channels[user.channel][user.uuid]) {
+            if(channels[channel] && channels[channel][user.uuid]) {
                delete channels[user.channel][user.uuid];
              }
-             data.channel="default";
+            channel = data.channel;
             user.channel = data.channel;
-            if(!channels["default"]){
-               channels["default"]={};
+            if(!channels[channel]){
+               channels[channel]={};
             }
-            channels["default"][user.uuid] = user;
-            console.log(data.channel,"channel ***");
-            Object.keys(channels[data.channel]).forEach(otherUuid=>{
+            channels[channel][uuid] = user;
+            Object.keys(channels[channel]).forEach(otherUuid=>{
                console.log("other uuid ", otherUuid, " vs ",user.uuid);
                if(otherUuid!=user.uuid){
                   const otherConn = channels[data.channel][otherUuid].connection;
@@ -79,22 +80,18 @@ wss.on('connection', function (connection) {
             }
             break;
          case "candidate":
-            Object.keys(channels[data.channel]).forEach(otherUuid=>{
+            console.log("candidate received");
+            console.log(data.candidate);
+            channel = connection.channel;
+            Object.keys(channels[channel]).forEach(otherUuid=>{
                if(otherUuid!=connection.uuid){
-                  const otherConn = channels[data.channel][otherUuid].connection;
+                  const otherConn = channels[channel][otherUuid].connection;
                   sendTo(otherConn, {
-                     type: "offer",
-                     offer: data.offer,
-                     caller_id: connection.uuid,
+                     type: "candidate",
+                     candidate: data.candidate,
                   });
                }
             })
-            if (conn != null) {
-               sendTo(conn, {
-                  type: "candidate",
-                  candidate: data.candidate
-               });
-            }
             break;
          case "leave":
             console.log("Disconnecting from", data.uuid);
