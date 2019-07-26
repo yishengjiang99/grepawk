@@ -12,16 +12,11 @@
 <body>
        <table>
            <tr>
-               <td width=50%> <video width=400 muted id="my_video" autoplay playsinline></video>
-               </td>
-               <td width=50%>  <video width=400  muted id="their_video"  autoplay playsinline></video>
+               <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
+               <td width=50%>  <video height=315  muted id="their_video"  autoplay playsinline></video>
                </td>
            </tr>
        </table>
-
-    <canvas style="display:none;" id="preview"></canvas>
-
-    <div id="logger"></div>
 </body>
 <script type="text/javascript">
     var canvas = document.getElementById("preview");
@@ -35,7 +30,7 @@
 
     $(function () { 
         var client = WebRTC_Client();
-        var uuid =  Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+        var uuid = localStorage.getItem("uuid");
         client.login(uuid).then(function(){
             client.join(uuid, "default");
         }).catch(e=>{alert(e.message)});

@@ -244,7 +244,7 @@
             if (args.length < 1) {
               outputError("Usage: watch {youtube video ID}");
             }
-            var iframeHTML = '<iframe width="560" height="315" src="https://www.youtube.com/embed/' +
+            var iframeHTML = '<iframe width=90% height="315" src="https://www.youtube.com/embed/' +
               args[0] + '?rel=0" frameborder="0" allowfullscreen></iframe>';
             outputHtml(iframeHTML);
             break;
@@ -539,8 +539,7 @@
             return;
           }
           socket.onmessage = function (event) {
-
-            if (event.data.startsWith("stdout: ")) {
+            if (event.data && event.data.startsWith("stdout: ")) {
               var stdout = event.data.replace("stdout: ", "");
               output("<pre>" + stdout + "</pre>");
             } else if (event.data.startsWith("stderr: ")) {
@@ -556,7 +555,12 @@
             } else if (event.data == 'checkedin') {
               socket.send("ls -l");
             } else {
-              _parse_api_response(JSON.parse(event.data));
+              try{
+                _parse_api_response(JSON.parse(event.data));
+              }catch(e){
+                console.log('parsing res', e);
+                
+              }
             }
           }
         },

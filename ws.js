@@ -220,16 +220,19 @@ wss.on('connection', (ws, request) => {
                 case 'echo':
                 case 'touch':
                     console.log(cwd);
-                    exec(message, {
-                        cwd: cwd
-                    }, (err, stdout, stderr) => {
-                        if (err) ws.send("error: " + err.message);
-                        else {
-                            ws.send("stdout: " + stdout);
-                            quests.check_quest_completion(message, user, ws);
-                        }
-                    });
-                    xfs.auto_complete_hints(cwd, ws);
+                    try {
+                        exec(message, {
+                            cwd: cwd
+                        }, (err, stdout, stderr) => {
+                            if (err) ws.send("error: " + err.message);
+                            else {
+                                ws.send("stdout: " + stdout);
+                                quests.check_quest_completion(message, user, ws);
+                            }
+                        });
+                    } catch (e) {
+                        ws.send("stderr: " + e.message);
+                    }
                     break;
 
                 default:
