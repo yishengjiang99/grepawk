@@ -7,6 +7,10 @@
   <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
   <script src='js/user.js'></script>
 
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+
+  <script src="js/webrtc_client.js"></script>
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="css/cmd.css" rel="stylesheet">
@@ -249,9 +253,16 @@
             outputHtml(iframeHTML);
             break;
           case 'cam':
-            var iframeHTML =
-              '<iframe width="560" height="315" src="/cam.html" frameborder="0" allowfullscreen></iframe>';
-            outputHtml(iframeHTML);
+            var camera = $("#camera").clone();
+            outputHtml(camera.parent().html());
+            var room = args.length==1 ? args[0] : "default";
+            var client = WebRTC_Client();
+            var uuid = localStorage.getItem("uuid");
+            client.login(uuid).then(function () {
+              client.join(uuid, room);
+            }).catch(e => {
+              alert(e.message)
+            });
             break;
           case 'download':
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
@@ -539,28 +550,29 @@
             return;
           }
           socket.onmessage = function (event) {
-            if (event.data && event.data.startsWith("stdout: ")) {
-              var stdout = event.data.replace("stdout: ", "");
-              output("<pre>" + stdout + "</pre>");
-            } else if (event.data.startsWith("stderr: ")) {
+            try {
 
-              var stderr = event.data.replace("stderr: ", "");
-              outputError(stderr);
-            } else if (event.data == 'set-spawn-mode-on') {
-              in_proc_mode = true;
-              updatePrompt();
-            } else if (event.data == 'set-spawn-mode-off') {
-              in_proc_mode = false;
-              updatePrompt();
-            } else if (event.data == 'checkedin') {
-              socket.send("ls -l");
-            } else {
-              try{
+              if (event.data && event.data.startsWith("stdout: ")) {
+                var stdout = event.data.replace("stdout: ", "");
+                output("<pre>" + stdout + "</pre>");
+              } else if (event.data.startsWith("stderr: ")) {
+
+                var stderr = event.data.replace("stderr: ", "");
+                outputError(stderr);
+              } else if (event.data == 'set-spawn-mode-on') {
+                in_proc_mode = true;
+                updatePrompt();
+              } else if (event.data == 'set-spawn-mode-off') {
+                in_proc_mode = false;
+                updatePrompt();
+              } else if (event.data == 'checkedin') {
+                socket.send("ls -l");
+              } else {
                 _parse_api_response(JSON.parse(event.data));
-              }catch(e){
-                console.log('parsing res', e);
-                
               }
+            } catch (e) {
+              console.log('parsing res', e);
+
             }
           }
         },
@@ -653,6 +665,16 @@
     <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
     <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
   </div>
+  <div id='camera'>
+    <table>
+      <tr>
+        <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
+        <td width=50%> <video height=315 id="their_video" autoplay playsinline></video>
+        </td>
+      </tr>
+    </table>
+  </div>
 </body>
+
 
 </html>
