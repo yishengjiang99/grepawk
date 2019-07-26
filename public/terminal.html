@@ -252,18 +252,23 @@
               args[0] + '?rel=0" frameborder="0" allowfullscreen></iframe>';
             outputHtml(iframeHTML);
             break;
+
           case 'cam':
-            var camera = $("#camera").clone();
-            outputHtml(camera.parent().html());
+            $("#camera").show();
+
             var room = args.length==1 ? args[0] : "default";
             var client = WebRTC_Client();
             var uuid = localStorage.getItem("uuid");
             client.login(uuid).then(function () {
               client.join(uuid, room);
             }).catch(e => {
-              alert(e.message)
+              console.log(e);
+             // alert(e.message)
             });
             break;
+          case 'camoff':
+            client.leave();
+          break;
           case 'download':
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
             break;
@@ -665,7 +670,7 @@
     <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
     <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
   </div>
-  <div id='camera'>
+  <div id='camera' style='position:fixed; bottom:200px; display:none'>
     <table>
       <tr>
         <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
