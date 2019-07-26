@@ -52,17 +52,15 @@ wss.on('connection', function (connection) {
                channels[data.channel]={};
             }
             channels[data.channel][user.uuid] = user;
-            console.log("data channels");
-            console.log(channels[data.channel]);
+   
             Object.keys(channels[data.channel]).forEach(otherUuid=>{
                console.log("other uuid ", otherUuid);
                if(otherUuid!==user.uuid){
                   const otherConn = channels[data.channel][otherUuid].connection;
-                  console.log("othercdonn",otherConn);
                   sendTo(otherConn, {
                      type: "offer",
                      offer: data.offer,
-                     uuid: uuid,
+                     callerUuid: uuid,
                      username: user.username
                   });
                }
@@ -115,7 +113,6 @@ wss.on('connection', function (connection) {
                console.log("Disconnecting from ", connection.otheruuid);
                var conn = users[connection.otheruuid];
                conn.otheruuid = null;
-
                if (conn != null) {
                   sendTo(conn, {
                      type: "leave"
