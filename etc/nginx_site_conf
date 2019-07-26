@@ -40,22 +40,20 @@ server {
 	#
 	# include snippets/snakeoil.conf;
 
-	root /home/yisheng/grepawk/public/;
+#	root /home/yisheng/grepawk/public/;
 
 	# Add index.php to the list if you are using PHP
-	index index.html index.htm index.nginx-debian.html;
+#	index index.html index.htm index.nginx-debian.html;
 
 	server_name grepawk.com www.grepawk.com grepawk.net www.grepawk.net;
 
-	location /node {
+	location / {
 		# First attempt to serve request as file, then
 		# as directory, then fall back to displaying a 404.
 	        proxy_pass http://localhost:8080;
         	proxy_http_version 1.1;
-        	proxy_set_header Upgrade $http_upgrade;
-        	proxy_set_header Connection 'upgrade';
-        	proxy_set_header Host $host;
-        	proxy_cache_bypass $http_upgrade;
+	        proxy_set_header   X-Forwarded-For $remote_addr;
+        	proxy_set_header   Host $host;
 	}
 
         location /ws {
@@ -70,6 +68,20 @@ server {
                 proxy_cache_bypass $http_upgrade;
 		proxy_set_header X-Forwarded-For $remote_addr;
         }
+        location /ice {
+                # First attempt to serve request as file, then
+
+                # as directory, then fall back to displaying a 404.
+                proxy_pass http://localhost:9090;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+                proxy_set_header X-Forwarded-For $remote_addr;
+        }
+
+
 
 
 	# pass PHP scripts to FastCGI server
@@ -96,6 +108,7 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/grepawk.com/privkey.pem; # managed by Certbot
     include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
 
 
 }
