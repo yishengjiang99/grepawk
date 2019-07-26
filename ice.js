@@ -7,6 +7,7 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
+   console.log("****sending to "+connection.uuid+": "+message.type);
    connection.send(JSON.stringify(message));
 }
 
@@ -15,7 +16,6 @@ var users={};
 var channels={
    'default': {}
 };
-
 
 wss.on('connection', function (connection) {
    connection.on('message', function (message) {
@@ -47,20 +47,21 @@ wss.on('connection', function (connection) {
             if(channels[user.channel] && channels[user.channel][user.uuid]) {
                delete channels[user.channel][user.uuid];
              }
+             data.channel="default";
             user.channel = data.channel;
-            if(!channels[data.channel]){
-               channels[data.channel]={};
+            if(!channels["default"]){
+               channels["default"]={};
             }
-            channels[data.channel][user.uuid] = user;
-   
+            channels["default"][user.uuid] = user;
+            console.log(data.channel,"channel ***");
             Object.keys(channels[data.channel]).forEach(otherUuid=>{
-               console.log("other uuid ", otherUuid);
-               if(otherUuid!==user.uuid){
+               console.log("other uuid ", otherUuid, " vs ",user.uuid);
+               if(otherUuid!=user.uuid){
                   const otherConn = channels[data.channel][otherUuid].connection;
                   sendTo(otherConn, {
                      type: "offer",
                      offer: data.offer,
-                     callerUuid: uuid,
+                     caller_id: uuid,
                      username: user.username
                   });
                }
@@ -69,7 +70,7 @@ wss.on('connection', function (connection) {
          case "answer":
             console.log("Sending answer to: ", data.uuid);
             //for ex. UserB answers UserA 
-            var conn = users[data.uuid];
+            var conn = users[data.uuid].connection;
             if (conn != null) {
                sendTo(conn, {
                   type: "answer",
@@ -78,8 +79,16 @@ wss.on('connection', function (connection) {
             }
             break;
          case "candidate":
-            console.log("Sending candidate to:", data.uuid);
-            var conn = users[data.uuid];
+            Object.keys(channels[data.channel]).forEach(otherUuid=>{
+               if(otherUuid!=connection.uuid){
+                  const otherConn = channels[data.channel][otherUuid].connection;
+                  sendTo(otherConn, {
+                     type: "offer",
+                     offer: data.offer,
+                     caller_id: connection.uuid,
+                  });
+               }
+            })
             if (conn != null) {
                sendTo(conn, {
                   type: "candidate",
@@ -121,7 +130,7 @@ wss.on('connection', function (connection) {
             }
          }
       });
-      console.log("Got message from a user:", message);
+     // console.log("Got message from a user:", message);
    });
    //sendTo(connection,{type:"connected"});
 });

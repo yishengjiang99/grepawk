@@ -14,16 +14,60 @@ var WebRTC_Client = function (options) {
 
 
    var stun_url = stun_url || "stun:stun2.1.google.com:1930";
-   var _uuid, channel, mystream, theirstream, myconnection;
+   var channel, mystream;
    var their_video_div = document.getElementById(opts.their_video);
    var my_video_div = document.getElementById(opts.my_video);
+
+
    const peerRTCConfig = {
-      "iceServers": [{
-         "url": opts.stun_url
-      }]
+      'iceServers': [{
+            'url': 'stun:stun.l.google.com:19302'
+         },
+         {
+            'url': 'turn:192.158.29.39:3478?transport=udp',
+            'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+            'username': '28224511:1379330808'
+         },
+         {
+            'url': 'turn:192.158.29.39:3478?transport=tcp',
+            'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+            'username': '28224511:1379330808'
+         }
+      ],
+      optional: [{ 'DtlsSrtpKeyAgreement': true }]
+
    }
 
-   var send_message = function(msg){
+   function gatheringStateChange() {
+      debug("\n"+myconnection.iceGatheringState);
+    }
+
+
+   function init_connection(){
+      var conn = new RTCPeerConnection(peerRTCConfig);
+      conn.onicegatheringstatechange = gatheringStateChange;
+      conn.onicecandidateerror = console.log;
+      conn.ontrack = (e) => {
+         console.log("theircoon on add track "+e.streams.length);
+         their_video_div = document.getElementById(opts.their_video);
+         if (e.streams[0] && their_video_div.srcObject !== e.streams[0]) {
+            their_video_div.srcObject = e.streams[0];
+            console.log('pc2 received remote stream');
+            their_video_div.play();
+          }
+      }
+      return conn;
+   }
+   var myconnection = init_connection();
+   const theirConn = init_connection();
+
+
+
+   var debug = function (msg) {
+      document.getElementById("logger").append("<p>" + msg + "</p>");
+   }
+
+   var send_message = function (msg) {
       signalConn.send(JSON.stringify(msg));
    }
 
@@ -41,7 +85,7 @@ var WebRTC_Client = function (options) {
             }));
          }
          signalConn.onerror = (e) => reject(e);
-         signalConn.onmessage = async  (msg) => {
+         signalConn.onmessage = async (msg) => {
             var data = JSON.parse(msg.data);
             if (data.type == 'login') {
                if (!data.success) {
@@ -57,27 +101,54 @@ var WebRTC_Client = function (options) {
    }
 
 
-   var join =function (channel) {
+   var join = function (channel) {
+      var _channel = channel;
       return new Promise(async (resolve, reject) => {
          try {
-            myconnection = new RTCPeerConnection(peerRTCConfig);
+            console.log(myconnection.iceConnectionState);
+            const offerOptions = {
+               offerToReceiveAudio: 1,
+               offerToReceiveVideo: 1
+            };
+
             myconnection.onicecandidate = function (event) {
-               alert('k');
-               if (event.candidate) {
+               console.log("mycall on on ice ");
+
+               if (event.candidates) {
                   send_message({
                      type: "candidate",
-                     uuid: uuid
+                     uuid: uuid,
+                     candate: event.dadidates[0]
                   })
                }
             }
-            var offer = await myconnection.createOffer();
-            await myconnection.setLocalDescription(offer);
-            send_message({
-               type: 'join',
-               offer: offer,
-               channel: channel
-            });
-            signalConn.onmessage = handler_messages;
+            myconnection.onnegotiationneeded= async () => {
+               try {
+                  myconnection.createOffer(offerOptions).then(desc=>{
+                     candidates = [];
+                     myconnection.setLocalDescription(desc);
+                     send_message({
+                        type: 'join',
+                        offer: desc,
+                        channel: _channel
+                     });
+                  })
+               } catch (err) {
+                 console.error(err);
+               }
+             };
+        
+            mystream.getTracks().forEach(function(track) {
+               myconnection.addTrack(track, mystream);
+             });
+
+            myconnection.onaddstream = (e) => {
+               console.log("mycionn on add track");
+            }
+
+    
+            
+            signalConn.onmessage = handler_messages;        
             resolve();
          } catch (e) {
             reject(e);
@@ -86,27 +157,32 @@ var WebRTC_Client = function (options) {
    }
 
    var handler_messages = async function (msg) {
+      console.log(myconnection.iceConnectionState);
+
       var data = JSON.parse(msg.data);
       switch (data.type) {
          case "offer": //receiving call
             try {
-               await myconnection.setRemoteDescription(data.offer);
-               const answer = await myconnection.createAnswer();
-               await myconnection.setLocalDescription(answer);
+               myconnection = init_connection();
+               //myconnection = new RTCPeerConnection();
+               await myconnection.setRemoteDescription(new RTCSessionDescription(data.offer))
+               var answer = await myconnection.createAnswer();
+               myconnection.setLocalDescription(answer); 
                send_message({
                   type: "answer",
-                  answer: answer
+                  answer: answer,
+                  uuid: data.caller_id
                })
             } catch (e) {
                throw e;
             }
             break;
          case "answer":
-            await myconnection.setRemoteDescription(data.answer);
+             await myconnection.setLocalDescription(data.answer);
             break;
          case "candidate":
-            debugger;
-            await yourConn.addIceCandidate(new RTCIceCandidate(candidate));
+            await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
+           // await myconnection.addIceCandidate(new RTCIceCandidate(candidate));
             break;
          default:
             break;
