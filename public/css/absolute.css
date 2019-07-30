@@ -11,7 +11,7 @@ html, body {
     background-color:black;
     color: white;
     left:50px;
-    top:20[x];
+    top:20px;
   }
   .terminal output {
     clear: both;
@@ -55,11 +55,11 @@ html, body {
 
   .desktop > .card{
     position: absolute;
-    min-width:800px;
+    min-width:960px;
 
   }
   .card-body{
-    min-height:400px;
+    min-height:70vh;
   }
    .card-title{
     height: 30px;

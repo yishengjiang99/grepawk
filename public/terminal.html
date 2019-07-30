@@ -7,10 +7,6 @@
   <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
   <script src='js/user.js'></script>
 
-  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-
-  <script src="js/webrtc_client.js"></script>
-
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="css/cmd.css" rel="stylesheet">
@@ -254,21 +250,14 @@
             break;
 
           case 'cam':
-            $("#camera").show();
-
-            var room = args.length==1 ? args[0] : "default";
-            var client = WebRTC_Client();
-            var uuid = localStorage.getItem("uuid");
-            client.login(uuid).then(function () {
-              client.join(uuid, room);
-            }).catch(e => {
-              console.log(e);
-             // alert(e.message)
-            });
+            parent.stdin("show_cam");
             break;
           case 'camoff':
             client.leave();
-          break;
+            break;
+          case 'host':
+
+            break;
           case 'download':
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
             break;
@@ -556,7 +545,6 @@
           }
           socket.onmessage = function (event) {
             try {
-
               if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
                 output("<pre>" + stdout + "</pre>");
@@ -571,7 +559,7 @@
                 in_proc_mode = false;
                 updatePrompt();
               } else if (event.data == 'checkedin') {
-//
+                //
               } else {
                 _parse_api_response(JSON.parse(event.data));
               }
@@ -604,9 +592,6 @@
 
 
     $(function () {
-
-      // Initialize a new terminal object  
-
       var term = new Terminal('#input-line .cmdline', '#container output');
       term.setUsername("guest");
       term.init();
@@ -618,7 +603,6 @@
         var _cmd = $(this).attr('cmd');
         term.cmd_string(_cmd);
       });
-
       window.terminal = term;
     });
   </script>

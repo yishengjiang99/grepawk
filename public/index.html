@@ -13,8 +13,9 @@
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
   </script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
-  </script>
+  <script src="js/webrtc_client.js"></script>
   <script src='/js/page2.js'></script>
 </head>
 
@@ -68,10 +69,12 @@
             </button>
           </div>
           <div class="modal-body">
-            <p><div class="custom-file">
+            <p>
+              <div class="custom-file">
                 <input type="file" class="custom-file-input" id="customFile">
                 <label class="custom-file-label" for="customFile">Choose file</label>
-              </div></p>
+              </div>
+            </p>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary">Save changes</button>
@@ -91,17 +94,55 @@
       <iframe class='card-body m-0 p-0 w-100 h-100 overflow-hidden' src='/terminal.html'>
       </iframe>
     </div>
+
+    <div class="draggable card camera" id='camera' style='display:none'>
+      <div class="card-title mb-0">
+        camera
+        <div class="icon1 close-window">x</div>
+        <div class="icon2 minimize-window">_</div>
+        <div class="icon3 maximize-window">[]</div>
+      </div>
+      <div>
+        <table>
+          <tr>
+            <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
+            <td width=50%> <video height=315 muted id="their_video" autoplay playsinline></video>
+            </td>
+          </tr>
+        </table>
+
+      </div>
+    </div>
   </div>
 </body>
 
 
 <script>
-
-  window.stdin = function (msg) {
-    if(msg=='upload form'){
+  window.stdin = function (cmd_str) {
+    var args = cmd_str.split(' ').filter(function (val, i) {
+      return val;
+    });
+    if (args.length === 0) {
+      return;
+    }
+    var cmd = args[0].toLowerCase();
+    args = args.splice(1); // Remove cmd from arg list.
+    var argsstr = args.join(' ');
+    if (cmd == 'upload form') {
       var modal = $("#modal-singleton");
       modal.html("ss");
       modal.show();
+    }
+    if (cmd == 'show_cam') {
+      $("#camera").show();
+      var room = args.length == 1 ? args[0] : "default";
+      var client = WebRTC_Client();
+      var uuid = localStorage.getItem("uuid");
+      client.login(uuid).then(function () {
+        client.join(uuid, room);
+      }).catch(e => {
+        console.log(e);
+      });
     }
   }
 

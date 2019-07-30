@@ -14,18 +14,18 @@ app.use(function (req, res, next) {
 });
 
 app.use(bodyParser.json());
+app.set('view engine', 'pug')
 
 
-// app.post('/table/meta', (req, res) => {
+app.get('/:room', (req,res)=>{
+ 
+    
+  res.render("")
+  res.end(); 
+});
 
-//     console.log(req.body.ss);
-//     debugger;
-//     // res.send(JSON.stringify(req.params));
-//     res.end(JSON.stringify(req.body.ss));
-// })
 
 app.post('/files/upload', xfs.upload_handler);
-app.post
 
 app.get('/:query', (req, res) => {
     res.end(req.params.query);
