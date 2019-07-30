@@ -571,7 +571,7 @@
                 in_proc_mode = false;
                 updatePrompt();
               } else if (event.data == 'checkedin') {
-                socket.send("ls -l");
+//
               } else {
                 _parse_api_response(JSON.parse(event.data));
               }
@@ -631,7 +631,7 @@
       <div id="input-line" class="input-line">
         <div class="prompt"></div>
         <div style='display:block'>
-          <input size=100 class="cmdline input-line" autofocus />
+          <input size=80 class="cmdline input-line" autofocus />
         </div>
       </div>
     </div>
