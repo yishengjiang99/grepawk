@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <title>grepawk</title>
-  <link rel="stylesheet" type="text/css" href="/css/absolute.css">
+  <link href="css/absolute.css" rel="stylesheet">
+
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
@@ -110,7 +111,17 @@
             </td>
           </tr>
         </table>
+      </div>
+    </div>
 
+    <div class="draggable card" id='template' style='display:none'>
+      <div class="card-title mb-0">
+        <div class='card-title-string'></div>
+        <div class="icon1 close-window">x</div>
+        <div class="icon2 minimize-window">_</div>
+        <div class="icon3 maximize-window">[]</div>
+      </div>
+      <div class='card-body'>
       </div>
     </div>
   </div>
@@ -128,9 +139,9 @@
     var cmd = args[0].toLowerCase();
     args = args.splice(1); // Remove cmd from arg list.
     var argsstr = args.join(' ');
-    if (cmd == 'upload form') {
+
+    if (cmd == 'upload') {
       var modal = $("#modal-singleton");
-      modal.html("ss");
       modal.show();
     }
     if (cmd == 'show_cam') {
@@ -144,6 +155,21 @@
         console.log(e);
       });
     }
+    else if(cmd=='edit'){
+      loadIframe("/editor.html",'editor')
+    }
+  }
+
+  function loadIframe(url,title){
+   var window=$("#template").clone();
+   window.find(".card-title-string").html(title);
+   var iframe = $("iframe");
+   iframe.attr("wdith","100");
+   iframe.attr("src",url);
+   window.css("display","block");
+   window.find(".card-body").append(iframe);
+   window.draggable();
+   $(".desktop").append(window);
   }
 
   $(document).ready(function () {
@@ -151,7 +177,6 @@
     var desktop = $(".desktop");
 
     stdin("upload form");
-
     $(".card").draggable();
 
     $(".close-window").click(function (e) {
@@ -167,6 +192,7 @@
       e.preventDefault();
       $(this).parent().parent().css("width", desktop.width);
     });
+    $(".terminal").animate({scrollTo:$(".terminal").height()});
   })
 </script>
 

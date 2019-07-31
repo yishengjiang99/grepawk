@@ -248,7 +248,9 @@
               args[0] + '?rel=0" frameborder="0" allowfullscreen></iframe>';
             outputHtml(iframeHTML);
             break;
-
+          case 'edit':
+            
+            parent.stdin("edit "+userInfo.cwd+"/"+args[0]);
           case 'cam':
             parent.stdin("show_cam");
             break;
@@ -298,10 +300,10 @@
             break;
         }
         $('html, body').animate({
-          scrollTop: $(document).height()
+          scrollTop: getDocHeight_()
         }, 'fast');
 
-        window.scrollTo(0, getDocHeight_());
+       // window.scrollTo(0, getDocHeight_());
       }
 
       function displayHTMLTable(results) {
@@ -338,6 +340,8 @@
       function outputHtml(html) {
         output_.insertAdjacentHTML('beforeEnd', html);
         window.scrollTo(0, getDocHeight_());
+        $(cmdLine_).focus()
+
       }
 
       function outputAppend(data) {
@@ -435,7 +439,7 @@
         if (in_proc_mode) {
           updatePromptWithString("> ");
         } else if (userInfo) {
-          var p = userInfo.username + '|' + userInfo.cwd + '|xp:' + userInfo.xp;
+          var p = userInfo.cwd+"$";
           updatePromptWithString(p);
         }
       }
@@ -535,8 +539,6 @@
       }
       return {
         init: async function () {
-          output('Welcome to grep|awk 2.0');
-          output('<br><br>');
           try {
             await connectSocketIfNotOpen();
           } catch (e) {
@@ -547,7 +549,7 @@
             try {
               if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
-                output("<pre>" + stdout + "</pre>");
+                output("<pre>"+stdout+"<pre>");
               } else if (event.data.startsWith("stderr: ")) {
 
                 var stderr = event.data.replace("stderr: ", "");
@@ -619,49 +621,6 @@
         </div>
       </div>
     </div>
-  </div>
-  <div id='forms-section' style='display:none'>
-    <form id='new_file_form'>
-      <div class="form-group">
-        <label for="file-name-input">File Name</label>
-        <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
-      </div>
-      <div class="form-group">
-        <label for="file-content-input">File Content</label>
-        <TextArea type="text" name='filecontent' class="form-control" id="file-content-input"
-          placeholder="Another input"></TextArea>
-      </div>
-      <div class="form-group">
-        <div class="offset-sm-2 col-sm-10">
-          <button id='new-file-submit' class="btn btn-primary">Create</button>
-        </div>
-      </div>
-    </form>
-    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload'
-      target="uploadTrg">
-      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
-
-    <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
-      target="upload_csv_form">
-      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
-  </div>
-  <div id='iframes' style='display:none'>
-    <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-    <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-    <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-  </div>
-  <div id='camera' style='position:fixed; bottom:200px; display:none'>
-    <table>
-      <tr>
-        <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
-        <td width=50%> <video height=315 id="their_video" autoplay playsinline></video>
-        </td>
-      </tr>
-    </table>
   </div>
 </body>
 
