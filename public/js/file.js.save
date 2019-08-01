@@ -1,0 +1,17 @@
+function handleFiles(){
+  const file = this.files[0];
+  var reader = new FileReader();
+  reader.onload(function(e){
+
+  });
+   file.text().then(alert);
+}
+
+const VfsClient = {
+  uploader: function(input_id){
+    const inputElement = document.getElementById(input_id);
+    inputElement.addEventListener("change", handleFiles, false);
+  
+  }
+  
+}
