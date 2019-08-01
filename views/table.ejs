@@ -1,0 +1,14 @@
+<table border=1>
+  <tr>
+    <% headers.forEach(field=>{ %>
+  <td> <%= field %> </td>
+  <% }) %>
+  </tr>
+  <% rows.forEach((row, i)=>{ %>
+  <tr>
+    <% headers.forEach(field=>{ %>
+    <td> <%= row[field] || "" %> </td>
+    <% }) %>
+  </tr>
+    <% }) %>
+</table>
