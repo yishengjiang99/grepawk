@@ -15,7 +15,7 @@
       if (msg == 'uploaded') {
         $("#new_file_upload_form").remove();
         window.terminal.output_ext("Upload complete");
-        window.terminal.cmd_str("ls -l");
+        window.terminal.cmd_string("ls -l");
         return;
       }
       if (typeof msg === 'string') {
@@ -249,8 +249,7 @@
             outputHtml(iframeHTML);
             break;
           case 'edit':
-            
-            parent.stdin("edit "+userInfo.cwd+"/"+args[0]);
+            parent.stdin("edit " + args[0]+" "+args[1]);
           case 'cam':
             parent.stdin("show_cam");
             break;
@@ -304,7 +303,7 @@
           scrollTop: getDocHeight_()
         }, 'fast');
 
-       // window.scrollTo(0, getDocHeight_());
+        // window.scrollTo(0, getDocHeight_());
       }
 
       function displayHTMLTable(results) {
@@ -354,7 +353,8 @@
         window.scrollTo(0, getDocHeight_());
         $(cmdLine_).focus()
       }
-      function outputDiv(div){
+
+      function outputDiv(div) {
         output_.append(div);
       }
 
@@ -390,10 +390,16 @@
           html += "<tr>";
           $.each(table.headers, function (i, header) {
             var val = row[header] || "";
-            if(header=="src"){
-
-            }
-            if (header === 'links') {
+            if (header == "edit_link") {
+              var val_html = "";
+              var cmd_str = "edit " + encodeURIComponent(val.url) + " " + val.context;
+              var onclick = "term.processNewCommand(\"" + cmd_str +
+                "\")";
+              val_html +=
+                "<a style='color:yellow' href='javascript://' class='onclick_cmd' cmd='" +
+                cmd_str + "'>edit</a>";
+              html += "<td>" + val_html + "</td>";
+            } else if (header === 'links') {
               var val_html = "";
               val.forEach(function (link, i) {
                 if (link.indexOf("onclick:") === 0) {
@@ -446,7 +452,7 @@
         if (in_proc_mode) {
           updatePromptWithString("> ");
         } else if (userInfo) {
-          var p = userInfo.cwd+"$";
+          var p = userInfo.cwd + "$";
           updatePromptWithString(p);
         }
       }
@@ -554,21 +560,20 @@
           }
           socket.onmessage = function (event) {
             try {
-              if(event.data=="binary_mode_on"){
-                socket.binary_mode=true;
+              if (event.data == "binary_mode_on") {
+                socket.binary_mode = true;
                 outputHtml("<p></p>");
-              }else if(event.data=="binary_mode_off"){
-                socket.binary_mode=false;
-              }else if(socket.binary_mode){
+              } else if (event.data == "binary_mode_off") {
+                socket.binary_mode = false;
+              } else if (socket.binary_mode) {
                 console.log(event);
                 var image = new Image();
                 image.src = URL.createObjectURL(event.data);
 
                 outputDiv(image);
-              }
-              else if (event.data && event.data.startsWith("stdout: ")) {
+              } else if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
-                output("<pre>"+stdout+"<pre>");
+                output("<pre>" + stdout + "<pre>");
               } else if (event.data.startsWith("stderr: ")) {
 
                 var stderr = event.data.replace("stderr: ", "");
@@ -663,7 +668,7 @@
       <input type="file" class="form-control" id="file-select-input" name="file">
       <input type="submit" class="form-control" name="submitBtn" value="Upload" />
     </form>
-  
+
     <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
       target="upload_csv_form">
       <input type="file" class="form-control" id="file-select-input" name="file">
