@@ -13,18 +13,42 @@
 </style>
 </head>
 <body>
-
-<div id="editor">
-
+<div>
+<button id='save'>Save</button>
+</div>
+<div id="editor" style='display:none'>
+<%= text %>
 </div>
     
 <script src="https://pagecdn.io/lib/ace/1.4.5/ace.js" integrity="sha256-5Xkhn3k/1rbXB+Q/DX/2RuAtaB4dRRyQvMs83prFjpM=" crossorigin="anonymous"></script>
 <script>
     var editor = ace.edit("editor");
     editor.setTheme("ace/theme/monokai");
-    editor.session.setMode("ace/mode/javascript");
+    var context = "<%= context %>"
+    var editorDiv = document.getElementById("editor");
+    editorDiv.style.top="30px";
 
+    editor.getSession().setMode("<%= mode %>");
+    editorDiv.style.display="block";
+    document.getElementById("save").addEventListener("click", function(){
+    let formData = new FormData();
+    formData.append("text", editor.getValue());
 
+    fetch("/file/edit",{
+            method:"POST",
+            headers: {
+                'x-context':context,
+               // 'Content-Type':formData.
+            },
+            body:formData
+        }).then(resp=>{
+            if(resp.ok){
+                parent.stdin("file_saved");
+            }
+        }).catch(err=>{
+            alert("err",err);
+        })
+    })
 </script>
 </body>
 </html>

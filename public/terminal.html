@@ -38,7 +38,7 @@
     };
 
     var node_url = window.location.hostname == 'localhost' ?
-      "http://localhost:8080" : "https://www.grepawk.com";
+      "http://localhost" : "https://www.grepawk.com";
 
 
     var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
@@ -250,6 +250,7 @@
             break;
           case 'edit':
             parent.stdin("edit " + args[0]+" "+args[1]);
+            break;
           case 'cam':
             parent.stdin("show_cam");
             break;
@@ -560,17 +561,13 @@
           }
           socket.onmessage = function (event) {
             try {
-              if (event.data == "binary_mode_on") {
-                socket.binary_mode = true;
-                outputHtml("<p></p>");
-              } else if (event.data == "binary_mode_off") {
-                socket.binary_mode = false;
-              } else if (socket.binary_mode) {
-                console.log(event);
-                var image = new Image();
-                image.src = URL.createObjectURL(event.data);
-
-                outputDiv(image);
+              console.log(typeof event.data);
+              if(typeof event.data==='object'){
+                // alert("blob");
+                // console.log(event);
+                // var image = new Image();
+                // image.src = URL.createObjectURL(event.data);
+                // outputDiv(image);
               } else if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
                 output("<pre>" + stdout + "<pre>");
@@ -590,8 +587,9 @@
                 _parse_api_response(JSON.parse(event.data));
               }
             } catch (e) {
-              console.log('parsing res', e);
 
+              console.log('parsing res', e, event);
+              
             }
           }
         },

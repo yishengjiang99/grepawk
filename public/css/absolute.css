@@ -7,15 +7,21 @@ html, body {
     margin:0;
     padding:0;
   }
-  .terminal{
+  .tty{
     background-color:black;
     color: white;
-    left:50px;
+    left:30px;
     top:20px;
+    min-width:90vw
   }
-  .terminal output {
+  .tty output {
     clear: both;
     width: 100%;
+  }
+  #iframe-template{
+    left:100px;
+    top:200px;
+
   }
   .video{
     left:300px;
@@ -56,7 +62,6 @@ html, body {
   .desktop > .card{
     position: absolute;
     min-width:960px;
-
   }
   .card-body{
     min-height:70vh;
@@ -94,3 +99,10 @@ html, body {
     top: 5px;
   }
  
+  .tty{
+    background-color:black;
+    color: white;
+    left:30px;
+    top:20px;
+    min-width:85vw !important
+  }
