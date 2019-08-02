@@ -193,6 +193,7 @@ wss.on('connection', (ws, request) => {
                     ws.send(JSON.stringify({
                         userInfo: user
                     }));
+                    xfs.init_pwd_container_if_neccessary(cwd);
                     xfs.list_files_table(cwd, ws);
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
