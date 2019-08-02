@@ -1,0 +1,105 @@
+<div id='card-template' class="desktop">
+    <div class="draggable card tty">
+        <div class="card-title mb-0">
+            tty
+            <div class="icon1 close-window">x</div>
+            <div class="icon2 minimize-window">_</div>
+            <div class="icon3 maximize-window">[]</div>
+        </div>
+        <iframe class='card-body m-0 p-0 w-100 h-100' src='/terminal.html'>
+        </iframe>
+    </div>
+</div>
+
+<div id='graph-template'>
+    <div class='c3 chart'>
+    </div>
+    <div class="c3-btn-group btn-group" role="group" aria-label="Basic example">
+        <button type="button" class="btn btn-secondary customize">Customize</button>
+        <button type="button" class="btn btn-secondary save">Save</button>
+        <button type="button" class="btn btn-secondary share">Share</button>
+    </div>
+    <button type="button" class="btn btn-primary">Export</button>
+</div>
+
+<div id='forms-section' style='display:none'>
+    <form id='new_file_form'>
+        <div class="form-group">
+            <label for="file-name-input">File Name</label>
+            <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
+        </div>
+        <div class="form-group">
+            <label for="file-content-input">File Content</label>
+            <TextArea type="text" name='filecontent' class="form-control" id="file-content-input"
+                placeholder="Another input"></TextArea>
+        </div>
+        <div class="form-group">
+            <div class="offset-sm-2 col-sm-10">
+                <button id='new-file-submit' class="btn btn-primary">Create</button>
+            </div>
+        </div>
+    </form>
+    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload'
+        target="uploadTrg">
+        <input type="file" class="form-control" id="file-select-input" name="file">
+        <input type="submit" class="form-control" name="submitBtn" value="Upload" />
+    </form>
+
+    <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
+        target="upload_csv_form">
+        <input type="file" class="form-control" id="file-select-input" name="file">
+        <input type="submit" class="form-control" name="submitBtn" value="Upload" />
+    </form>
+</div>
+<div id='iframes' style='display:none'>
+    <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+    <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+    <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
+</div>
+<div id='camera' style='position:fixed; bottom:200px; display:none'>
+    <table>
+        <tr>
+            <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
+            <td width=50%> <video height=315 id="their_video" autoplay playsinline></video>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="modal" id='model-singleton' tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"></h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Modal body text goes here.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div id='form-row-template'>
+    <form>
+        <div class="form-group row">
+            <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control form-control-lg" id="colFormLabelLg"
+                    placeholder="col-form-label-lg">
+            </div>
+        </div>
+        <div class="form-group row">
+            <label for="colFormLabelLg" class="col-sm-2 col-form-label col-form-label-lg">Email</label>
+            <div class="col-sm-10">
+                <input type="email" class="form-control form-control-lg" id="colFormLabelLg"
+                    placeholder="col-form-label-lg">
+            </div>
+        </div>
+      
+    </form>
+</div>
