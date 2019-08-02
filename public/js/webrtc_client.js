@@ -1,6 +1,6 @@
 var WebRTC_Client = function (options) {
    const opts = Object.assign({
-      signal_url: "ws://localhost:9090",
+      signal_url: "wss://grepawk.com/ws",
       stun_url: "stun:stun2.1.google.com:1930",
       my_video: "my_video",
       their_video: "their_video",
