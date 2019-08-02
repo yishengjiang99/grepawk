@@ -112,6 +112,7 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         ws.send("stdout: user: " + user.username);
                     });
+                case 'npm':
                 case 'git':
                 case 'ps':
                 case 'cat':
