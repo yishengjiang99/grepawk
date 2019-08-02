@@ -29,7 +29,8 @@ var User = function(){
  
   return {
     get_info: get_info,
-    get_uuid: get_uuid
+    get_uuid: get_uuid,
+    gen_uuid: generateUUID
   }
 }
 

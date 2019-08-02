@@ -28,6 +28,7 @@
     "formidable": "^1.2.1",
     "mime": "^2.4.4",
     "mime-types": "^2.1.24",
+    "node-fetch": "^2.6.0",
     "nodemon": "^1.19.1",
     "pg": "^7.11.0",
     "promise": "^8.0.3",

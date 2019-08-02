@@ -3,13 +3,27 @@
 <head>
   <title>cmd</title>
   <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
-  <script src='js/user.js'></script>
 
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css"
     integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link href="css/cmd.css" rel="stylesheet">
+
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
+    integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
+  </script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
+    integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
+  </script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
+  <script src='js/user.js'></script>
+
+  <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.3/c3.min.css'>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.9.7/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.3/c3.min.js"></script>
+  <script src='js/chart.js'></script>
   <script>
     iframe_interface = function (msg) {
       if (msg == 'uploaded') {
@@ -249,7 +263,7 @@
             outputHtml(iframeHTML);
             break;
           case 'edit':
-            parent.stdin("edit " + args[0]+" "+args[1]);
+            parent.stdin("edit " + args[0] + " " + args[1]);
             break;
           case 'cam':
             parent.stdin("show_cam");
@@ -258,7 +272,17 @@
             client.leave();
             break;
           case 'host':
+            break;
+          case 'chart':
+          case 'pie':
+          case 'scatter':
 
+            _parse_api_response({
+              chart: {
+                type: cmd,
+                argstr: argsstr
+              }
+            });
             break;
           case 'download':
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
@@ -481,6 +505,38 @@
           outputOptions(ret.options.rows);
           option_select = ret.options;
         }
+        if (ret.chart) {
+          var type = ret.chart.type;
+          var data;
+          if(ret.chart.opts){
+            data ={opts:ret.chart.opts};
+          }
+          else if (ret.chart.data) {
+            data = ret.chart.data;
+          } else if (ret.chart.argstr) {
+            var t = ret.chart.argstr.split("|");
+            data = t.map((d) => {
+              d.trim();
+              return d.split(" ").map(dd => {
+                if (!isNaN(dd)){
+                  dd = parseInt(dd);
+                }
+                return dd;
+              })
+            });
+
+            console.log(data);
+          }
+
+          var divId = "chart-" + user.gen_uuid();
+          var chart = Chart(divId);
+          var div = $("#graph-template").clone();
+          div.find(".c3").attr("id", divId);
+          $(output_).append(div);
+          
+          chart.chart_line(ret.chart.type, data);
+          return;
+        }
 
         ret.meta = ret.meta || {};
         if (ret.error) {
@@ -562,7 +618,7 @@
           socket.onmessage = function (event) {
             try {
               console.log(typeof event.data);
-              if(typeof event.data==='object'){
+              if (typeof event.data === 'object') {
                 // alert("blob");
                 // console.log(event);
                 // var image = new Image();
@@ -589,7 +645,7 @@
             } catch (e) {
 
               console.log('parsing res', e, event);
-              
+
             }
           }
         },
@@ -627,7 +683,16 @@
         var _cmd = $(this).attr('cmd');
         term.cmd_string(_cmd);
       });
+      $("#templates_repo").load("/templates.html", function () {
+        var modal = $("#model-singleton");
+        modal.detach();
+        $("body").append(modal);
+
+      });
+
+
       window.terminal = term;
+
     });
   </script>
 </head>
@@ -643,50 +708,11 @@
         </div>
       </div>
     </div>
-  </div>
-  <div id='forms-section' style='display:none'>
-    <form id='new_file_form'>
-      <div class="form-group">
-        <label for="file-name-input">File Name</label>
-        <input type="text" name='filename' class="form-control" id="file-name-input" placeholder="File Name">
-      </div>
-      <div class="form-group">
-        <label for="file-content-input">File Content</label>
-        <TextArea type="text" name='filecontent' class="form-control" id="file-content-input"
-          placeholder="Another input"></TextArea>
-      </div>
-      <div class="form-group">
-        <div class="offset-sm-2 col-sm-10">
-          <button id='new-file-submit' class="btn btn-primary">Create</button>
-        </div>
-      </div>
-    </form>
-    <form id='new_file_upload_form' method='POST' enctype="multipart/form-data" action='/files/upload'
-      target="uploadTrg">
-      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
+    <div id='templates_repo' class='d-none'>
 
-    <form id='upload_csv_form' method='POST' enctype="multipart/form-data" action='/files/upload/csv'
-      target="upload_csv_form">
-      <input type="file" class="form-control" id="file-select-input" name="file">
-      <input type="submit" class="form-control" name="submitBtn" value="Upload" />
-    </form>
+    </div>
   </div>
-  <div id='iframes' style='display:none'>
-    <iframe id="uploadTrg" name="uploadTrg" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-    <iframe id="file_download_1" name="file_download_1" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-    <iframe id="csv_upload" name="csv_upload" height="0" width="0" frameborder="0" scrolling="yes"></iframe>
-  </div>
-  <div id='camera' style='position:fixed; bottom:200px; display:none'>
-    <table>
-      <tr>
-        <td width=50%> <video height=315 muted id="my_video" autoplay playsinline></video>
-        <td width=50%> <video height=315 id="their_video" autoplay playsinline></video>
-        </td>
-      </tr>
-    </table>
-  </div>
+
 </body>
 
 

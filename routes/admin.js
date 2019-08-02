@@ -14,7 +14,7 @@ router.get('/quests', async function (req, res) {
   const client = new Client()
   await client.connect();
   const dbres = await client.query("select * from quests");
- 
+
   let headers = dbres.fields.map(f=>f.name);
   res.render("table",{headers: headers, rows:dbres.rows});
   client.end();

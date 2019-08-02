@@ -4,7 +4,6 @@ const HttpRequest = require('request');
 
 const fs = require('fs');
 const path = require("path");
-
 const port = process.env.ws_port || 8081
 console.log(process.env.AZURE_STORAGE_CONNECTION_STRING);
 const wss = new WebSocket.Server({
@@ -20,6 +19,7 @@ const db = require("./lib/db");
 const xfs = require("./lib/xfs");
 const quests = require("./lib/quests");
 const gsearch = require("./lib/gsearch");
+const geo = require("./lib/geo");
 
 console.log("listening on " + port)
 
@@ -79,6 +79,10 @@ wss.on('connection', (ws, request) => {
                         console.error(err);
                         ws.send("stderr: " + err.message);
                     })
+                    break;
+                case 'weather':
+                    var opts=await geo.getTempChart(args.join(" "));
+                    send_json_resonse(ws, {chart:{opts:opts}})
                     break;
                 case 'download':
                     xfs.download_blob(cwd, args[0], ws);
