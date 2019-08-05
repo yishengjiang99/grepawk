@@ -128,15 +128,19 @@ app.get("/stdin", function(req,res){
   };
 
   request.post(options,(err,httpResponse,body)=>{
+   const response = JSON.parse(body);
+	
+res.send(response.scope+" "+response.access_token);   
+   
     if(body.err){
       res.status(400).send(body.err);
-      
     }
+		
+
     if(err){
       console.log(err);
       res.end(err.message);
     }
-res.end();
 
     console.log(body);
   })
