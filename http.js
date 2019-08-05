@@ -16,6 +16,15 @@ var bodyParser = require('body-parser');
 // app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
+
+app.get("/", async function(req,res){
+  var user = null;
+  if(req.query.uuid){ //access token
+    user = await db.get_user(req.query.uuid);
+  }
+  res.render("index",{user:user});
+})
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
@@ -132,27 +141,21 @@ app.get("/stdin", function (req, res) {
       const url = "https://www.googleapis.com/oauth2/v1/userinfo?access_token="+response.access_token;
      console.log(url);
 
-      request.get(url, (err,resp,result)=>{
+      request.get(url, async (err,resp,result)=>{
+        if(err){
+          res.redirect("/500.html");
+        }else{
           const userInfo = JSON.parse(result);
-          const user = db.get_oauth_user(userInfo);
+          const user = await db.get_oauth_user(userInfo);
           res.redirect("/?uuid="+user.uuid);
+        }
+
       })
     }else{
 		
 	res.end("failed");
     }
   })
-
-
-  //   code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
-  // client_id=your_client_id&
-  // client_secret=your_client_secret&
-  // redirect_uri=https://oauth2.example.com/code&
-  // grant_type=authorization_code
-
-  // const urlObj = url.parse(req.url)
-  // console.log(urlObj) // #some/url
-  // res.end(urlObj.hash);
 })
 
 
