@@ -144,8 +144,10 @@
     if (cmd == 'upload') {
       var modal = $("#modal-singleton");
       modal.show();
+    }else if(cmd=='new'){
+      loadIframe("/file/edit?mode=new&filename="+args[0]+"&cwp="+args[1],'editor')
     }
-    if (cmd == 'show_cam') {
+    else if (cmd == 'show_cam') {
       $("#camera").show();
       var room = args.length == 1 ? args[0] : "default";
       var client = WebRTC_Client();

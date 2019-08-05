@@ -22,28 +22,44 @@ app.use(function (req, res, next) {
 });
 
 app.get("/file/edit", function (req, res, next) {
-  if(!req.query.url){
-    res.status(400).send("...");
-    res.end();
-  }
-  filename = path.basename(decodeURIComponent(req.query.url));
-  mode = xfs.autoImplementedMode(filename);
- console.log(filename, mode);
-  request(req.query.url, (err,resp,body)=>{
-    if(err){
-      res.status(500).send(err.message);
-    }
+
+  if(req.query.mode=='new'){
+    var filename = req.query.filename;
+    var fileMode = xfs.autoImplementedMode(filename);
+
+    var containerName = xfs.get_container_name(req.query.cwp);
+
+    context = containerName+"/"+filename;
     data={
-      url: req.query.url,
-      text: body,
-      mode:mode,
-      context: req.query.context
+      text:"",
+      mode:fileMode,
+      context: context
     }
     res.render("editor",data);
+  }else{
+    if(!req.query.url){
+      res.status(400).send("...");
+      res.end();
+      return;
+    }
+    var filename = path.basename(decodeURIComponent(req.query.url));
+    var mode = xfs.autoImplementedMode(filename);
+    request(req.query.url, (err,resp,body)=>{
+      if(err){
+        res.status(500).send(err.message);
+      }
+      data={
+        url: req.query.url,
+        text: body,
+        mode:mode,
+        context: req.query.context
+      }
+      res.render("editor",data);
+  
+    })
+  }
 
-  })
 });
-
 
 app.post("/file/edit", function (req, res, next) {
   var context= req.headers['x-context'];
@@ -54,8 +70,6 @@ app.post("/file/edit", function (req, res, next) {
   }
   var containerName = t[0];
   var blobName = t[1];
-
-  console.log("ddd");
   new formidable.IncomingForm().parse(req, (err, fields) => {
     if(err){
       console.log(err);

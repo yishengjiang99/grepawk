@@ -276,7 +276,6 @@
           case 'chart':
           case 'pie':
           case 'scatter':
-
             _parse_api_response({
               chart: {
                 type: cmd,
@@ -288,7 +287,8 @@
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
             break;
           case 'new':
-            parent.iframe_interface("new");
+            let filename = args[0] || "";           
+            parent.stdin("new "+filename+" "+userInfo.cwd);
             break;
           case 'upload':
             file_type = args[0] || "";

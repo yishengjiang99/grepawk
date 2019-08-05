@@ -15,6 +15,7 @@
 <body>
 <div>
 <button id='save'>Save</button>
+<input type='text' size=60 id='filename' placeholder='filename' value='' />
 </div>
 <div id="editor" style='display:none'>
 <%= text %>
@@ -26,18 +27,19 @@
     editor.setTheme("ace/theme/monokai");
     var context = "<%= context %>"
     var editorDiv = document.getElementById("editor");
+    var filenameInput = document.getElementById("filename");
+    filenameInput.value=context;
+    
     editorDiv.style.top="30px";
-
     editor.getSession().setMode("<%= mode %>");
     editorDiv.style.display="block";
     document.getElementById("save").addEventListener("click", function(){
     let formData = new FormData();
     formData.append("text", editor.getValue());
-
     fetch("/file/edit",{
             method:"POST",
             headers: {
-                'x-context':context,
+                'x-context':filenameInput.value,
                // 'Content-Type':formData.
             },
             body:formData
