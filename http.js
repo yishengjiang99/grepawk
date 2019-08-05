@@ -109,9 +109,6 @@ app.get("/google_login", function (req, res) {
 const url = require('url')
 
 app.get("/stdin", function (req, res) {
-  res.redirect("http://localhost/stdin?code="+req.query.code);
-  return;
-
   console.log(req.query.code);
   var body = {
     code: req.query.code,
@@ -132,13 +129,17 @@ app.get("/stdin", function (req, res) {
   request.post(options, (err, httpResponse, body) => {
     const response = JSON.parse(body);
     if(response.access_token){
-      const url = "https://www.googleapis.com/oauth2/v1/userinfo?"+
-      +"access_token="+response.access_token;
+      const url = "https://www.googleapis.com/oauth2/v1/userinfo?access_token="+response.access_token;
+     console.log(url);
+
       request.get(url, (err,resp,result)=>{
           const userInfo = JSON.parse(result);
           const user = db.get_oauth_user(userInfo);
           res.redirect("/?uuid="+user.uuid);
       })
+    }else{
+		
+	res.end("failed");
     }
   })
 

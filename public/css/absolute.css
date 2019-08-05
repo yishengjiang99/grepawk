@@ -11,7 +11,7 @@ html, body {
     background-color:black;
     color: white;
     left:30px;
-    top:20px;
+    top:80px;
     min-width:90vw
   }
   .tty output {
@@ -99,10 +99,3 @@ html, body {
     top: 5px;
   }
  
-  .tty{
-    background-color:black;
-    color: white;
-    left:30px;
-    top:20px;
-    min-width:85vw !important
-  }
