@@ -102,6 +102,40 @@ app.post('/files/upload', xfs.upload_handler);
 
 app.use("/admin", admin);
 app.use('/', express.static('public'))
+app.get("/oauth/reddit", function (req,res){
+  var url ="https://www.reddit.com/api/v1/authorize";
+  url += "?client_id=" + process.env.REDDIT_CLIENT_ID;
+  url += "&redirect_uri=" + process.env.HOSTNAME + "/cb/reddit";
+  url += "&response_type=code&duration=permanent";
+  url += "&scope=" + (req.query.scope || "read");
+  url +="&state=" + req.query.uuid;
+  res.redirect(url);
+});
+
+app.get("/cb/reddit", function(req,res){
+  if(!req.query.code){
+    res.status(400).end("no code");
+    return;
+  }
+  var body = {
+    code: req.query.code,
+    redirect_uri: process.env.HOSTNAME + "/cb/reddit",
+    grant_type: 'authorization_code'
+  }
+  var auth_str = Buffer.from(process.env.REDDIT_CLIENT_ID+":"+process.env.REDDIT_CLIENT_SECRET).toString("base64");
+  const options = {
+    url: "https://www.reddit.com/api/v1/access_token",
+    headers: {
+      'Authorization': 'Basic '+auth_str
+    },
+    formData: body
+  };
+  
+  request(options, (err, res,ret)=>{
+    console.log(err);
+    console.log(ret);
+  });
+});
 
 app.get("/google_login", function (req, res) {
   var url = 'https://accounts.google.com/o/oauth2/v2/auth';

@@ -65,6 +65,10 @@ wss.on('connection', (ws, request) => {
             var args = t.length > 1 ? t.splice(1) : [];
 
             switch (cmd) {
+                case 'index':
+    
+
+                   break;
                 case 'search':
                     if (args.length < 1) {
                         ws.send("stderr: Usage: search <keyword>");
