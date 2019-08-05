@@ -94,6 +94,65 @@ app.post('/files/upload', xfs.upload_handler);
 app.use("/admin", admin);
 app.use('/', express.static('public'))
 
+app.get("/google_login", function(req,res){
+   var url = 'https://accounts.google.com/o/oauth2/v2/auth';
+   url+="?client_id="+process.env.GOOGLE_CLIENT_ID;
+   url+="&redirect_uri="+process.env.HOSTNAME+"/stdin";
+   url+="&response_type=code";
+   url+="&scope=" + (req.query.scope || "email profile openid");
+  // url+="&state=" + req.cookies.uuid;
+   url+="&login_hint="+encodeURIComponent("twich prime");
+  console.log(url); 
+ 
+   res.redirect(url);   
+});
+const url = require('url')
+
+app.get("/stdin", function(req,res){
+
+  console.log(req.query.code);
+  var body = {
+    code : req.query.code,
+    client_id: process.env.GOOGLE_CLIENT_ID,
+    client_secret: process.env.GOOGLE_CLIENT_SECRET,
+    redirect_uri: process.env.HOSTNAME+"/stdin",
+    grant_type: 'authorization_code'
+  }
+
+  const options = {
+    url: "https://www.googleapis.com//oauth2/v4/token",
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    formData:body
+  };
+
+  request.post(options,(err,httpResponse,body)=>{
+    if(body.err){
+      res.status(400).send(body.err);
+      
+    }
+    if(err){
+      console.log(err);
+      res.end(err.message);
+    }
+res.end();
+
+    console.log(body);
+  })
+ 
+
+//   code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
+// client_id=your_client_id&
+// client_secret=your_client_secret&
+// redirect_uri=https://oauth2.example.com/code&
+// grant_type=authorization_code
+
+  // const urlObj = url.parse(req.url)
+  // console.log(urlObj) // #some/url
+  // res.end(urlObj.hash);
+})
+
 
 
 

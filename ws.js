@@ -5,7 +5,6 @@ const HttpRequest = require('request');
 const fs = require('fs');
 const path = require("path");
 const port = process.env.ws_port || 8081
-console.log(process.env.AZURE_STORAGE_CONNECTION_STRING);
 const wss = new WebSocket.Server({
     port: port
 })
