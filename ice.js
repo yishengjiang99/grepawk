@@ -40,6 +40,11 @@ wss.on('connection', function (connection) {
                   success: true
                });
                channels[data.channel][user.uuid]=user;
+            }).catch(err=>{
+               sendTo(connection,{
+                  type: "error",
+                  success:false
+               })
             })
             break;
          case "join":
