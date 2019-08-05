@@ -151,8 +151,10 @@ app.get("/google_login", function (req, res) {
 });
 const url = require('url')
 
+app.get("/cb", function(req,res){
+  res.status(200).end("welcome");
+});
 app.get("/stdin", function (req, res) {
-  console.log(req.query.code);
   var body = {
     code: req.query.code,
     client_id: process.env.GOOGLE_CLIENT_ID,
