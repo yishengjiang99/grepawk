@@ -125,15 +125,20 @@ app.get("/cb/reddit", function(req,res){
   var auth_str = Buffer.from(process.env.REDDIT_CLIENT_ID+":"+process.env.REDDIT_CLIENT_SECRET).toString("base64");
   const options = {
     url: "https://www.reddit.com/api/v1/access_token",
+    method: 'POST',
     headers: {
-      'Authorization': 'Basic '+auth_str
+      'Authorization': 'Basic '+auth_str,
+      'Content-Type': 'application/x-www-form-urlencoded'
     },
     formData: body
   };
-  
-  request(options, (err, res,ret)=>{
-    console.log(err);
-    console.log(ret);
+
+  request(options, (err, result,ret)=>{
+	if(err) {
+
+		res.end("ret:"+err.message);    
+	}
+	res.end(ret);
   });
 });
 
