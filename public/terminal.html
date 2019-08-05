@@ -579,6 +579,7 @@
         }
         if (ret.userInfo) {
           userInfo = ret.userInfo;
+          localStorage.setItem("uuid",userInfo.uuid);
           updatePrompt();
         }
       }
@@ -617,8 +618,9 @@
           }
           socket.onmessage = function (event) {
             try {
-              console.log(typeof event.data);
               if (typeof event.data === 'object') {
+                output("<pre>debug<pre>");
+
                 // alert("blob");
                 // console.log(event);
                 // var image = new Image();
@@ -626,7 +628,7 @@
                 // outputDiv(image);
               } else if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
-                output("<pre>" + stdout + "<pre>");
+                output("<pre>" + stdout + "</pre>");
               } else if (event.data.startsWith("stderr: ")) {
 
                 var stderr = event.data.replace("stderr: ", "");
