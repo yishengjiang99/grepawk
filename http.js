@@ -23,64 +23,64 @@ app.use(function (req, res, next) {
 
 app.get("/file/edit", function (req, res, next) {
 
-  if(req.query.mode=='new'){
+  if (req.query.mode == 'new') {
     var filename = req.query.filename;
     var fileMode = xfs.autoImplementedMode(filename);
 
     var containerName = xfs.get_container_name(req.query.cwp);
 
-    context = containerName+"/"+filename;
-    data={
-      text:"",
-      mode:fileMode,
+    context = containerName + "/" + filename;
+    data = {
+      text: "",
+      mode: fileMode,
       context: context
     }
-    res.render("editor",data);
-  }else{
-    if(!req.query.url){
+    res.render("editor", data);
+  } else {
+    if (!req.query.url) {
       res.status(400).send("...");
       res.end();
       return;
     }
     var filename = path.basename(decodeURIComponent(req.query.url));
     var mode = xfs.autoImplementedMode(filename);
-    request(req.query.url, (err,resp,body)=>{
-      if(err){
+    request(req.query.url, (err, resp, body) => {
+      if (err) {
         res.status(500).send(err.message);
       }
-      data={
+      data = {
         url: req.query.url,
         text: body,
-        mode:mode,
+        mode: mode,
         context: req.query.context
       }
-      res.render("editor",data);
-  
+      res.render("editor", data);
+
     })
   }
 
 });
 
 app.post("/file/edit", function (req, res, next) {
-  var context= req.headers['x-context'];
+  var context = req.headers['x-context'];
   var t = context.split("/");
-  if(t.length<2){
+  if (t.length < 2) {
     res.status(400).send("invalid context header");
     res.end();
   }
   var containerName = t[0];
   var blobName = t[1];
   new formidable.IncomingForm().parse(req, (err, fields) => {
-    if(err){
+    if (err) {
       console.log(err);
       res.status(400).send("invalid body");
       res.end();
     }
     console.log(fields.text);
-    xfs.edit_file(containerName,blobName,fields.text).then(function(result){
+    xfs.edit_file(containerName, blobName, fields.text).then(function (result) {
       console.log(result);
       res.end("ok");
-    }).catch(err=>{
+    }).catch(err => {
       console.log(error);
       res.status(400).send(err.message);
       res.end("bad");
@@ -94,28 +94,28 @@ app.post('/files/upload', xfs.upload_handler);
 app.use("/admin", admin);
 app.use('/', express.static('public'))
 
-app.get("/google_login", function(req,res){
-   var url = 'https://accounts.google.com/o/oauth2/v2/auth';
-   url+="?client_id="+process.env.GOOGLE_CLIENT_ID;
-   url+="&redirect_uri="+process.env.HOSTNAME+"/stdin";
-   url+="&response_type=code";
-   url+="&scope=" + (req.query.scope || "email profile openid");
+app.get("/google_login", function (req, res) {
+  var url = 'https://accounts.google.com/o/oauth2/v2/auth';
+  url += "?client_id=" + process.env.GOOGLE_CLIENT_ID;
+  url += "&redirect_uri=" + process.env.HOSTNAME + "/stdin";
+  url += "&response_type=code";
+  url += "&scope=" + (req.query.scope || "email profile openid");
   // url+="&state=" + req.cookies.uuid;
-   url+="&login_hint="+encodeURIComponent("twich prime");
-  console.log(url); 
- 
-   res.redirect(url);   
+  url += "&login_hint=" + encodeURIComponent("twich prime");
+  console.log(url);
+
+  res.redirect(url);
 });
 const url = require('url')
 
-app.get("/stdin", function(req,res){
+app.get("/stdin", function (req, res) {
 
   console.log(req.query.code);
   var body = {
-    code : req.query.code,
+    code: req.query.code,
     client_id: process.env.GOOGLE_CLIENT_ID,
     client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    redirect_uri: process.env.HOSTNAME+"/stdin",
+    redirect_uri: process.env.HOSTNAME + "/stdin",
     grant_type: 'authorization_code'
   }
 
@@ -124,33 +124,42 @@ app.get("/stdin", function(req,res){
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded'
     },
-    formData:body
+    formData: body
   };
 
-  request.post(options,(err,httpResponse,body)=>{
-   const response = JSON.parse(body);
-	
-res.send(response.scope+" "+response.access_token);   
-   
-    if(body.err){
+  request.post(options, (err, httpResponse, body) => {
+    const response = JSON.parse(body);
+    if(response.access_token){
+      const url = "https://www.googleapis.com/oauth2/v1/userinfo?"+
+      +"access_token="+response.access_token;
+      request.get(url, (err,resp,result)=>{
+          const userInfo = JSON.parse(result);
+          const user = db.get_oauth_user(userInfo);
+      })
+    }
+
+
+    res.send(response.scope + " " + response.access_token);
+
+    if (body.err) {
       res.status(400).send(body.err);
     }
-		
 
-    if(err){
+
+    if (err) {
       console.log(err);
       res.end(err.message);
     }
 
     console.log(body);
   })
- 
 
-//   code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
-// client_id=your_client_id&
-// client_secret=your_client_secret&
-// redirect_uri=https://oauth2.example.com/code&
-// grant_type=authorization_code
+
+  //   code=4/P7q7W91a-oMsCeLvIaQm6bTrgtp7&
+  // client_id=your_client_id&
+  // client_secret=your_client_secret&
+  // redirect_uri=https://oauth2.example.com/code&
+  // grant_type=authorization_code
 
   // const urlObj = url.parse(req.url)
   // console.log(urlObj) // #some/url
