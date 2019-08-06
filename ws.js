@@ -159,6 +159,9 @@ wss.on('connection', (ws, request) => {
                         sub_proc.stderr.on("data", data => {
                             ws.send("stderr: " + data.toString('utf-8'));
                         });
+                        sub_proc.stdout.on("end", data => {
+                            ws.send("stdout: " + data.toString('utf-8'));
+                        });
                         sub_proc.on("close", () => {
                             console.log("subproc closee");
                             delete spawned_procs[user.uuid];
@@ -253,9 +256,9 @@ wss.on('connection', (ws, request) => {
                     }));
                     xfs.init_pwd_container_if_neccessary(cwd);
                     xfs.list_files_table(cwd, ws);
-                    quests.check_quest_completion(message, user, ws);
+                    //quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
-                    quests.send_quests(user, ws);
+                    //quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     break;
                     //break;
@@ -274,7 +277,7 @@ wss.on('connection', (ws, request) => {
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
                     //xfs.send_description(cwd, ws);
-                    quests.send_quests(user, ws);
+                    //quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     xfs.list_files_table(cwd, ws);
                 case 'echo':
@@ -287,7 +290,7 @@ wss.on('connection', (ws, request) => {
                             if (err) ws.send("error: " + err.message);
                             else {
                                 ws.send("stdout: " + stdout);
-                                quests.check_quest_completion(message, user, ws);
+                                //quests.check_quest_completion(message, user, ws);
                             }
                         });
                     } catch (e) {
