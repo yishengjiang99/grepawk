@@ -61,7 +61,7 @@ html, body {
 
   .desktop > .card{
     position: absolute;
-    min-width:960px;
+    min-width:70vw;
   }
   .card-body{
     min-height:70vh;
