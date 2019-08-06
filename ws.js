@@ -42,7 +42,6 @@ function setUserForWs(ws, user){
 
 wss.on('connection', (ws, request) => {
     var user;
-    console.log(request.connection.remoteAddress);
     ws.on('message', async message => {
         try {
             if (user && user.uuid && spawned_procs[user.uuid]) {

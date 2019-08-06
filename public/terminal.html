@@ -619,13 +619,9 @@
           socket.onmessage = function (event) {
             try {
               if (typeof event.data === 'object') {
-                output("<pre>debug<pre>");
-
-                // alert("blob");
-                // console.log(event);
-                // var image = new Image();
-                // image.src = URL.createObjectURL(event.data);
-                // outputDiv(image);
+                var image = new Image();
+                image.src = URL.createObjectURL(event.data);
+                outputDiv(image);
               } else if (event.data && event.data.startsWith("stdout: ")) {
                 var stdout = event.data.replace("stdout: ", "");
                 output("<pre>" + stdout + "</pre>");

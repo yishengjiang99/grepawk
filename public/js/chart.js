@@ -24,7 +24,7 @@ var Chart = function (divId) {
     };
     _options.bindto=divId;
     chart = c3.generate(_options);
-    //chart.transform(type);
+    chart.transform(type);
   }
   return {
     chart_line: chart_line
