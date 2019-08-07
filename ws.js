@@ -218,7 +218,8 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         _user.ws.send("stdout: user " + user.username + " arrived");
                     });
-                    xfs.list_files_table(cwd,ws);
+      	            xfs.list_files_table(cwd,ws);
+
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     ws.send("checkedin");
