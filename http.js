@@ -8,6 +8,7 @@ const request = require('request');
 const formidable = require('formidable')
 
 var admin = require("./routes/admin");
+var bt = require("./routes/bt");
 
 
 
@@ -101,6 +102,7 @@ app.post("/file/edit", function (req, res, next) {
 app.post('/files/upload', xfs.upload_handler);
 
 app.use("/admin", admin);
+app.use("/bt", bt);
 app.use('/', express.static('public'))
 app.get("/oauth/reddit", function (req,res){
   var url ="https://www.reddit.com/api/v1/authorize";

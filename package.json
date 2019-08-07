@@ -22,6 +22,8 @@
   "dependencies": {
     "azure-storage": "^2.10.3",
     "body-parser": "^1.19.0",
+    "braintree": "^2.18.0",
+    "braintree-web": "^3.50.0",
     "crypto": "^1.0.1",
     "dotenv": "^8.0.0",
     "ejs": "^2.6.2",

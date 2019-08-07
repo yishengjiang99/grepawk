@@ -12,25 +12,49 @@ function generateUUID() { // Public Domain/MIT
 
 var User = function(){
   var uuid;
-  var cwd;
-  var xp;
-  var points;
   var get_uuid = function(){
     if (uuid) return uuid;
     if (uuid = localStorage.getItem('uuid')) return uuid;
-    
     uuid = generateUUID();
     localStorage.setItem('uuid', uuid);
     return uuid;
   }
-  var get_info = function(){
-    
+  var set_uuid=function(uuid){
+    uuid=uuid;
+    localStorage.setItem('uuid', uuid);
   }
- 
+  var get_info = function(){
+  }
+  var deposit=function(args){
+    fetch("/bt/token").then(res=>{
+          const token = res.body;
+          $("#payment-dialog").modal('show');
+          if(args[0]){
+            $('#bt_amount').val(args[0]);
+          }
+          braintree.dropin.create({
+            authorization:token,
+            container:"#bt_container",
+            paypal:{
+              flow:'vault'
+            }
+          },function(err,instance){
+            if(err){
+              outputError("error connecting payment service");
+              $("#payment-dialog").modal('hide');
+            }else{
+               
+            }
+          })
+        })  
+  }
+  
   return {
+    deposit: deposit,
     get_info: get_info,
     get_uuid: get_uuid,
-    gen_uuid: generateUUID
+    gen_uuid: generateUUID,
+    set_uuid: set_uuid
   }
 }
 

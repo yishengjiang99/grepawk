@@ -65,6 +65,34 @@
         </tr>
     </table>
 </div>
+
+<div class="modal" id='payment-dialog' tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Store Credit</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form method='post' action='/bt/checkouts'>
+                    <div class="form-group row">
+                        <label for="amount" class='col-md-2'>Amount</label>
+                        <div class="col-md-10">
+                            <input type="tel" min=1 class="form-control form-control-lg" id="amount"
+                                placeholder="Enter Amount" />
+                        </div>
+                        <input type='hidden' id='bt-nonce' name='payment_method_nonce' />
+                    </div>
+                    <div id='bt_container'></div>
+                    <button type="button" class="btn btn-primary">Deposit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="modal" id='model-singleton' tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -100,6 +128,6 @@
                     placeholder="col-form-label-lg">
             </div>
         </div>
-      
+
     </form>
 </div>

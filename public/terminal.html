@@ -18,6 +18,8 @@
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
+  <script src="https://js.braintreegateway.com/web/3.50.0/js/client.min.js"></script>
+
   <script src='js/user.js'></script>
 
   <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/c3/0.7.3/c3.min.css'>
@@ -89,6 +91,7 @@
       var possible_matched_words = [];
       var tab_complete_last_word = '';
 
+    
       function historyHandler_(e) {
         if (history_.length) {
           if (e.keyCode == 38 || e.keyCode == 40) {
@@ -285,6 +288,10 @@
             break;
           case 'download':
             open_dl_iframe(nodeurl + "/download/?msg=" + argsstr + "&format=" + cmd);
+            break;
+          case 'pay':
+            debugger;
+            user.deposit(args);
             break;
           case 'new':
             let filename = args[0] || "";
@@ -669,10 +676,7 @@
         $("body").append(modal);
 
       });
-
-
       window.terminal = term;
-
     });
   </script>
 </head>

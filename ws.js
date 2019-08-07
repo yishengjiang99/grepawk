@@ -159,9 +159,9 @@ wss.on('connection', (ws, request) => {
                         sub_proc.stderr.on("data", data => {
                             ws.send("stderr: " + data.toString('utf-8'));
                         });
-                        sub_proc.stdout.on("end", data => {
-                            ws.send("stdout: " + data.toString('utf-8'));
-                        });
+                        // sub_proc.stdout.on("end", data => {
+                        //     ws.send("stdout: " + data.toString('utf-8'));
+                        // });
                         sub_proc.on("close", () => {
                             console.log("subproc closee");
                             delete spawned_procs[user.uuid];
@@ -218,6 +218,7 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         _user.ws.send("stdout: user " + user.username + " arrived");
                     });
+                    xfs.list_files_table(cwd,ws);
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     ws.send("checkedin");
