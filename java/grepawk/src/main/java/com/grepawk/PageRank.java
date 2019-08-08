@@ -96,7 +96,7 @@ public class PageRank {
 			Document doc = Jsoup.connect(url).get();
 			Element title = doc.selectFirst("title");
 			PageInfo info = new PageInfo(url, title.text());
-			Elements links = doc.select("a[href]");
+			Elements links = doc.select("a[href].js-navigation-open");
 			Elements h5 = doc.select("h5");
 			print(title.text());
 			postJSON("https://grepawk.com/data", info.toString(),"pageInfo");
@@ -104,7 +104,7 @@ public class PageRank {
 				LinkInfo infoLink = new LinkInfo(link.attr("abs:href"), link.text(), level + 1);
 				infoLink.fromUrl=url;
 				postJSON("https://grepawk.com/data", infoLink.toString(),"link");
-				//postJSON("https://grepawk.com/queue/send", infoLink.toQueueString(),"link");
+				postJSON("https://grepawk.com/queue/send", infoLink.toQueueString(),"link");
 				print(" * a: <%s>  (%s)", link.attr("abs:href"), link.text());
 			}
 		} catch (MalformedURLException e) {
@@ -138,6 +138,7 @@ public class PageRank {
 			e.printStackTrace();
 		}
 
+		
 	}
 
 	public static void main(String[] args) {
