@@ -265,6 +265,9 @@
               args[0] + '?rel=0" frameborder="0" allowfullscreen></iframe>';
             outputHtml(iframeHTML);
             break;
+          case "audio":
+            window.open('/video/dl_audio?id=' + args[0], '_blank');
+            break;
           case 'edit':
             parent.stdin("edit " + args[0] + " " + args[1]);
             break;

@@ -24,6 +24,9 @@ app.use("/file", file);
 app.use("/files", file);
 
 
+const video = require("./routes/video");
+app.use("/video",video); 
+
 
 app.post("/data", async (req, res) => {
   try {
@@ -66,6 +69,7 @@ app.get("/", async function (req, res) {
     user: user
   });
 })
+
 
 
 app.use(function (req, res, next) {
