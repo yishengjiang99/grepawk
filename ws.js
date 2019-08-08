@@ -111,9 +111,7 @@ wss.on('connection', (ws, request) => {
                     });
                     break;
                 case 'weather':
-console.log("wea");
                     var opts = await geo.getTempChart(args.join(" "));
-console.log(opts);
                     send_json_resonse(ws, {
                         chart: {
                             opts: opts
@@ -153,6 +151,21 @@ console.log(opts);
                         console.log(_user);
                         ws.send("stdout: user: " + _user.user.username);
                     });
+                    break;
+                case 'tables':  
+                    message="\d";
+                case 'select':
+                    var rows = await db.query(message);
+                    var headers = Object.keys(rows[0]); 
+                    var json = {
+                      'headers': headers,
+                      'rows': rows
+                    };
+                    ws.send(JSON.stringify({
+                      table: json
+                    }));
+                    console.log(rows);
+                    ws.send(JSON.stringify({table:rows}));
                     break;
                 case 'npm':
                 case 'git':
