@@ -107,8 +107,6 @@ public class PageRank {
 				//postJSON("https://grepawk.com/queue/send", infoLink.toQueueString(),"link");
 				print(" * a: <%s>  (%s)", link.attr("abs:href"), link.text());
 			}
-			
-
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
