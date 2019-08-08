@@ -7,10 +7,13 @@ const {
 const sbClient = ServiceBusClient.createFromConnectionString(process.env.AZURE_SERVICEBUS_CONNECTION_STRING);
 
 router.get("/receive", async (req, res) => {
+    var queueClient;
     try {
-        const queueClient = sbClient.createQueueClient(req.query.name||"parse");
+        queueClient = sbClient.createQueueClient(req.query.name||"parse");
         const receiver = queueClient.createReceiver(ReceiveMode.receiveAndDelete);
-        const messages = await receiver.receiveMessages(req.query.num || 3);
+	const num = req.query.num || 1;
+	const waitTime = req.query.wait|| 1;
+        const messages = await receiver.receiveMessages(num,waitTime);
         const msg_bodies = messages.map(message => message.body);
         res.json(msg_bodies);
         res.end();
@@ -21,14 +24,31 @@ router.get("/receive", async (req, res) => {
     }
 });
 
-router.post("/send", async (req, res) => {
+router.get("/peek", async (req, res) => {
+    var queueClient;
     try {
-        const queueClient = sbClient.createQueueClient(req.query.name||"parse");
+        queueClient = sbClient.createQueueClient(req.query.name||"parse");
+	const receiver = queueClient.createReceiver(ReceiveMode.PeekLock);
+	const messages = await receiver.receiveMessages(req.query.num || 1);
+	const msg_bodies = messages.map(message => message.body);
+        res.json(msg_bodies);
+// const msg_bodies = messages.map(message => message.body);
+  //      res.json(msg_bodies);
+    //    res.end();
+    } catch (err) {
+        res.status(500).end(err.message);
+    } finally{
+        await queueClient.close();
+    }
+});
+
+
+router.post("/send", async (req, res) => {
+    var queueClient;
+    try {
+        queueClient = sbClient.createQueueClient(req.query.name||"parse");
         const sender = queueClient.createSender();
-        var messages = req.body;
-        messages.forEach(async m => {
-            await sender.send(m);
-        });
+	await sender.send({body:req.body});
         res.status(200).end("ok");
     } catch (err) {
         res.status(500).end(err.message);
@@ -41,7 +61,8 @@ router.get("/healthcheck", async (req, res) => {
     try {
         const queueClient = sbClient.createQueueClient(req.query.name||"parse");
         const sender = queueClient.createSender();
-        await sender.send({body:"check"});
+	const msg = {url:'https://wikipedia.com',level:0};
+        await sender.send({body:msg});
         res.status(200).end("ok");
     } catch (err) {
         res.status(500).end(err.message);

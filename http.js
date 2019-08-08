@@ -25,7 +25,9 @@ app.use("/queue", queue);
 
 
 
-
+app.post("/data",(req,res)=>{
+  res.end("ok");
+});
 app.get("/", async function(req,res){
   var user = null;
   if(req.query.uuid){ //access token
