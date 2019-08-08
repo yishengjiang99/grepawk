@@ -9,13 +9,21 @@ const formidable = require('formidable')
 
 var admin = require("./routes/admin");
 var bt = require("./routes/bt");
+var queue = require("./routes/queue");
+var bodyParser = require('body-parser');
+app.use(bodyParser.json());
 
 
 
 app.set('view engine', 'ejs');
-var bodyParser = require('body-parser');
-// app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+
+app.use("/admin", admin);
+app.use("/bt", bt);
+app.use("/lib", express.static("lib"));
+app.use("/queue", queue);
+
+
+
 
 
 app.get("/", async function(req,res){
@@ -25,6 +33,7 @@ app.get("/", async function(req,res){
   }
   res.render("index",{user:user});
 })
+
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
@@ -101,9 +110,8 @@ app.post("/file/edit", function (req, res, next) {
 
 app.post('/files/upload', xfs.upload_handler);
 
-app.use("/admin", admin);
-app.use("/bt", bt);
-app.use('/', express.static('public'))
+
+
 app.get("/oauth/reddit", function (req,res){
   var url ="https://www.reddit.com/api/v1/authorize";
   url += "?client_id=" + process.env.REDDIT_CLIENT_ID;
@@ -203,6 +211,7 @@ app.get("/stdin", function (req, res) {
 
 
 
+app.use('/', express.static('public'))
 
 
 

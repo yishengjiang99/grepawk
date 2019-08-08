@@ -20,6 +20,8 @@
   },
   "homepage": "http://grepawk.com",
   "dependencies": {
+    "@azure/service-bus": "^1.0.3",
+    "azure": "^2.3.1-preview",
     "azure-storage": "^2.10.3",
     "body-parser": "^1.19.0",
     "braintree": "^2.18.0",

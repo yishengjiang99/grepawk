@@ -1,0 +1,14 @@
+require('dotenv').config();
+
+const tokenizationKey = process.env.BT_TOKEN_KEY;
+
+var environment='production';
+var client = require('braintree-web/client');
+var hostedFields = require('braintree-web/hosted-fields');
+
+client.create({
+  authorization: tokenizationKey
+}, function (err, clientInstance) {
+ console.log(err);
+ console.log(clientInstance);
+});
