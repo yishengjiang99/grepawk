@@ -30,11 +30,11 @@ const send_json_resonse = function (ws, json) {
     ws.send(JSON.stringify(json));
 }
 
-function setUserForWs(ws, user){
+function setUserForWs(ws, user) {
     ws.user = user;
-    users[user.uuid]={
-        ws:ws,
-        user:user
+    users[user.uuid] = {
+        ws: ws,
+        user: user
     }
 }
 
@@ -63,9 +63,9 @@ wss.on('connection', (ws, request) => {
 
             switch (cmd) {
                 case 'index':
-    
 
-                   break;
+
+                    break;
                 case 'search':
                     if (args.length < 1) {
                         ws.send("stderr: Usage: search <keyword>");
@@ -91,20 +91,23 @@ wss.on('connection', (ws, request) => {
                     })
                     break;
                 case 'parse':
-                    if(args.length<1){
+                    if (args.length < 1) {
                         ws.send("stderr: usage 'parse <url>'");
                     }
-                    var parseUrl = args[1];
+                    var parseUrl = args[0];
                     HttpRequest.post({
                         url: "https://grepawk.com/queue/send",
-                        json:{body:{url:parseUrl, level:0}}
-                     
-                        },(err,res)=>{
-                            console.log(err);
-                            if(err) ws.send("stderr: parse request failed to queue");
-                            else ws.send("stdout: parse request queued");
-                        });
-                     break;  
+                        json: {
+                            url: parseUrl,
+                            level: 0
+                        }
+                    }, (err, res) => {
+                        console.log(err);
+                        console.log(res);
+                        if (err) ws.send("stderr: parse request failed to queue");
+                        else ws.send("stdout: parse request queued");
+                    });
+                    break;
                 case 'weather':
                     var opts = await geo.getTempChart(args.join(" "));
                     send_json_resonse(ws, {
@@ -195,8 +198,8 @@ wss.on('connection', (ws, request) => {
                     let password = crypto.createHash('md5').update(args[1]).digest('hex');
                     db.update_user(ws.uuid, "username", username);
                     db.update_user(ws.uuid, "password", password);
-                    var luser=db.get_user_with_password(lusername,lpassword);
-                    setUserForWs(ws,luser);
+                    var luser = db.get_user_with_password(lusername, lpassword);
+                    setUserForWs(ws, luser);
                     ws.send("stdout: registered username " + username);
                     break;
                 case 'login':
@@ -206,24 +209,24 @@ wss.on('connection', (ws, request) => {
                     }
                     let lusername = args[0];
                     let lpassword = crypto.createHash('md5').update(args[1]).digest('hex');
-                    var luser=db.get_user_with_password(lusername,lpassword);
-                    if(!luser){
+                    var luser = db.get_user_with_password(lusername, lpassword);
+                    if (!luser) {
                         ws.send("stderr: user not found");
-                    }else{
+                    } else {
                         ws.send(JSON.stringify({
                             userInfo: luser
                         }));
                     }
-                    setUserForWs(ws,luser);
-           
-                   break;
+                    setUserForWs(ws, luser);
+
+                    break;
                 case 'check-in':
                     const uuid = args[0];
                     user = await db.get_user(uuid, request.headers['x-forwarded-for'] || request.connection.remoteAddress);
-                    if(!user){
+                    if (!user) {
                         ws.send("stderr: db error");
                     }
-                    setUserForWs(ws,user);
+                    setUserForWs(ws, user);
                     cwd = root_path + user.cwd;
                     ws.send(JSON.stringify({
                         userInfo: user
@@ -231,7 +234,7 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         _user.ws.send("stdout: user " + user.username + " arrived");
                     });
-      	            xfs.list_files_table(cwd,ws);
+                    xfs.list_files_table(cwd, ws);
 
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
@@ -240,10 +243,10 @@ wss.on('connection', (ws, request) => {
                 case 'shout':
                     console.log('shouting');
                     Object.values(users).forEach(_user => {
-                        if(_user.user.uuid== user.uuid){
+                        if (_user.user.uuid == user.uuid) {
                             _user.ws.send("stdout: you shout '" + args.join(" ") + "'");
 
-                        }else{
+                        } else {
                             _user.ws.send("stdout: " + _user.user.username + " shouts '" + args.join(" ") + "'");
                         }
                     });
@@ -314,7 +317,7 @@ wss.on('connection', (ws, request) => {
                     break;
 
                 default:
-                    ws.send("stdout: you say '"+message+"'");
+                    ws.send("stdout: you say '" + message + "'");
                     break;
             }
         } catch (err) {

@@ -29,7 +29,7 @@ router.get("/peek", async (req, res) => {
     try {
         queueClient = sbClient.createQueueClient(req.query.name || "parse_queue");
         const receiver = queueClient.createReceiver(ReceiveMode.PeekLock);
-        const messages = await receiver.receiveMessages(req.query.num || 1);
+        const messages = await receiver.receiveMessages(req.query.num || 1,2);
         const msg_bodies = messages.map(message => message.body);
         res.json(msg_bodies);
         // const msg_bodies = messages.map(message => message.body);
@@ -62,6 +62,7 @@ router.post("/send", async (req, res) => {
 router.get("/healthcheck", async (req, res) => {
     try {
         const queueClient = sbClient.createQueueClient(req.query.name || "parse_queue");
+      
         const sender = queueClient.createSender();
         const msg = {
             url: 'https://wikipedia.com',

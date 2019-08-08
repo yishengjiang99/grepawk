@@ -123,9 +123,12 @@ public class PageRank {
 			JSONArray array = new JSONArray(jsonTxt);
 			for (int i = 0; i < array.length(); i++) {
 				JSONObject obj = array.getJSONObject(i);
-				String url = obj.getString("url");
-				int level = obj.getInt("level");
-				parseUrl(url, level);
+				if(obj.has("url") && obj.has("level")){
+					String url = obj.getString("url");
+					int level = obj.getInt("level");
+					parseUrl(url, level);
+				}
+			
 			}
 		} catch (MalformedURLException e) {
 			// TODO Auto-generated catch block
