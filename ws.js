@@ -71,16 +71,18 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: Usage: search <keyword>");
                         return;
                     }
-                    keyword = args[0];
-                    pageToken = args[1] || "";
-                    gsearch.find_youtube(encodeURIComponent(args.join(" ")), 5, pageToken).then((ret) => {
+		    var argstr = args.join(" ");
+		    var argt = argstr.split("~~~");
+		    var searchTerm = argt[0];
+                    pageToken = argt[1] || "";
+                    gsearch.find_youtube(encodeURIComponent(argstr), 5, pageToken).then((ret) => {
                         send_json_resonse(ws, {
                             table: ret
                         });
                         if (ret.nextPage) {
                             send_json_resonse(ws, {
                                 link: {
-                                    url: `onclick: search ${keyword} ${ret.nextPage}`,
+                                    url: `onclick: search ${argstr}~~~${ret.nextPage}`,
                                     text: 'more'
                                 }
                             });
