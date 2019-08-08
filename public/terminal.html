@@ -28,7 +28,7 @@
   <script src='js/chart.js'></script>
   <script>
     iframe_interface = function (msg) {
-      if (msg == 'uploaded') {
+      if (msg=="uploaded") {
         $("#new_file_upload_form").remove();
         window.terminal.output_ext("Upload complete");
         window.terminal.cmd_string("ls -l");
@@ -300,10 +300,10 @@
           case 'upload':
             file_type = args[0] || "";
             var formObj = $("#new_file_upload_form").clone();
+            var form_uuid ="uploader-"+user.gen_uuid();
             if (file_type) formObj.attr("accept", "*." + file_type);
             formObj.attr("action", node_url + "/files/upload?type=" + file_type);
             formObj.attr("method", 'POST');
-
             formObj.append(`<input type='hidden' name='uuid' value='${localStorage.uuid}' />`);
             outputHtml(formObj.wrap('<div>').parent().html())
             var file;

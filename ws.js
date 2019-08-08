@@ -301,7 +301,7 @@ wss.on('connection', (ws, request) => {
                     break;
 
                 default:
-                    ws.send(message);
+                    ws.send("stdout: you say '"+message+"'");
                     break;
             }
         } catch (err) {
