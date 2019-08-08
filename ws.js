@@ -73,7 +73,7 @@ wss.on('connection', (ws, request) => {
                     }
                     keyword = args[0];
                     pageToken = args[1] || "";
-                    gsearch.find_youtube(keyword, 5, pageToken).then((ret) => {
+                    gsearch.find_youtube(args.join(" "), 5, pageToken).then((ret) => {
                         send_json_resonse(ws, {
                             table: ret
                         });
