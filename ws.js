@@ -111,7 +111,9 @@ wss.on('connection', (ws, request) => {
                     });
                     break;
                 case 'weather':
+console.log("wea");
                     var opts = await geo.getTempChart(args.join(" "));
+console.log(opts);
                     send_json_resonse(ws, {
                         chart: {
                             opts: opts
@@ -234,7 +236,7 @@ wss.on('connection', (ws, request) => {
                         userInfo: user
                     }));
                     Object.values(users).forEach(_user => {
-                        _user.ws.send("stdout: user " + user.username + " arrived");
+                        if(_user.uuid != user.uuid) _user.ws.send("stdout: user " + user.username + " arrived");
                     });
                     xfs.list_files_table(cwd, ws);
 
