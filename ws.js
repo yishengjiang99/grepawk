@@ -12,11 +12,9 @@ const {
     exec,
     spawn
 } = require('child_process');
-const utf8 = require('utf8');
 
 const db = require("./lib/db");
-const crypto = require('crypto')
-
+const crypto = require('crypto');
 const xfs = require("./lib/xfs");
 const quests = require("./lib/quests");
 const gsearch = require("./lib/gsearch");
@@ -92,6 +90,21 @@ wss.on('connection', (ws, request) => {
                         ws.send("stderr: " + err.message);
                     })
                     break;
+                case 'parse':
+                    if(args.length<1){
+                        ws.send("stderr: usage 'parse <url>'");
+                    }
+                    var parseUrl = args[1];
+                    HttpRequest.post({
+                        url: "https://grepawk.com/queue/send",
+                        json:{body:{url:parseUrl, level:0}}
+                     
+                        },(err,res)=>{
+                            console.log(err);
+                            if(err) ws.send("stderr: parse request failed to queue");
+                            else ws.send("stdout: parse request queued");
+                        });
+                     break;  
                 case 'weather':
                     var opts = await geo.getTempChart(args.join(" "));
                     send_json_resonse(ws, {

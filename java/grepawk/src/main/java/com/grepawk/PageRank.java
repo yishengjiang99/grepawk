@@ -70,11 +70,10 @@ class PageInfo {
 	}
 }
 
-public class App {
+public class PageRank {
 	private static void print(String msg, Object... args) {
 		System.out.println(String.format(msg, args));
 	}
-
 	private static void postJSON(String urlString, String jsonString, String dataType) throws IOException {
 		  String charset = "UTF-8"; 
 		  URLConnection connection = new URL(urlString).openConnection();
@@ -105,8 +104,7 @@ public class App {
 				LinkInfo infoLink = new LinkInfo(link.attr("abs:href"), link.text(), level + 1);
 				infoLink.fromUrl=url;
 				postJSON("https://grepawk.com/data", infoLink.toString(),"link");
-				postJSON("https://grepawk.com/queue/send", infoLink.toQueueString(),"link");
-
+				//postJSON("https://grepawk.com/queue/send", infoLink.toQueueString(),"link");
 				print(" * a: <%s>  (%s)", link.attr("abs:href"), link.text());
 			}
 			
