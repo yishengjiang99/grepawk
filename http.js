@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express')
 const app = express()
 const httpport = 8080
@@ -25,9 +26,23 @@ app.use("/queue", queue);
 
 
 
-app.post("/data",(req,res)=>{
+app.post("/data",async (req,res)=>{
+  const data = req.body;
+  const type = req.header("x-data-type");
+  switch(type){
+	case 'pageInfo': 
+	  await db.insertTable("node",{xpath:data.url, data:data});
+	  break;
+	case  'link':
+          const meta = {text: data.text};
+          await db.insertTable("link",{from_node:data.from, to_node:data.to});
+     break;
+	   default: break;
+		
+  }
   res.end("ok");
 });
+
 app.get("/", async function(req,res){
   var user = null;
   if(req.query.uuid){ //access token
