@@ -27,6 +27,10 @@ app.use("/files", file);
 const video = require("./routes/video");
 app.use("/video",video); 
 
+const draw = require("./routes/draw");
+app.use("/draw",draw);
+
+
 
 app.post("/data", async (req, res) => {
   try {
