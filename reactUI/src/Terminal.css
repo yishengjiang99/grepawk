@@ -1,0 +1,45 @@
+.input-line {
+    display: -webkit-box;
+    -webkit-box-align: stretch;
+    display: -moz-box;
+    -moz-box-align: stretch;
+    display: box;
+    box-orient: horizontal;
+    box-align: stretch;
+    clear: both;
+  }
+  .input-line > div:nth-child(2) {
+    box-flex: 1;
+  }
+  .prompt {
+    white-space: nowrap;
+    color: #96b38a;
+    margin-right: 7px;
+    display: -webkit-box;
+    -webkit-box-pack: center;
+    display: -moz-box;
+    -moz-box-pack: center;
+    display: box;
+    box-pack: center;
+    box-orient: vertical;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+        user-select: none;
+  }
+  .cmdline {
+    outline: none;
+    background-color: transparent;
+    margin: 0;
+    width: 100%;
+    height:100%;
+    font: inherit;
+    border: none;
+    color: inherit;
+  }
+  .terminal-body{
+    padding: 0.1em 1.5em 1em 1em;
+    height:100%;
+    background-color: black;
+    color: white;
+  }

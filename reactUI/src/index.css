@@ -1,0 +1,75 @@
+.desktop{
+  widows: 100vw;
+  height: 100vh;
+  position: relative;
+  background-color:#f1f1f1;
+}
+.window{
+  min-width: width 50px;
+}
+
+.wc-box {
+  position: absolute;
+  top: calc(50% - 15px);
+  right: calc(50% - 45px);
+}
+
+.wc-box div {
+  position: relative;
+  float: left;
+  width: 30px;
+  height: 30px;
+}
+
+.wc-box div:before,
+.wc-box div:after {
+  top: 30%;
+  right: 30%;
+  bottom: 30%;
+  left: 30%;
+  content: " ";
+  position: absolute;
+  border-color: #CCCCCC;
+  border-style: solid;
+  border-width: 0 0 2px 0;
+}
+
+.wc-box .minimize:before {
+  border-bottom-width: 2px;
+}
+
+.wc-box .maximize:before {
+  border-width: 1px 1px 2px 1px;
+}
+
+.wc-box .close:before,
+.wc-box .close:after {
+  bottom: 50%;
+  top: 50%;
+}
+
+.wc-box .close:before {
+  transform: rotate(45deg);
+}
+
+.wc-box .close:after {
+  transform: rotate(-45deg);
+}
+
+.wc-box div:hover {
+  background-color: #CCCCCC;
+}
+
+.wc-box .close:hover {
+  background-color: #E04343;
+}
+
+.wc-box div:hover:after,
+.wc-box div:hover:before {
+  border-color: #333333;
+}
+
+.wc-box .close:hover:after,
+.wc-box .close:hover:before {
+  border-color: #FFFFFF;
+}
