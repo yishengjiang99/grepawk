@@ -1,0 +1,10 @@
+.app-icon-grid{
+    display: grid;
+    grid-gap: 85px 85px;
+    position: absolute;
+    /* width: calc(100% - 50px);
+    height: calc(100% - 10px); */
+    top:70px;
+    left:0px;
+    margin-left:30px;
+}

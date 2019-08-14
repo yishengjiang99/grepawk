@@ -61,19 +61,18 @@ wss.on('connection', (ws, request) => {
             var cmd = t[0];
             var args = t.length > 1 ? t.splice(1) : [];
 
+            var cmdSuccessful=false;
             switch (cmd) {
                 case 'index':
-
-
                     break;
                 case 'search':
                     if (args.length < 1) {
                         ws.send("stderr: Usage: search <keyword>");
                         return;
                     }
-		    var argstr = args.join(" ");
-		    var argt = argstr.split("~~~");
-		    var searchTerm = argt[0];
+        		    var argstr = args.join(" ");
+        		    var argt = argstr.split("~~~");
+        		    var searchTerm = argt[0];
                     pageToken = argt[1] || "";
                     gsearch.find_youtube(encodeURIComponent(argstr), 5, pageToken).then((ret) => {
                         send_json_resonse(ws, {
@@ -215,9 +214,13 @@ wss.on('connection', (ws, request) => {
                     let password = crypto.createHash('md5').update(args[1]).digest('hex');
                     db.update_user(ws.uuid, "username", username);
                     db.update_user(ws.uuid, "password", password);
-                    var luser = db.get_user_with_password(lusername, lpassword);
+                    var luser = await db.get_user_with_password(username, password);
+                    console.log(luser);
                     setUserForWs(ws, luser);
                     ws.send("stdout: registered username " + username);
+                    ws.send(JSON.stringify({
+                            userInfo: luser
+                        }));
                     break;
                 case 'login':
                     if (args.length < 1) {
@@ -226,7 +229,7 @@ wss.on('connection', (ws, request) => {
                     }
                     let lusername = args[0];
                     let lpassword = crypto.createHash('md5').update(args[1]).digest('hex');
-                    var luser = db.get_user_with_password(lusername, lpassword);
+                    var luser = await db.get_user_with_password(lusername, lpassword);
                     if (!luser) {
                         ws.send("stderr: user not found");
                     } else {
@@ -235,7 +238,8 @@ wss.on('connection', (ws, request) => {
                         }));
                     }
                     setUserForWs(ws, luser);
-
+                    ws.quests = await quests.list(user);
+                    send_json_resonse(ws,{quests:quests});
                     break;
                 case 'check-in':
                     const uuid = args[0];
@@ -251,8 +255,9 @@ wss.on('connection', (ws, request) => {
                     Object.values(users).forEach(_user => {
                         if(_user.uuid != user.uuid) _user.ws.send("stdout: user " + user.username + " arrived");
                     });
+                    ws.quests = await quests.list(user);
+                    send_json_resonse(ws,{quests:ws.quests});
                     xfs.list_files_table(cwd, ws);
-
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     ws.send("checkedin");
@@ -291,7 +296,7 @@ wss.on('connection', (ws, request) => {
                     }));
                     xfs.init_pwd_container_if_neccessary(cwd);
                     xfs.list_files_table(cwd, ws);
-                    //quests.check_quest_completion(message, user, ws);
+                    quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
                     //quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
@@ -299,7 +304,6 @@ wss.on('connection', (ws, request) => {
                     //break;
                 case 'pwd':
                     console.log("user.cwd " + user.cwd);
-
                     ws.send("stdout: " + (user.cwd || 'root'));
                     break;
                 case 'mkdir':
@@ -311,8 +315,6 @@ wss.on('connection', (ws, request) => {
                         ws.send("stdout: " + containerName + " created");
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
-                    //xfs.send_description(cwd, ws);
-                    //quests.send_quests(user, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     xfs.list_files_table(cwd, ws);
                 case 'echo':
@@ -325,14 +327,13 @@ wss.on('connection', (ws, request) => {
                             if (err) ws.send("error: " + err.message);
                             else {
                                 ws.send("stdout: " + stdout);
-                                //quests.check_quest_completion(message, user, ws);
+                                quests.check_quest_completion(message, user, ws);
                             }
                         });
                     } catch (e) {
                         ws.send("stderr: " + e.message);
                     }
                     break;
-
                 default:
                     ws.send("stdout: you say '" + message + "'");
                     break;

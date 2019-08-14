@@ -3,73 +3,35 @@
   height: 100vh;
   position: relative;
   background-color:#f1f1f1;
+  overflow:hidden;
 }
-.window{
-  min-width: width 50px;
-}
-
-.wc-box {
-  position: absolute;
-  top: calc(50% - 15px);
-  right: calc(50% - 45px);
+body{
+  overflow:hidden;
 }
 
-.wc-box div {
-  position: relative;
-  float: left;
-  width: 30px;
-  height: 30px;
+.quest-list{
+  position:absolute;
+  top:50px;
+  right:30px;
 }
 
-.wc-box div:before,
-.wc-box div:after {
-  top: 30%;
-  right: 30%;
-  bottom: 30%;
-  left: 30%;
-  content: " ";
-  position: absolute;
-  border-color: #CCCCCC;
-  border-style: solid;
-  border-width: 0 0 2px 0;
+.camera{
+  position:absolute;
+  top:70px;
+  left:640px;
+  width:calc(100%-640px);
+  height:340px;
 }
 
-.wc-box .minimize:before {
-  border-bottom-width: 2px;
-}
-
-.wc-box .maximize:before {
-  border-width: 1px 1px 2px 1px;
-}
-
-.wc-box .close:before,
-.wc-box .close:after {
-  bottom: 50%;
-  top: 50%;
-}
-
-.wc-box .close:before {
-  transform: rotate(45deg);
-}
-
-.wc-box .close:after {
-  transform: rotate(-45deg);
-}
-
-.wc-box div:hover {
-  background-color: #CCCCCC;
-}
-
-.wc-box .close:hover {
-  background-color: #E04343;
-}
-
-.wc-box div:hover:after,
-.wc-box div:hover:before {
-  border-color: #333333;
-}
-
-.wc-box .close:hover:after,
-.wc-box .close:hover:before {
-  border-color: #FFFFFF;
+.terminal{
+  width:870px;
+  height:340px;
+  background:#C0C0C0;
+  border-width:1px;
+  border-color:#FFFFFF #808080 #808080 #FFFFFF;
+  border-style:solid;
+  position:absolute;
+  top:60px;
+  left:290px;
+  padding:1px;
 }

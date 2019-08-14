@@ -6,6 +6,11 @@ const xfs = require("../lib/xfs");
 const path = require("path");
 const request=require("request");
 
+
+router.get("/", async function(req, res){
+  res.json(await db.query("select * from fs_graph where type='dir'"));
+})
+
 router.get("/edit", function (req, res, next) {
     if (req.query.mode == 'new') {
       var filename = req.query.filename;

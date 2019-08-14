@@ -3,7 +3,7 @@
 <title>GrepAwk Canvas</title>
 </head>
 <body>
-<canvas id='canvas' width='300', height='300', style='border:1px solid #000000;'>
+<canvas id='canvas' width='300', height='300', style=''>
 </canvas>
 <script>
   const canvas = document.getElementById('canvas');
@@ -17,20 +17,37 @@
     stroke(cmd,args);
   })
 
+  var xScale = 20;
+  var yScale = 20;
+
   function stroke(cmd, args){
+    args = args.map((a,i)=> i<=3 ? parseInt(a) : a);
+    console.log(cmd,args);
+    
+    const marginX = 5;
+    const marginY = 5;
+
+    if(cmd=='rect'){
+        args = args.map(a=>parseInt(a));
+        xScale = (canvas.width-2*marginX)/(args[2] - args[0]);
+        yScale = (canvas.height-2*marginY)/(args[3] - args[1]);
+    }
+    console.log(xScale,yScale,marginY,marginX);
+      
     args = args.map((a,i)=>{
-      return i<=4 ? 10+parseInt(a) : a;
+       if(i>3) return a;
+       if(i % 2) return marginY+a*yScale;
+       else      return marginX+a*xScale;
     });
+   console.log(cmd,args);
     switch(cmd){
       case 'rect': 
-        args = args.map(a=>parseInt(a));
-        console.log(args);
-        ctx.fillStyle= "#E0E0E0";
+        ctx.fillStyle= "#fafafa";
         ctx.fillRect(args[0],args[1],args[2],args[3])
         break;
       case 'dot':
         ctx.fillStyle= "#303030";   
-        ctx.fillRect(args[0],args[1], 3, 3);
+        ctx.fillRect(args[0]-5,args[1]-5, 10, 10);
         break;
       case 'line':
         ctx.beginPath();

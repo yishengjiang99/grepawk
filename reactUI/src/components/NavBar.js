@@ -1,4 +1,5 @@
 import React from 'react'
+//deprecated
 class NavBar extends React.Component{
     constructor(props){
         super(props);

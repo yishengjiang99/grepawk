@@ -33,7 +33,7 @@
     margin: 0;
     width: 100%;
     height:100%;
-    font: inherit;
+	  font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace; 
     border: none;
     color: inherit;
   }
@@ -42,4 +42,21 @@
     height:100%;
     background-color: black;
     color: white;
+    overflow:scroll;
+    overflow-anchor:none;
+    overflow-x:visible;
+    overflow-y:scroll;
+    scrollbar-width: thin;
+ 
+    font-family: Courier New,Courier,Lucida Sans Typewriter,Lucida Typewriter,monospace; 
+    font-size:14px;
   }
+  .terminal-anchor{
+    overflow-anchor: auto;
+    height: 1px;
+
+  }
+pre{
+  color:white;
+  background-color:black;
+}
