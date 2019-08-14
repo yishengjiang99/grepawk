@@ -50,7 +50,7 @@ var ICEClient = function (options) {
        conn.onicecandidateerror = console.log;
  
        mystream.getTracks().forEach(function (track) {
-          console.log("ddating track to stream");
+          console.log("dating track to stream");
           conn.addTrack(track, mystream);
        });
  

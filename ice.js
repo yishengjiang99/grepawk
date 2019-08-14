@@ -11,13 +11,27 @@ function sendTo(connection, message) {
    connection.send(JSON.stringify(message));
 }
 
+function sendError(connection, msg) {
+   connection.send(JSON.stringify({type:"error",message:msg}));
+}
 
-var users={};
+
+
 var channels={
-   'default': {}
+   'default': []
 };
-
-wss.on('connection', function (connection) {
+var joinChannel=function(connection,channel){
+   if(!channels[channel]){
+      channels[channel]={
+         users:{},
+         name:channel
+      }
+   }
+   channels[channel][users][connection.user.uuid]= user;
+   return channels[channel];
+}
+wss.on('connection', function (connection){
+   connections.push(connection);
    connection.on('message', function (message) {
       console.log("on message "+message);
       var data;
@@ -29,60 +43,42 @@ wss.on('connection', function (connection) {
       }
       switch (data.type) {
          case "login":
-            db.get_user(data.uuid).then(user=>{
-               user.connection = connection;
-               user.channel = data.channel;
-               users[user.uuid]=user;
-               connection.uuid = user.uuid;
-               connection.channel = data.channel
+            db.get_user_cols(data.uuid,['uuid','username']).then(user=>{
+               connection.user = user;
+               connection.channel = data.channel || "default";
+               var channelJoined=joinChannel(connection, connection.channel);
                sendTo(connection, {
                   type: "login",
-                  success: true
+                  success: true,
+                  channelJoined: channelJoined.name,
+                  users: Object.values(channelJoined.users)
                });
-               channels[data.channel][user.uuid]=user;
             }).catch(err=>{
-               sendTo(connection,{
-                  type: "error",
-                  success:false
-               })
+               sendError(connection,"get user failed");
             })
             break;
-         case "join":
-            var uuid = connection.uuid;
-            var channel = connection.channel;
-            user = users[uuid];
-            if(channels[channel] && channels[channel][user.uuid]) {
-               delete channels[user.channel][user.uuid];
-             }
-            channel = data.channel;
-            user.channel = data.channel;
-            if(!channels[channel]){
-               channels[channel]={};
+         case "offer":
+            const offerToChannel = data.channel;
+            if(!channels[offerToChannel]){
+               sendError(connection,"Channel doesn't exist");
             }
-            channels[channel][uuid] = user;
-            Object.keys(channels[channel]).forEach(otherUuid=>{
-               console.log("other uuid ", otherUuid, " vs ",user.uuid);
-               if(otherUuid!=user.uuid){
-                  const otherConn = channels[data.channel][otherUuid].connection;
-                  sendTo(otherConn, {
-                     type: "offer",
-                     offer: data.offer,
-                     caller_id: uuid,
-                     username: user.username
-                  });
-               }
+            channels[offerToChannel].users.forEach((userConn)=>{
+               sendTo(userConn,{
+                  type:"offer",
+                  offer: data.offer,
+                  channel: offerToChannel,
+                  caller_id: connection.uuid
+               })
             })
             break;
          case "answer":
             console.log("Sending answer to: ", data.uuid);
-            //for ex. UserB answers UserA 
-            var conn = users[data.uuid].connection;
-            if (conn != null) {
-               sendTo(conn, {
-                  type: "answer",
-                  answer: data.answer
-               });
+            var otherConnection  = channels[data.channel][data.uuid];
+            if(!otherConnection){
+               sendError(connection,"Other user not found/left.l");
+               return;
             }
+            sendTo(otherConnection,{ type: "answer",answer: data.answer}) 
             break;
          case "candidate":
             console.log("candidate received");

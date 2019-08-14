@@ -65,7 +65,7 @@ class Desktop extends React.Component{
                     );
                 }else if(proc.name==='camera'){
                     return (
-                        <Camera pid={pid} title='Face 2 Face' ipc={this.ipc} />
+                        <Camera userInfo={this.state.userInfo} pid={pid} title='Face 2 Face' ipc={this.ipc} />
                     );
                 }
             })
