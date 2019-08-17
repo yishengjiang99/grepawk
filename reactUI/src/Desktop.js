@@ -4,6 +4,8 @@ import Terminal from './Terminal'
 import HUD from "./HUD";
 import ListView from "./components/ListView"
 import Camera from "./Camera";
+import Stream from "./Stream";
+
 import AppIconGrid from './AppIconGrid';
 
 class Desktop extends React.Component{
@@ -45,6 +47,16 @@ class Desktop extends React.Component{
                var plist = this.state.processes.concat({"name":"camera"});
                this.setState({processes:plist});
             break;
+            case "stream":
+                var plist = this.state.processes.concat({"name":"stream","args":args});
+                this.setState({processes:plist});
+                break; 
+            case "watch":
+                var plist = this.state.processes.concat({"name":"watch","args":args});
+                this.setState({processes:plist});
+                break;
+                        
+
             case "hud-update":
                 this.setState({userInfo:args});
             break;
@@ -61,12 +73,16 @@ class Desktop extends React.Component{
                 if(proc.state==='off') return null;
                 if(proc.name === 'tty'){
                     return (
-                        <Terminal pid={pid} title='tty' ipc={this.ipc}/>
+                        <Terminal key='tty1' pid={pid} title='tty' ipc={this.ipc}/>
                     );
                 }else if(proc.name==='camera'){
                     return (
                         <Camera userInfo={this.state.userInfo} pid={pid} title='Face 2 Face' ipc={this.ipc} />
                     );
+                }else if(proc.name==="stream"){
+                    return (
+                        <Stream userInfo={this.state.userInfo} args={proc.args} pid={pid} title="Broadcast" ipc={this.ipc} />
+                    )
                 }
             })
         )
@@ -94,7 +110,7 @@ class Desktop extends React.Component{
         return (
             <div className='desktop'>
                 <nav className='navbar navbar-light bg-light'>
-                    <a class="navbar-brand" href="#">GrepAwk</a>
+                    <a className="navbar-brand" href="#">GrepAwk</a>
                     {this.renderHud()}
                 </nav>
                 {this.renderBackground()}

@@ -9,7 +9,7 @@ const node_ws_url = 'ws://localhost:8081';
 class Terminal extends React.Component{
     state={
        socket,
-       output_rows:[{type:'text',data:'welcome!'},{type:'text',data:'welcome!'}],
+       output_rows:[],
        output_cursor_position:0,
        uuid: getUUID()
     }
@@ -123,6 +123,9 @@ class Terminal extends React.Component{
             case 'cam':
             case 'upload':
             case 'new':
+            case 'stream':
+            case 'broadcast':
+            case 'draw':
                 this.props.ipc(cmd,args);
                 return true;
             default:
@@ -151,9 +154,15 @@ class Terminal extends React.Component{
                 </div>
                 )
     }
+
+    clickOnTerminal=(e)=>{
+       //    document.getElementById("terminal_input").focus();;
+    }
+
+
     render(){
         return (<Window className="terminal" title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
-            <div className='terminal-body'  onLoad={this.windowLoaded}>
+            <div className='terminal-body' onClick={this.clickOnTerminal}>
             {this.state.output_rows.map((row,i)=>{
                 return this.renderOutputRow(row,i);
             })}

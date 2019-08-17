@@ -9,9 +9,13 @@ class Table extends React.Component{
         if(!this.props.headers) return null;
         return (
             <thead>
-                {this.props.headers.map((header)=>{
-                    return (<th>{header}</th>)
+                <tr key={'tbtrh1'}>    
+                {this.props.headers.map((header,i)=>{
+                    return (<th key={"th"+i}>{header}</th>)
                 })}
+
+                </tr>
+            
             </thead>
         )
     }
@@ -19,7 +23,7 @@ class Table extends React.Component{
         if(!this.props.rows) return null;
         return (
             <tbody>
-{           this.props.rows.map(row=>{
+{           this.props.rows.map((row,rn)=>{
                 var html="";
                 this.props.headers.map((header)=>{
                     var val = row[header] || "";
@@ -38,7 +42,7 @@ class Table extends React.Component{
                 })
                 var htmlToReactParser = new HtmlToReactParser();
 
-                return (<tr>{htmlToReactParser.parse(html)}</tr>)
+                return (<tr key={"tr "+rn}>{htmlToReactParser.parse(html)}</tr>)
             })
         }
              </tbody>

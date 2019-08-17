@@ -7,6 +7,8 @@
     box-orient: horizontal;
     box-align: stretch;
     clear: both;
+    margin-top:15px;
+
   }
   .input-line > div:nth-child(2) {
     box-flex: 1;

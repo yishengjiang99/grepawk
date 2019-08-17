@@ -22,7 +22,7 @@ class AppIconGrid extends React.Component{
                        // backgroundColor:"#D3D3D3"
                     }
              
-                    return (<div style={iconStyle}><i className={"fas fa-lg fa-"+icon.name}></i><br></br>{icon.title}</div>)
+                    return (<div key={"icon"+index} style={iconStyle}><i className={"fas fa-lg fa-"+icon.name}></i><br></br>{icon.title}</div>)
                 })}
 
             </div>

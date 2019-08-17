@@ -7,7 +7,7 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
-   console.log("****sending to "+connection.uuid+": "+message.type);
+   console.log("****sending to "+connection.user.username+": "+message.type);
    connection.send(JSON.stringify(message));
 }
 
@@ -17,22 +17,27 @@ function sendError(connection, msg) {
 
 
 
-var channels={
-   'default': []
-};
+var channels={};
+var connections=[];
 var joinChannel=function(connection,channel){
+   console.log("join channel");
    if(!channels[channel]){
       channels[channel]={
          users:{},
          name:channel
       }
    }
-   channels[channel][users][connection.user.uuid]= user;
+   channels[channel]['users'][connection.user.uuid]= connection;
    return channels[channel];
 }
+
+var broadcasts = {}
+
 wss.on('connection', function (connection){
    connections.push(connection);
+   console.log(connection.headers, "connected")
    connection.on('message', function (message) {
+    console.log(channels);
       console.log("on message "+message);
       var data;
       try {
@@ -42,18 +47,27 @@ wss.on('connection', function (connection){
          data = {};
       }
       switch (data.type) {
+         case 'register_broadcast':
+            broadcsts[args[0]] = connection;  
+             sendTo(connection, {
+                ok:true
+             });
+         break;
          case "login":
             db.get_user_cols(data.uuid,['uuid','username']).then(user=>{
                connection.user = user;
+               connection.uuid = user.uuid;
+               
                connection.channel = data.channel || "default";
                var channelJoined=joinChannel(connection, connection.channel);
                sendTo(connection, {
                   type: "login",
                   success: true,
                   channelJoined: channelJoined.name,
-                  users: Object.values(channelJoined.users)
+                  usersCount: Object.values(channelJoined.users).length
                });
             }).catch(err=>{
+               console.log("error",err);
                sendError(connection,"get user failed");
             })
             break;
@@ -62,20 +76,24 @@ wss.on('connection', function (connection){
             if(!channels[offerToChannel]){
                sendError(connection,"Channel doesn't exist");
             }
-            channels[offerToChannel].users.forEach((userConn)=>{
-               sendTo(userConn,{
-                  type:"offer",
-                  offer: data.offer,
-                  channel: offerToChannel,
-                  caller_id: connection.uuid
-               })
+            Object.keys(channels[offerToChannel].users).forEach(otherUuid=>{
+               if(otherUuid!==connection.uuid){
+                  const otherConn = channels[offerToChannel]['users'][otherUuid];
+                  sendTo(otherConn,{
+                     type:"offer",
+                     offer: data.offer,
+                     channel: offerToChannel,
+                     caller_id: connection.uuid
+                  })
+               }
+           
             })
             break;
          case "answer":
             console.log("Sending answer to: ", data.uuid);
-            var otherConnection  = channels[data.channel][data.uuid];
+            var otherConnection  = channels[data.channel]['users'][data.uuid];
             if(!otherConnection){
-               sendError(connection,"Other user not found/left.l");
+               sendError(connection,"Other user not found/left");
                return;
             }
             sendTo(otherConnection,{ type: "answer",answer: data.answer}) 
@@ -83,10 +101,9 @@ wss.on('connection', function (connection){
          case "candidate":
             console.log("candidate received");
             console.log(data.candidate);
-            channel = connection.channel;
-            Object.keys(channels[channel]).forEach(otherUuid=>{
+            Object.keys(channels[data.channel].users).forEach(otherUuid=>{
                if(otherUuid!=connection.uuid){
-                  const otherConn = channels[channel][otherUuid].connection;
+                  const otherConn = channels[data.channel]['users'][otherUuid];
                   sendTo(otherConn, {
                      type: "candidate",
                      candidate: data.candidate,
@@ -108,25 +125,25 @@ wss.on('connection', function (connection){
          default:
             sendTo(connection, {
                type: "error",
-               message: "Command no found: " + data.type
+               message: "Command not found: " + data.type
             });
 
             break;
       }
       connection.on("close", function () {
-         if (connection.uuid) {
-            delete users[connection.uuid];
-            if (connection.otheruuid) {
-               console.log("Disconnecting from ", connection.otheruuid);
-               var conn = users[connection.otheruuid];
-               conn.otheruuid = null;
-               if (conn != null) {
-                  sendTo(conn, {
-                     type: "leave"
-                  });
-               }
-            }
-         }
+         // if (connection.uuid) {
+         //    delete users[connection.uuid];
+         //    if (connection.otheruuid) {
+         //       console.log("Disconnecting from ", connection.otheruuid);
+         //       var conn = users[connection.otheruuid];
+         //       conn.otheruuid = null;
+         //       if (conn != null) {
+         //          sendTo(conn, {
+         //             type: "leave"
+         //          });
+         //       }
+         //    }
+         // }
       });
      // console.log("Got message from a user:", message);
    });

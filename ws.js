@@ -260,7 +260,6 @@ wss.on('connection', (ws, request) => {
                     xfs.list_files_table(cwd, ws);
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
-                    ws.send("checkedin");
                     break;
                 case 'shout':
                     console.log('shouting');

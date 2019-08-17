@@ -3,7 +3,6 @@
   height: 100vh;
   position: relative;
   background-color:#f1f1f1;
-  overflow:hidden;
 }
 body{
   overflow:hidden;
@@ -20,18 +19,25 @@ body{
   top:70px;
   left:640px;
   width:calc(100%-640px);
-  height:340px;
+  height:500px;
 }
 
+.stream{
+  position:absolute;
+  top:70px;
+  left:640px;
+  width:calc(100%-640px);
+  height:500px;
+}
 .terminal{
-  width:870px;
-  height:340px;
+  width:640px;
+  height:360px;
+  font-size:14px;
   background:#C0C0C0;
   border-width:1px;
   border-color:#FFFFFF #808080 #808080 #FFFFFF;
   border-style:solid;
   position:absolute;
-  top:60px;
-  left:290px;
-  padding:1px;
+  top:30px;
+  left:calc((100% - 640px) / 2);
 }
