@@ -24,10 +24,10 @@ body{
 
 .stream{
   position:absolute;
-  top:70px;
-  left:640px;
-  width:calc(100%-640px);
-  height:500px;
+  top:5%;
+  left:10%;
+  width:80%;
+  height:90%;
 }
 .terminal{
   width:640px;

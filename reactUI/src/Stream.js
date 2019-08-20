@@ -20,7 +20,6 @@ class Stream extends React.Component{
 
     componentDidMount(){
         this.screenShare();
-        alert(this.state.streamURI);
     }
 
     screenShare=()=>{
@@ -33,7 +32,9 @@ class Stream extends React.Component{
         console.log(event.target.value);
         this.setState({streamURI:event.target.value});
     }
-    startStream=(event)=>{
+    startStream=()=>{
+        
+        
         signalClient.registerBroadcast(this.state.streamURI).then(function(){
             this.setState({broad_casting:true});
         })
@@ -54,7 +55,9 @@ class Stream extends React.Component{
     }
     renderStreamControll=()=>{
         return(
-            <div>stream started</div>
+            <div>
+                <button onClick={this.startStream} />
+            </div>
         )
     }
 

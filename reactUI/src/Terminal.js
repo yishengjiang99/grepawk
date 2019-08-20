@@ -156,7 +156,7 @@ class Terminal extends React.Component{
     }
 
     clickOnTerminal=(e)=>{
-       //    document.getElementById("terminal_input").focus();;
+          document.getElementById("terminal_input").focus();;
     }
 
 

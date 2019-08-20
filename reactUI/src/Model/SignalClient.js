@@ -1,5 +1,29 @@
-const SignalClient=function(){
+const peerRTCConfig = {
+    'RTCIceServers': [{
+          'url': 'stun:stun.l.google.com:19302'
+       },
+       {
+          'url': 'turn:192.158.29.39:3478?transport=udp',
+          'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+          'username': '28224511:1379330808'
+       },
+       {
+          'url': 'turn:192.158.29.39:3478?transport=tcp',
+          'credential': 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+          'username': '28224511:1379330808'
+       }
+    ],
+    optional: [{
+       'DtlsSrtpKeyAgreement': true
+    }]
+ }
 
+ const signalServerURL = window.location.hostname == 'localhost' ?
+ "ws://localhost:9090" : "wss://grepawk.com/signal";
+
+const SignalClient=function(){
+    var localStreamTracks=[];
+    var remoteStreams=[];
     var socket;
     var onMessageHandlers={}; //key-value pair so we can remove..
 
@@ -16,26 +40,46 @@ const SignalClient=function(){
             if(socket && socket.readyState===WebSocket.OPEN){
                 resolve();
             }
-            socket = new WebSocket("ws://localhost:8081");
+            socket = new WebSocket(signalServerURL);
             socket.onopen=(event)=>{resolve()};
             socket.onmessage=socketOnMessage;
             socket.onerror=(event)=>{reject()};
         })
     }
+  
+    function sendSocketJson(jsonObj){
+        sock.send(JSON.stringify(json));
+    }
+    let _channelName; 
+    let _localStream;
+    let _rtcConn;
 
-    return{        
-        registerBroadcast: function(channelName){
-            return new Promise(async (resolve,reject)=>{
+    return{    
+        startStream: async function(stream, channelName){
+            return new Promise((resolve,reject)=>{
                 await init();
-                socket.send("register_broadcast"+channelName);
-                onMessageHandlers["register_"+channelName]=function(response){
+                _channelName = channelName;
+                _localStream = stream;
+                _rtcConn = new RTCPeerConnection(peerRTCConfig);
+                _rtcConn.onicecandidate=(e)=>{
+                    if(e.candidate){
+                        sendSocketJson({type:"candidate",candidate:e.candidate});
+                    }
+                }
+                stream.getTracks(track=>{_rtcConn.addTrack(track, stream)});
+                const offer= await _rtcConn.createOffer()
+                await _rtcConn.setLocalDescription(offer);
+                sendSocketJson({type:"register_stream",channel:_channelName, offer: offer});
+                onMessageHandlers["register_offer_"+_channelName]=function(response){
                     if(response.ok){
-                        delete onMessageHandlers["register_"+channelName];
-                        resolve(response.url);
+                        delete onMessageHandlers["register_offer_"+_channelName];
+                        resolve();
+                    }else{
+                        reject(new Error(response.error));
                     }
                 }
                 setTimeout(()=>{
-                    delete onMessageHandlers["register_"+channelName];
+                    delete onMessageHandlers["register_offer_"+_channelName];
                     reject(new Error("Broadcast request timed out"));
                 },30000);
             })
