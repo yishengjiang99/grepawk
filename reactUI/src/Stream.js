@@ -15,7 +15,8 @@ class Stream extends React.Component{
     state={
         broad_casting:false,
         screenCaptureStream: null,
-        streamURI: (this.props.args.length>1 && this.props.args[1]) || this.props.userInfo.username
+        streamURI: (this.props.args.length>1 && this.props.args[1]) || this.props.userInfo.username,
+        flashMessage:null        
     }
 
     componentDidMount(){
@@ -32,14 +33,15 @@ class Stream extends React.Component{
         console.log(event.target.value);
         this.setState({streamURI:event.target.value});
     }
+
     startStream=()=>{
-        
-        
-        signalClient.registerBroadcast(this.state.streamURI).then(function(){
+        signalClient.startStream(this.state.screenCaptureStream, this.state.streamURI).then(()=>{
+
             this.setState({broad_casting:true});
+        }).catch(err=>{
+            this.setState({flashMessage:err.message})
         })
     }
-
     renderLobby=()=>{
         const uri = this.state.streamURI;
         return (
@@ -49,14 +51,14 @@ class Stream extends React.Component{
                     placeholder='select url'
                     onChange={this.handleURIChange}
                     value={uri} /></p>
-                <p><button onClick={this.startStream}>Start Stream</button></p>
+                <p><a onClick={this.startStream} href='#'>Start Stream</a></p>
             </div>
         )
     }
     renderStreamControll=()=>{
         return(
             <div>
-                <button onClick={this.startStream} />
+               Broadcasting now at {this.state.streamURI}
             </div>
         )
     }
@@ -64,13 +66,14 @@ class Stream extends React.Component{
     render(){
         const broadcastStream = this.state.screenCaptureStream;
         const uri = this.state.streamURI;
+        
         return(
             <Window className='stream' title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
+                {this.state.flashMessage ? (<div>{this.state.flashMessage}</div>) : null}
                 <div className='stream-control' style={streamControlStyle}>
                     {broadcastStream ? (<Video media={broadcastStream} /> ) : 
                     <button onClick={this.screenShare}>Screen Share</button>}
-                   
-                   {this.state.broad_casting ? this.renderLobby() : this.renderStreamControll()}
+                   {this.state.broad_casting===false ? this.renderLobby() : this.renderStreamControll()}
                 </div>
             </Window>
         )

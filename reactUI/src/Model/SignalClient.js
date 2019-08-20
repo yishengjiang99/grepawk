@@ -19,7 +19,7 @@ const peerRTCConfig = {
  }
 
  const signalServerURL = window.location.hostname == 'localhost' ?
- "ws://localhost:9090" : "wss://grepawk.com/signal";
+ "ws://localhost:9091" : "wss://grepawk.com/signal";
 
 const SignalClient=function(){
     var localStreamTracks=[];
@@ -48,15 +48,15 @@ const SignalClient=function(){
     }
   
     function sendSocketJson(jsonObj){
-        sock.send(JSON.stringify(json));
+        socket.send(JSON.stringify(jsonObj));
     }
     let _channelName; 
     let _localStream;
     let _rtcConn;
 
     return{    
-        startStream: async function(stream, channelName){
-            return new Promise((resolve,reject)=>{
+        startStream:  function(stream, channelName){
+            return new Promise(async (resolve,reject)=>{
                 await init();
                 _channelName = channelName;
                 _localStream = stream;
@@ -66,7 +66,7 @@ const SignalClient=function(){
                         sendSocketJson({type:"candidate",candidate:e.candidate});
                     }
                 }
-                stream.getTracks(track=>{_rtcConn.addTrack(track, stream)});
+                _localStream.getTracks(track=>{_rtcConn.addTrack(track, _localStream)});
                 const offer= await _rtcConn.createOffer()
                 await _rtcConn.setLocalDescription(offer);
                 sendSocketJson({type:"register_stream",channel:_channelName, offer: offer});
