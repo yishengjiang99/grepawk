@@ -19,7 +19,7 @@ app.set('view engine', 'ejs');
 app.use("/admin", admin);
 app.use("/bt", bt);
 app.use("/lib", express.static("lib"));
-app.use("rct", express.static("reactUI/build/"));
+app.use("/rct", express.static("reactUI/build/"));
 app.use("/queue", queue);
 app.use("/file", file);
 app.use("/files", file);
