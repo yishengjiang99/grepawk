@@ -79,8 +79,13 @@
    </div>
   </div>
 </div>
+<div id='debug'></div>
 <script>
   $(document).ready(function(){
+    var con = new RTCPeerConnection();
+    con.onicecandidate=(e)=>{
+      $("#debug").append(JSON.stringify(e));
+    }
    $(".card").each(function(index){
      if($(this).hasClass("add")) return; 
      var parent = $(this).parent().parent();

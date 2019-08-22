@@ -1,0 +1,144 @@
+<html>
+
+<head>
+  <style>
+    .canvas {
+      width: 800px;
+      height: 500px;
+display:none;
+    }
+    .video {
+            width: 800px;
+            height: 500px;
+        }
+  </style>
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+</head>
+
+<body>
+  <video class='video' autoplay playsinline muted></video>
+  <div id='debug'></div>
+  <canvas class='canvas' id='local'></canvas>
+  <script>
+    const peerRTCConfig = {
+      'RTCIceServers': [{
+        'url': 'stun:stun.l.google.com:19302'
+      }]
+    }
+
+    function getUrlParameter(name) {
+      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+      var results = regex.exec(location.search);
+      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    };
+
+    const signalServerURL = window.location.hostname == 'localhost' ?
+      "ws://localhost:9091" : "wss://grepawk.com/signal";
+    const start = new Date().getTime();
+    const channelName = window.location.search
+
+    function debug(msg, obj) {
+      const t = new Date().getTime() - start;
+      $("#debug").append("<br>t" + t + ": " + msg);
+      if (obj) $("#debug").append((JSON.stringify(obj).replace("\r\n", "<br>")));
+    }
+
+    $(document).ready(function () {
+      let clientCon;
+      var con = new RTCPeerConnection(peerRTCConfig);
+      var signalConn = new WebSocket(signalServerURL);
+      let client_uuid;
+      con.onicecandidate = (e) => {
+        if (e.candidate && client_uuid) {
+          signalConn.send(JSON.stringify({
+              type: "candidate",
+              candidate: e.candidate,
+              to_uuid: client_uuid
+            }));
+        } 
+      }
+      con.ontrack = (e) => {
+        debug("on track");
+        debugger;
+      }
+      con.onnegotiationneeded = async (e) => {
+        debug("on neg needed");
+        const offer = await con.createOffer();
+        debug("offer created");
+        await con.setLocalDescription(offer);
+
+        debug("local desc set ", offer.type);
+
+        signalConn.send(JSON.stringify({
+          type: "register_stream",
+          offer: offer,
+          channel: getUrlParameter("channel")
+        }))
+        signalConn.onmessage = async  function (event) {
+          let data = JSON.parse(event.data);
+          switch (data.type) {
+            case 'user_joined':
+              client_uuid = data.uuid;
+              debug("user_joined "+client_uuid);
+              break;
+            case 'answer':
+              debug("answer ", data.type);
+              try{
+                await con.setRemoteDescription(data.answer);
+                debug("remote set ");
+              }catch(e){
+                debug("error ",e);
+              }
+              debug("answer client-uuid "+client_uuid);;
+              break;
+            case 'candidate':
+              debug("ice can set ");
+              debugger;
+              await con.addIceCandidate(data.candidate);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+
+      async function init() {
+        try {
+          const stream = await navigator.mediaDevices.getDisplayMedia();
+          const localVideo = document.getElementsByTagName("video")[0];
+          const localCanvas = document.getElementsByTagName("canvas")[0];
+          const localCanvas2dContext = localCanvas.getContext('2d');
+          var cw = 500;
+          var ch = 500;
+
+          function draw(v, c, w, h) {
+            if (v.paused || v.ended) return false;
+            c.drawImage(v, 0, 0, w, h);
+            setTimeout(draw, 20, v, c, w, h);
+          }
+          localCanvas.width = cw;
+          localCanvas.height = ch;
+          localVideo.addEventListener("play", function () {
+            draw(localVideo, localCanvas2dContext, cw, ch);
+          });
+
+          localVideo.srcObject = stream;
+          var canvasStream = localCanvas.captureStream(25);
+          stream.getTracks().forEach((t, index) => {
+            canvasStream.addTrack(t);
+          });
+
+          canvasStream.getTracks().forEach((t, index) => {
+            con.addTrack(t);
+          });
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+      init();
+    })
+  </script>
+</body>
+
+</html>

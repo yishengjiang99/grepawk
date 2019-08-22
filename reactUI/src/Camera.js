@@ -163,7 +163,6 @@ class Camera extends React.Component{
                 channel: this.state.room
              }));
         }).catch(e=>{
-            debugger;
             alert(e.message);
         })
     }

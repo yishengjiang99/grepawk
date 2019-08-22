@@ -4,7 +4,8 @@ import './Terminal.css'
 import Table from './components/Table'
 
 var socket=null;
-const node_ws_url = 'ws://localhost:8081';
+const node_ws_url = window.location.hostname == 'localhost' ?
+"ws://localhost:8081" : "wss://grepawk.com/node";
 
 class Terminal extends React.Component{
     state={
@@ -126,6 +127,7 @@ class Terminal extends React.Component{
             case 'stream':
             case 'broadcast':
             case 'draw':
+            case 'watch':
                 this.props.ipc(cmd,args);
                 return true;
             default:

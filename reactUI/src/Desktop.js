@@ -3,8 +3,9 @@ import './App.css'
 import Terminal from './Terminal'
 import HUD from "./HUD";
 import ListView from "./components/ListView"
-import Camera from "./Camera";
-import Stream from "./Stream";
+import Camera from "./Camera"
+import Stream from "./Stream"
+import Watch from "./Watch"
 
 import AppIconGrid from './AppIconGrid';
 
@@ -28,7 +29,12 @@ class Desktop extends React.Component{
     }
 
     componentDidMount(){
-
+        if(window.location.hash){
+            var t = window.location.hash.replace("#","").split("/");
+            const cmd = t[0];
+            const args = t.splice(1);
+            this.ipc(cmd, args);
+        }
     }
 
     push_proc=(proc)=>{
@@ -55,8 +61,6 @@ class Desktop extends React.Component{
                 var plist = this.state.processes.concat({"name":"watch","args":args});
                 this.setState({processes:plist});
                 break;
-                        
-
             case "hud-update":
                 this.setState({userInfo:args});
             break;
@@ -82,6 +86,11 @@ class Desktop extends React.Component{
                 }else if(proc.name==="stream"){
                     return (
                         <Stream userInfo={this.state.userInfo} args={proc.args} pid={pid} title="Broadcast" ipc={this.ipc} />
+                    )
+                }
+                else if(proc.name==="watch"){
+                    return (
+                        <Watch userInfo={this.state.userInfo} args={proc.args} pid={pid} title="Watch" ipc={this.ipc} />
                     )
                 }
             })

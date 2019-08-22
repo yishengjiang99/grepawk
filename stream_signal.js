@@ -16,43 +16,83 @@ function sendError(connection, msg) {
 }
 
 var broadcasts = {}
+var connections = {};
+
+function generateUUID() { // Public Domain/MIT
+   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+}
+
 wss.on('connection', function (connection){
+   connection.uuid = generateUUID();
+   connections[connection.uuid] = connection;
    connection.on('message', function (message) {
       const data = JSON.parse(message);
-      switch (data.type) {
-         case 'register_stream':
-            if(!data.offer || !data.channel){
-               sendError(connection, "offer and channel are required parameters");
-               return;
+      const to_connection = data.to_uuid ? connections[data.to_uuid] : null;
+      console.log(data.type);
+      switch (data.type) {//
+         case 'offer':
+         case 'answer':
+         case 'candidate':
+            console.log("to uuid",data.to_uuid);
+            if (to_connection){
+               sendTo(to_connection, data); 
+            }else{
+             // sendError(connection,"to_uuid missing");   
             }
-            console.log(data.offer);
-            if(!data.offer.sdp){
-               sendError(connection, "offer does not contain session descriptor");
+            break;
+         case 'register_stream':
+            if(!data.channel){
+               sendError(connection, "channel is required");
                return;
             }
             const channelName = data.channel;
-            broadcasts[channelName]={
+
+            broadcasts[channelName] = {
               name: channelName,
-              sdp: data.offer.sdp
+              host_uuid: connection.uuid,
+              offers: [],
+              receivers:[]
             }
+ 
+            if(data.offer) broadcasts[channelName].offers.push(data.offer);
             sendTo(connection,{
                ok:true
             })
             console.log(broadcasts);
+            console.log(Object.keys(connections));
          break;
+
          case 'watch_stream':
-            if(!data.channelName){
+            if(!data.channel){
                sendError(connection, "channel name not attached");
                return;
             }
-            
-            if(!broadcasts[data.channelName]){
+            if(!broadcasts[data.channel]){
                sendError(connection, "channel not streaming");
+               return;
             }
+            if(broadcasts[data.channel].offers.length==0){
+               sendError(connection, "channel busy");
+               return;
+            }
+            
+            console.log(broadcasts);
+
+            console.log(Object.keys(connections));
+
+            sendTo(connection, {
+               type:"offer",
+               host_uuid: broadcasts[data.channel].host_uuid,
+               offer: broadcasts[data.channel].offers.pop()
+            });
+            let hostConnection = connections[broadcasts[data.channel].host_uuid];
+            sendTo(hostConnection, {
+               type: "user_joined",
+               uuid: connection.uuid
+            })
 
          break;
-         case "candidate":
-            break;
          default:
             sendTo(connection, {
                type: "error",

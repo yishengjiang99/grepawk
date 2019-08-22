@@ -29,6 +29,13 @@ body{
   width:80%;
   height:90%;
 }
+.watch{
+  position:absolute;
+  top:5%;
+  left:10%;
+  width:80%;
+  height:90%;
+}
 .terminal{
   width:640px;
   height:360px;

@@ -15,7 +15,7 @@ class Stream extends React.Component{
     state={
         broad_casting:false,
         screenCaptureStream: null,
-        streamURI: (this.props.args.length>1 && this.props.args[1]) || this.props.userInfo.username,
+        streamURI: (this.props.args.length>0 && this.props.args[0]) || this.props.userInfo.username,
         flashMessage:null        
     }
 
