@@ -116,7 +116,7 @@
           });
 
           localVideo.srcObject = stream;
-          var canvasStream = localCanvas.captureStream(25);
+          var canvasStream = localCanvas.captureStream(100);
           stream.getTracks().forEach((t, index) => {
             canvasStream.addTrack(t);
           });

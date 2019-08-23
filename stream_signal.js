@@ -84,7 +84,7 @@ wss.on('connection', function (connection){
             sendTo(connection, {
                type:"offer",
                host_uuid: broadcasts[data.channel].host_uuid,
-               offer: broadcasts[data.channel].offers.pop()
+               offer: broadcasts[data.channel].offers[0]
             });
             let hostConnection = connections[broadcasts[data.channel].host_uuid];
             sendTo(hostConnection, {
