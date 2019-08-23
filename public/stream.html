@@ -5,13 +5,16 @@
     .canvas {
       width: 800px;
       height: 500px;
-display:none;
+      display:none; 
     }
     .video {
             width: 800px;
             height: 500px;
         }
   </style>
+  <script src="/js/adapter-latest.js"></script>
+  <script src="/js/broadcast.js"></script>
+
   <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 </head>
 
@@ -20,18 +23,7 @@ display:none;
   <div id='debug'></div>
   <canvas class='canvas' id='local'></canvas>
   <script>
-    const peerRTCConfig = {
-      'RTCIceServers': [{
-        'url': 'stun:stun.l.google.com:19302'
-      }]
-    }
 
-    function getUrlParameter(name) {
-      name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
-      var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
-      var results = regex.exec(location.search);
-      return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
-    };
 
     const signalServerURL = window.location.hostname == 'localhost' ?
       "ws://localhost:9091" : "wss://grepawk.com/signal";
@@ -136,7 +128,7 @@ display:none;
           alert(e.message);
         }
       }
-      init();
+      //init();
     })
   </script>
 </body>
