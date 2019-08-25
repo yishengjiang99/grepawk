@@ -151,7 +151,8 @@ class Terminal extends React.Component{
                     <input onLoad={this.keyboardLoaded}
                            onKeyDown={this.keyboardPressed}
                            size='80' 
-                           id='terminal_input' 
+                           id="terminal_input"
+                           autoComplete="off"
                            className='cmdline input-line' />
                 </div>
                 )

@@ -292,10 +292,10 @@ function BroadcasterUI(config) {
         mixer.height = maxH * 0.8;
 
         function drawTracks() {
-            // sctx.clear();
-            ctx.globalCompositeOperation = "source-over";
-
+            
             tracksOrder.forEach((track, i, arr) => {
+                if(i==0) ctx.globalCompositeOperation = "source-over";
+                else ctx.globalCompositeOperation = "destination-over";
                 ctx.drawImage(track.mediaSource, 0, 0,
                     track.width, track.height,
                     0, 0, track.width * track.ratio, track.height * track.ratio);

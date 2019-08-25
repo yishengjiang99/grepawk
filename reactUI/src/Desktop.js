@@ -4,7 +4,7 @@ import Terminal from './Terminal'
 import HUD from "./HUD";
 import ListView from "./components/ListView"
 import Camera from "./Camera"
-import Stream from "./Stream"
+import Broadcast from "./Broadcast/index.js"
 import Watch from "./Watch"
 
 import AppIconGrid from './AppIconGrid';
@@ -14,14 +14,10 @@ class Desktop extends React.Component{
         processes:[{name:"tty", state:"on"}],
         userInfo:{name:"guest",xp:0,gold:0},
         quests:[],
-        icons:[{name:"broadcast-tower",title:"terminal"},
-                {name:"folder",title:"files"},
-                {name:"tasks",title:"Weather"},
-                {name:"file",title:"file"},
-                {name:"file",title:"file2"},
-                {name:"file",title:"file3"},
-                {name:"file",title:"file4"},
-                {name:"folder",title:"folder"}]
+        icons:[
+            {name:"terminal",title:"terminal",cmd:"tty", args:[]},
+            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:[]}
+          ]
     }
     constructor(props){
         super(props);
@@ -52,13 +48,18 @@ class Desktop extends React.Component{
             case "camera":
                var plist = this.state.processes.concat({"name":"camera"});
                this.setState({processes:plist});
-            break;
+                break;
+            case "broadcast":
             case "stream":
                 var plist = this.state.processes.concat({"name":"stream","args":args});
                 this.setState({processes:plist});
                 break; 
             case "watch":
                 var plist = this.state.processes.concat({"name":"watch","args":args});
+                this.setState({processes:plist});
+                break;
+            case "tty":
+                var plist = this.state.processes.concat({"name":"tty","args":args});
                 this.setState({processes:plist});
                 break;
             case "hud-update":
@@ -71,8 +72,10 @@ class Desktop extends React.Component{
     }
 
     renderBody(){
+       
         return(
             this.state.processes.map((proc,pid)=>{
+                debugger;
                 console.log(proc,pid);
                 if(proc.state==='off') return null;
                 if(proc.name === 'tty'){
@@ -85,7 +88,7 @@ class Desktop extends React.Component{
                     );
                 }else if(proc.name==="stream"){
                     return (
-                        <Stream userInfo={this.state.userInfo} args={proc.args} pid={pid} title="Broadcast" ipc={this.ipc} />
+                        <Broadcast args={proc.args} pid={pid} title="Broadcast" ipc={this.ipc} />
                     )
                 }
                 else if(proc.name==="watch"){
@@ -112,7 +115,7 @@ class Desktop extends React.Component{
     }
     renderBackground(){
         return(
-            <AppIconGrid icons={this.state.icons}></AppIconGrid>
+            <AppIconGrid icons={this.state.icons} ipc={this.ipc}></AppIconGrid>
         )
     }
     render(){

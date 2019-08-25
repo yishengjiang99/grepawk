@@ -253,11 +253,10 @@ wss.on('connection', (ws, request) => {
                         userInfo: user
                     }));
                     Object.values(users).forEach(_user => {
-                        if(_user.uuid != user.uuid) _user.ws.send("stdout: user " + user.username + " arrived");
+                         if(_user.user.uuid !== user.uuid) _user.ws.send("stdout: user " + user.username + " arrived");
                     });
                     ws.quests = await quests.list(user);
                     send_json_resonse(ws,{quests:ws.quests});
-                    xfs.list_files_table(cwd, ws);
                     xfs.send_description(cwd, ws);
                     xfs.auto_complete_hints(cwd, ws);
                     break;

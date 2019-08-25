@@ -6,6 +6,15 @@ const icons_per_column = 5;
 
 
 class AppIconGrid extends React.Component{
+    constructor(props){
+        super(props);
+        this.iconClicked = this.iconClicked.bind(this);
+    }
+
+    iconClicked(idx){
+        var icon = this.props.icons[idx];
+        this.props.ipc(icon.cmd, icon.args);
+    }
     render(){
         return(
             <div className='app-icon-grid'>
@@ -18,11 +27,22 @@ class AppIconGrid extends React.Component{
                         gridRowStart:row,
                         gridRowEnd:row+1,
                         width:50,
-                        height:50
+                        height:50,
+                        borderColor:"black",
+                        borderWidth:2
                        // backgroundColor:"#D3D3D3"
                     }
              
-                    return (<div key={"icon"+index} style={iconStyle}><i className={"fas fa-lg fa-"+icon.name}></i><br></br>{icon.title}</div>)
+                    return (
+                        <div key={"icon"+index} 
+                            style={iconStyle} 
+                            onClick={()=>{
+                                this.iconClicked(index);
+                            }}
+                        >
+                            <i className={"fas fa-lg fa-"+icon.name}></i><br></br>{icon.title}
+                        </div>
+                        )
                 })}
 
             </div>
