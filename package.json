@@ -43,6 +43,7 @@
     "rtcpeerconnection": "^8.4.0",
     "utf8": "^3.0.0",
     "uuid": "^3.3.2",
+    "video-stream-merger": "^3.3.1",
     "web-socket": "0.0.0",
     "ws": "^7.1.0",
     "xterm": "^3.14.5",

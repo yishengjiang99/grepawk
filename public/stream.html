@@ -13,9 +13,10 @@
         }
   </style>
   <script src="/js/adapter-latest.js"></script>
-  <script src="/js/broadcast.js"></script>
 
-  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+  <script src="/js/jquery.js"></script>
+  <!-- <script src="/js/broadcast.js"></script> -->
+
 </head>
 
 <body>
@@ -23,6 +24,12 @@
   <div id='debug'></div>
   <canvas class='canvas' id='local'></canvas>
   <script>
+    const peerRTCConfig = {
+    'RTCIceServers': [{
+        'url': 'stun:stun.l.google.com:19302'
+    }]
+}
+
 
 
     const signalServerURL = window.location.hostname == 'localhost' ?
@@ -59,9 +66,7 @@
         const offer = await con.createOffer();
         debug("offer created");
         await con.setLocalDescription(offer);
-
         debug("local desc set ", offer.type);
-
         signalConn.send(JSON.stringify({
           type: "register_stream",
           offer: offer,
@@ -86,7 +91,6 @@
               break;
             case 'candidate':
               debug("ice can set ");
-              debugger;
               await con.addIceCandidate(data.candidate);
               break;
             default:
@@ -117,9 +121,9 @@
 
           localVideo.srcObject = stream;
           var canvasStream = localCanvas.captureStream(100);
-          stream.getTracks().forEach((t, index) => {
-            canvasStream.addTrack(t);
-          });
+          // stream.getTracks().forEach((t, index) => {
+          //   canvasStream.addTrack(t);
+          // });
 
           canvasStream.getTracks().forEach((t, index) => {
             con.addTrack(t);

@@ -7,12 +7,16 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
-   console.log("****sending to connection");
+   console.log("send msg ",message);
    connection.send(JSON.stringify(message));
 }
 
 function sendError(connection, msg) {
-   connection.send(JSON.stringify({type:"error",message:msg}));
+   console.log("send error ",msg);
+   connection.send(JSON.stringify({
+      type: "error",
+      message: msg
+   }));
 }
 
 var broadcasts = {}
@@ -20,79 +24,60 @@ var connections = {};
 
 function generateUUID() { // Public Domain/MIT
    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-
 }
 
-wss.on('connection', function (connection){
+wss.on('connection', function (connection) {
    connection.uuid = generateUUID();
    connections[connection.uuid] = connection;
    connection.on('message', function (message) {
       const data = JSON.parse(message);
       const to_connection = data.to_uuid ? connections[data.to_uuid] : null;
       console.log(data.type);
-      switch (data.type) {//
+      switch (data.type) {
          case 'offer':
          case 'answer':
          case 'candidate':
-            console.log("to uuid",data.to_uuid);
-            if (to_connection){
-               sendTo(to_connection, data); 
-            }else{
-             // sendError(connection,"to_uuid missing");   
+            data.client_uuid = data.client_uuid || connection.uuid;
+            console.log("to uuid", data.to_uuid);
+            if (to_connection) {
+               sendTo(to_connection, data);
             }
             break;
          case 'register_stream':
-            if(!data.channel){
+            if (!data.channel) {
                sendError(connection, "channel is required");
                return;
             }
             const channelName = data.channel;
-
             broadcasts[channelName] = {
-              name: channelName,
-              host_uuid: connection.uuid,
-              offers: [],
-              receivers:[]
+               name: channelName,
+               host_uuid: connection.uuid,
+               peer_connections: []
             }
- 
-            if(data.offer) broadcasts[channelName].offers.push(data.offer);
-            sendTo(connection,{
-               ok:true
+            sendTo(connection, {
+               type: "registered",
+               host_uuid: connection.uuid
             })
             console.log(broadcasts);
-            console.log(Object.keys(connections));
-         break;
+            break;
 
          case 'watch_stream':
-            if(!data.channel){
+            if (!data.channel) {
                sendError(connection, "channel name not attached");
                return;
             }
-            if(!broadcasts[data.channel]){
+            if (!broadcasts[data.channel]) {
                sendError(connection, "channel not streaming");
                return;
             }
-            if(broadcasts[data.channel].offers.length==0){
-               sendError(connection, "channel busy");
-               return;
-            }
-            
-            console.log(broadcasts);
-
-            console.log(Object.keys(connections));
-
-            sendTo(connection, {
-               type:"offer",
-               host_uuid: broadcasts[data.channel].host_uuid,
-               offer: broadcasts[data.channel].offers[0]
-            });
-            let hostConnection = connections[broadcasts[data.channel].host_uuid];
+            var host_uuid = broadcasts[data.channel].host_uuid;
+            var hostConnection = connections[host_uuid];
             sendTo(hostConnection, {
                type: "user_joined",
-               uuid: connection.uuid
+               client_uuid: connection.uuid
             })
-
-         break;
+            broadcasts[data.channel].peer_connections.push(connection.uuid);
+            break;
          default:
             sendTo(connection, {
                type: "error",
@@ -116,7 +101,7 @@ wss.on('connection', function (connection){
          //    }
          // }
       });
-     // console.log("Got message from a user:", message);
+      // console.log("Got message from a user:", message);
    });
    //sendTo(connection,{type:"connected"});
 });

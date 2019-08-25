@@ -60,14 +60,25 @@
     </style>
     <link href="/css/bootstrap.min.css" rel="stylesheet">
     <script src="/js/jquery.js"></script>
+    <script src="/js/adapter-latest.js"></script>
+    <script src="/js/video-stream-merger.js"></script>
 </head>
 
 <body style='overflow:hidden'>
     <div class='obs'>
         <div class='controls'>
             <h5>Start Streaming</h5>
-            <b>https://t.grepawk.com/ <input type='text' size=15 placeholder='enter uri here' autofocus /></b>
+    
             <ul class='list-group'>
+                    <li class='list-group-item'>
+                            select url: 
+                            <b>https://t.grepawk.com/<input id='channel_name_input' type='text' size=15 placeholder='enter uri here' autofocus /></b>
+                    </li>  
+                <li class='list-group-item'>
+                        <button id='start_broadcast' class='btn btn-primary'>
+                            Start Broadcast
+                        </button>
+                    </li>
                 <li class='list-group-item'>
                     <button class='btn' id='screenshare_button'>
                         Share Screen
@@ -103,11 +114,7 @@
                         WebSite
                     </button>
                 </li>
-                <li class='list-group-item'>
-                        <button class='btn btn-primary'>
-                            Start Broadcast
-                        </button>
-                    </li>
+  
             </ul>
         </div>
         <div class='preview'>

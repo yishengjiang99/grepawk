@@ -17,8 +17,8 @@
 
 <body>
 
-    <video class='video' autoplay playsinline muted ></video>
-
+    <video class='video' autoplay playsinline></video>
+<div id="stats"></div>
     <div id='debug'></div>
 
     <script>
@@ -54,11 +54,13 @@
                     type: "watch_stream",
                     channel: getUrlParameter("channel") || "default"
                 }))
+
                 signalConn.onmessage = function (event) {
                     let data = JSON.parse(event.data);
+                    debug("sig msg", data);
                     switch (data.type) {
                         case 'offer':
-                            debug("got offer")
+                            debug("got offer: host_uuid=", data.host_uuid);
                             gotSDP(data.offer, data.host_uuid);
                             break;
                         case 'candidate':
@@ -87,7 +89,7 @@
 
                 clientCon.ontrack = (e) => {
                     if (e.stream) {
-                       debug("client got stream");
+                        debug("client got stream");
 
                         remoteVideo.srcObject = e.stream;
                     } else if (e.track) {
@@ -99,19 +101,43 @@
                         debug("client on tracks but no stream", e);
                     }
                 }
-
                 debug("got sdp");
-
                 await clientCon.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await clientCon.createAnswer();
                 debug("setting answser");
                 clientCon.setLocalDescription(answer);
                 signalConn.send(JSON.stringify({
-                            type: "answer",
-                            to_uuid: host_uuid,
-                            answer: answer
-                        }))
+                    type: "answer",
+                    to_uuid: host_uuid,
+                    answer: answer
+                }))
                 debug("host remote desc set");
+                window.setInterval(function () {
+                    clientCon.getStats(null).then(stats => {
+                        let statsOutput = "";
+
+                        stats.forEach(report => {
+                            if(report.type!=='transport') return;
+                            statsOutput +=
+                                `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
+                                `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;
+
+                            // Now the statistics for this report; we intentially drop the ones we
+                            // sorted to the top above
+
+                            Object.keys(report).forEach(statName => {
+                                if (statName !== "id" && statName !==
+                                    "timestamp" &&
+                                    statName !== "type") {
+                                    statsOutput +=
+                                        `<strong>${statName}:</strong> ${report[statName]}<br>\n`;
+                                }
+                            });
+                        });
+
+                        $("#stats").html(statsOutput);
+                    });
+                }, 1000);
             }
         })
     </script>
