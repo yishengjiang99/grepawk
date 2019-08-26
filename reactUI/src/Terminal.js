@@ -5,7 +5,7 @@ import Table from './components/Table'
 
 var socket=null;
 const node_ws_url = window.location.hostname == 'localhost' ?
-"ws://localhost:8081" : "wss://grepawk.com/node";
+"ws://localhost:8081" : "wss://grepawk.com/ws";
 
 class Terminal extends React.Component{
     state={
