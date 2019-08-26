@@ -48,8 +48,6 @@ Video.propTypes = {
       id: PropTypes.string,
     },
   ),
-  height: PropTypes.number,
-  width: PropTypes.number,
   muted: PropTypes.bool,
 };
 

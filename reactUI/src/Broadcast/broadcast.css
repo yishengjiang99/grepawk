@@ -7,10 +7,10 @@
 
 .preview {
     position: absolute;
-    width: 80vw;
-    height: 80vh;
+    width: 70%;
+    height: 80%;
     top: 0;
-    left: 20vw;
+    left: 10%;
     background-color: gray;
 }
 
@@ -18,17 +18,19 @@
     position: absolute;
     top: 0;
     left: 0;
-    width: 20vw;
-    height: 100vh;
+    width: 10%;
+    height: 100%;
     padding: 0 5px;
 }
 
+
+
 .console {
     position: absolute;
-    top: 80vh;
-    left: 20vw;
-    width: 80vw;
-    height: 20vh;
+    top: 80%;
+    left: 10%;
+    width: 90%;
+    height: 20%;
     background-color: black;
     color: white;
     overflow-y: scroll;
@@ -50,3 +52,19 @@
     border-width: 2px;
     border-color: aquamarine
 }
+
+.btn, .btn:hover {
+    text-decoration: none;
+  }
+  
+  .btn-primary{
+    color: #fff !important;
+    background-color: #0074d9 !important;
+    border-radius: 3px;
+  }
+  
+  .btn-secondary {
+    color: #fff !important;
+    background-color: #6c757d !important;
+    border-color: #6c757d !important;
+  }

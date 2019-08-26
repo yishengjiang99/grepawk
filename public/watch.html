@@ -16,8 +16,10 @@
 </head>
 
 <body>
+  <div id='watcher'>
+      
+  </div>
 
-    <video class='video' autoplay playsinline></video>
 <div id="stats"></div>
     <div id='debug'></div>
 
@@ -88,19 +90,27 @@
                 }
 
                 clientCon.ontrack = (e) => {
+                    var media;
                     if (e.stream) {
                         debug("client got stream");
-
-                        remoteVideo.srcObject = e.stream;
+                        media = e.stream;
                     } else if (e.track) {
-                        debug("client got track");
+                        console.log(e.track);
+                        debug("client got track ", e.track.contentHint);
                         let remoteVideoStream = new MediaStream();
                         remoteVideoStream.addTrack(e.track);
-                        remoteVideo.srcObject = remoteVideoStream;
+                        media = remoteVideoStream;
                     } else {
                         debug("client on tracks but no stream", e);
                     }
+                    if(media){
+                        var video = document.createElement('video');
+                        video.srcObject=media;
+                        video.autoplay=true;
+                        document.getElementById("watcher").appendChild(video);
+                    }
                 }
+
                 debug("got sdp");
                 await clientCon.setRemoteDescription(new RTCSessionDescription(offer));
                 const answer = await clientCon.createAnswer();
@@ -117,7 +127,8 @@
                         let statsOutput = "";
 
                         stats.forEach(report => {
-                            if(report.type!=='transport') return;
+
+                            if(report.type!=='transport' && report.type!=='track') return;
                             statsOutput +=
                                 `<h2>Report: ${report.type}</h3>\n<strong>ID:</strong> ${report.id}<br>\n` +
                                 `<strong>Timestamp:</strong> ${report.timestamp}<br>\n`;

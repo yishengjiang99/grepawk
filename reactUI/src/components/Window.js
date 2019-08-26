@@ -45,7 +45,19 @@ class Window extends React.Component{
         }else{
             boxClass='box';
         }    
-        boxClass= (this.props.className ||"")+" " + boxClass;          
+        boxClass= (this.props.className ||"")+" " + boxClass;  
+
+        const draggable = this.props.draggable && true; 
+        if(draggable===false){
+            return (   
+            <div className={boxClass}>
+                {this.renderNavTop()}
+                <div className="body">
+                    {this.props.children}
+                </div>
+            </div>)
+        }
+
         return (
             <Draggable>
                 <div className={boxClass}>

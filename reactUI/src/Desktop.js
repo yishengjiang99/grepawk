@@ -75,7 +75,6 @@ class Desktop extends React.Component{
        
         return(
             this.state.processes.map((proc,pid)=>{
-                debugger;
                 console.log(proc,pid);
                 if(proc.state==='off') return null;
                 if(proc.name === 'tty'){
