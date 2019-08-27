@@ -23,6 +23,7 @@ class Video extends React.Component {
         width={width}
         muted={muted}
         autoPlay
+        playsInLine
         ref={(video) => { this.video = video; }}
       >
         {children}

@@ -14,8 +14,29 @@ function BroadcasterClient(config) {
     let onEvent = config.onEvent || console.log;
     let signalConnection;
     let peerConnections = {};
-    let tracks=[];
+    let localTracks=[];
     var host_uuid;
+
+    function trackDescriptor(id, track,dimensions){
+        return{
+            id:id, track:track, dimensions:dimensions, live:true
+        }
+    }
+    function addTrack(track, dimensions){
+        for(var idx in localTracks){
+            if(localTracks[idx].id===track.id){
+                localTracks[idx]=trackDescriptor(track.id, track, dimensions);
+            }
+        }
+        localTracks.push(trackDescriptor(track.id, track, dimensions));
+    }
+    function removeTrack(track){
+        for(var idx in localTracks){
+            if(localTracks[idx].id===track.id){
+                localTracks[idx].live=false;
+            }
+        }
+    }
     function sendJson(json, to_uuid) {
         if (to_uuid) json[to_uuid] = to_uuid;
         signalConnection.send(JSON.stringify(json));
@@ -50,7 +71,7 @@ function BroadcasterClient(config) {
                 type: "register_stream",
                 channel: channelName
             });
-            onEvent("Stream registered");
+            onEvent("Stream registered "+channelName);
         }
         signalConnection.onerror = (e) => onEvent("ERROR: signalconnection not connecting", e);
     }
@@ -69,40 +90,32 @@ function BroadcasterClient(config) {
     function user_join_request(data) {
         if (!data.client_uuid) throw new Error("unexpected user_join request");
         peerConnections[data.client_uuid] = BroadcasterRTCConnection(signalConnection, data.client_uuid,host_uuid,onEvent);
-        peerConnections[data.client_uuid].updateTracks(tracks);
+        peerConnections[data.client_uuid].updateTracks(localTracks);
+        
     }
     function updateTrackForPeers(){
         Object.values(peerConnections).forEach(client=>{
-            client.updateTracks(tracks);
+            client.updateTracks(localTracks);
         })
     }
 
     function addStream(stream,dimensions){
-        stream.getTracks().forEach(async track=>{
-            let existing=false;
-            tracks.forEach((_track,idx)=>{
-                if(_track.id===track.id) {
-                    onEvent("existing track "+_track.id);
-                    existing=true;
-                }
-            })
-            if(existing===false) tracks.push(track);
+        stream.getTracks().forEach(track=>{
+            addTrack(track, dimensions);
         })       
         updateTrackForPeers();
     }
 
     function removeStream(stream){
         stream.getTracks().forEach((track)=>{
+            removeTrack(track);
             track.stop();
-            tracks.forEach((_track,idx)=>{
-                if(_track.id===track.id) tracks.splice(idx,1);
-            })
         })
         updateTrackForPeers();
         return null;
     }
 
-    function requestStream(type){
+    function requestUserStream(type){
         return new Promise(async (resolve,reject)=>{
             try {
                 let stream;
@@ -124,19 +137,26 @@ function BroadcasterClient(config) {
     }
 
     return {
-        requestStream: requestStream,
+        requestUserStream: requestUserStream,
         addStream: addStream,
         removeStream:removeStream,
         peerConnections: peerConnections,
         startBroadcast: startBroadcast
     }
 }
-
 function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEvent) {
     var signalConnection = signalConnection;
     var client_uuid = client_uuid;
     var host_uuid;
     var peerConnection = new RTCPeerConnection(peerRTCConfig);
+    var metadataChannel = peerConnection.createDataChannel("metadata");
+
+    var trackMap={};
+
+    metadataChannel.onopen = function(){
+        onEvent("Meta channel open with "+client_uuid);
+        sendMetaData();
+    }
     peerConnection.onicecandidate = (e) => {
         if (e.candidate) {
             signalConnection.send(JSON.stringify({
@@ -158,20 +178,44 @@ function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEven
             host_uuid:host_uuid
        }))
     }
-    var trackMap={};
+    function sendMetaData(){
+        if(!metadataChannel || metadataChannel.readyState!=='open'){
+            onEvent("metadata channel not yet o0pen");
+            setTimeout(sendMetaData, 1000);
+            return;
+        }
+        
+        let metadata=[];
+        let trackIds = Object.keys(trackMap);
+        trackIds.forEach(trackId=>{
+            let track = trackMap[trackId];
+            metadata.push({
+                trackId: track.id,
+                dimensions: track.dimensions,
+                live: track.active
+            })
+        })          
+        let payload = {
+            type:"mediaMetadata",
+            data: metadata
+        }
+        onEvent("sending metadata ", payload);
+        metadataChannel.send(JSON.stringify(payload));
+    }
+
     return {
         updateTracks: function(tracks){
-            debugger;
-            tracks.forEach(track=>{
-                if(!!trackMap[track.id]){
-                    onEvent("skip existing track");
-                    return;
-                }
-                trackMap[track.id]=1;
-                onEvent("adding new track ",track);
-                peerConnection.addTrack(track);
-            })
+            for(var idx in tracks){
+               let trackId = tracks[idx].id;
+               if(typeof trackMap[trackId]!=='undefined'){
+                   continue;
+               }
+               trackMap[trackId] = tracks[idx];
+               if(tracks[idx].live) peerConnection.addTrack(tracks[idx].track);
+            }     
+            sendMetaData();
         },
+
         set_sdp_anwser: async function(answer) {
             try {
                 await peerConnection.setRemoteDescription(answer);
@@ -186,8 +230,6 @@ function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEven
         }
     }
 }
-
-const start = new Date().getTime();
 
 // 
 export default BroadcasterClient;

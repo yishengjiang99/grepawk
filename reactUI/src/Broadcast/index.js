@@ -70,7 +70,7 @@ class Broadcast extends React.Component {
       let stream;
       switch(control){
           case "screenshare":
-                stream = turnOn ? await this.broadcastClient.requestStream(control) 
+                stream = turnOn ? await this.broadcastClient.requestUserStream(control) 
                                     : await this.broadcastClient.removeStream(existingStream);
                 this.updateStreamElements(control, stream, defaultDimensions[control]);
                 this.setState({screenshare: turnOn});

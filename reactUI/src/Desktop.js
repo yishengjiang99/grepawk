@@ -4,8 +4,8 @@ import Terminal from './Terminal'
 import HUD from "./HUD";
 import ListView from "./components/ListView"
 import Camera from "./Camera"
-import Broadcast from "./Broadcast/index.js"
-import Watch from "./Watch"
+import Broadcast from "./Broadcast/Broadcast"
+import Watch from "./Broadcast/Watch"
 
 import AppIconGrid from './AppIconGrid';
 
@@ -16,7 +16,9 @@ class Desktop extends React.Component{
         quests:[],
         icons:[
             {name:"terminal",title:"terminal",cmd:"tty", args:[]},
-            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:[]}
+            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:["asmongold"]},
+            {name:"play-circle",title:"Watch", cmd:"watch", args:["hearthstone"]},
+            {name:"play-circle",title:"Watch", cmd:"watch", args:["asmongold"]}
           ]
     }
     constructor(props){
@@ -25,17 +27,14 @@ class Desktop extends React.Component{
     }
 
     componentDidMount(){
-        if(window.location.hash){
-            var t = window.location.hash.replace("#","").split("/");
+        if(window.location.search){
+            var t = window.location.search.replace("?","").split("/");
             const cmd = t[0];
             const args = t.splice(1);
             this.ipc(cmd, args);
         }
     }
 
-    push_proc=(proc)=>{
-
-    }
     ipc(cmd, args){
         switch(cmd){
             case "close":
@@ -87,12 +86,13 @@ class Desktop extends React.Component{
                     );
                 }else if(proc.name==="stream"){
                     return (
-                        <Broadcast args={proc.args} pid={pid} title="Broadcast" ipc={this.ipc} />
+                        <Broadcast args={proc.args} channel={proc.args[0] || ""} pid={pid} title="Broadcast" ipc={this.ipc} />
                     )
                 }
                 else if(proc.name==="watch"){
+                    var channelName = proc.args[0] || "default";
                     return (
-                        <Watch userInfo={this.state.userInfo} args={proc.args} pid={pid} title="Watch" ipc={this.ipc} />
+                        <Watch userInfo={this.state.userInfo} channelName={channelName} pid={pid} title="Watch" ipc={this.ipc} />
                     )
                 }
             })

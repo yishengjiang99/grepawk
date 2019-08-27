@@ -61,7 +61,7 @@
     text-align:center;
   }
   div.body{
-    height:100%;
+    height:calc(100% - 18px);
     width:100%;
     display:inline-block;
     position:relative;
