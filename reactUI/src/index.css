@@ -29,13 +29,6 @@ body{
   width:80%;
   height:90%;
 }
-.watch{
-  position:absolute;
-  top:5%;
-  left:10%;
-  width:80%;
-  height:90%;
-}
 .terminal{
   width:640px;
   height:360px;
@@ -45,6 +38,8 @@ body{
   border-color:#FFFFFF #808080 #808080 #FFFFFF;
   border-style:solid;
   position:absolute;
-  top:30px;
-  left:calc((100% - 640px) / 2);
+  top:0;
+  right:0;
+  width:48%;
+  height:48%;
 }

@@ -74,3 +74,11 @@
     background-color: #6c757d !important;
     border-color: #6c757d !important;
   }
+
+  .watch-stream{
+    position:absolute !important;
+    top:50%;
+    right:0;
+    width:58%;
+    height:50%;
+  }

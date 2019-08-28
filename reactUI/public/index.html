@@ -16,8 +16,22 @@
   <div id="root"></div>
 </body>
 <script>
-  function terminalDidMount() {
-    document.getElementById("terminal_input").focus();
+
+document.addEventListener("window.DOMContentLoaded", function(event){
+  const colors = ['black', 'white'];
+  var updateBlinker=function(count){
+    if(document.getElementById("sdtin")!==document.activeElement){
+      document.getElementById("sdtin-prompt").style.color  ="gray";
+    }else{
+      document.getElementById("sdtin-prompt").style.color = colors[count++ % 2];
+    }
+    setTimeout(function(){
+      updateBlinker(count);
+    },1000);
   }
+  updateBlinker(0);  
+});
+
+
 </script>
 </html>

@@ -16,9 +16,9 @@ class Desktop extends React.Component{
         quests:[],
         icons:[
             {name:"terminal",title:"terminal",cmd:"tty", args:[]},
-            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:["asmongold"]},
-            {name:"play-circle",title:"Watch", cmd:"watch", args:["hearthstone"]},
-            {name:"play-circle",title:"Watch", cmd:"watch", args:["asmongold"]}
+            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:[]},
+            {name:"play-circle",title:"Watch Hearthstone", cmd:"watch", args:["rank_5_rogue"]},
+            {name:"play-circle",title:"Watch WoW", cmd:"watch", args:["asmongold"]}
           ]
     }
     constructor(props){

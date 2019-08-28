@@ -17,6 +17,8 @@ class Terminal extends React.Component{
 
     constructor(props){
         super(props)
+        this.prompt=React.createRef();
+        this.promptInput = React.createRef();
     }
     initSocket=()=>{
         return new Promise((resolve, reject) => {
@@ -87,10 +89,11 @@ class Terminal extends React.Component{
                 this.parseAPIResponse(JSON.parse(event.data));
             }
         }
-       window.terminalDidMount();
+    //  window.terminalDidMount();
     }
 
     renderOutputRow=(row,i)=>{
+
         switch(row.type){
             case 'stdout':
             case 'text':
@@ -99,8 +102,10 @@ class Terminal extends React.Component{
                 var redStyle={color:"red"};
                 return (<pre key={"op-"+i}> <span style={redStyle}>{row.data}</span></pre>)
             case 'stdin':              
-                return (<div className='input-line' key={"op-"+i}><div className='prompt'>$</div> 
-                   <input className='cmdline input-line' disabled  value={row.data} /></div>);
+                return (<div className='input-line' key={"op-"+i}>
+                            <div className='prompt'>></div> 
+                            <input className='cmdline input-line' disabled  value={row.data} />
+                        </div>);
             case 'table':
                  return(<div key={"op-"+i}><Table className="table table-dark" headers={row.data.headers} rows={row.data.rows}></Table></div>)
             break;
@@ -146,9 +151,11 @@ class Terminal extends React.Component{
     }
 
     renderInputBar = () => {
+        const stdinPromptString = ">";
         return (<div className='input-line'>
-                    <div className='prompt'>$</div>
-                    <input onLoad={this.keyboardLoaded}
+                    <div id='stdin-prompt' className='prompt'> > </div>
+                    <input autofocus="true"   
+                         onLoad={this.keyboardLoaded}
                            onKeyDown={this.keyboardPressed}
                            size='80' 
                            id="terminal_input"
@@ -165,7 +172,11 @@ class Terminal extends React.Component{
 
     render(){
         return (<Window className="terminal" title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
-            <div className='terminal-body' onClick={this.clickOnTerminal}>
+            <div className='terminal-body' onClick={this.clickOnTerminal} 
+                onLoad={()=>{
+
+
+                }}>
             {this.state.output_rows.map((row,i)=>{
                 return this.renderOutputRow(row,i);
             })}
