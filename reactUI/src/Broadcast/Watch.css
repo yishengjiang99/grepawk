@@ -1,0 +1,33 @@
+.stream-wrapper{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+.stream-content {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    background-color:darkgray;
+}
+
+.console-watcher {
+    position: absolute;
+    top: 70%;
+    left: 0%;
+    width: 32%;
+    height: 30%;
+    background:black;
+    color: white;
+    overflow-y: scroll;
+}
+
+.watch-stream{
+    position:absolute !important;
+    top:50%;
+    right:0;
+    width:48%;
+    height:50%;
+  }
