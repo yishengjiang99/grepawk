@@ -38,8 +38,8 @@ body{
   border-color:#FFFFFF #808080 #808080 #FFFFFF;
   border-style:solid;
   position:absolute;
-  top:0;
-  right:0;
-  width:48%;
-  height:48%;
+  top:10%;
+  right:10%;
+  width:40%;
+  height:40%;
 }
