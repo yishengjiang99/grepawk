@@ -107,7 +107,8 @@ class Terminal extends React.Component{
                             <input className='cmdline input-line' disabled  value={row.data} />
                         </div>);
             case 'table':
-                 return(<div key={"op-"+i}><Table className="table table-dark" headers={row.data.headers} rows={row.data.rows}></Table></div>)
+                 return(<div key={"op-"+i}><Table clickedCmd={this.stdin} 
+                    className="table table-dark" headers={row.data.headers} rows={row.data.rows}></Table></div>)
             break;
         }
     }
@@ -140,12 +141,16 @@ class Terminal extends React.Component{
         }
 
     }
+    stdin=(cmd)=>{
+        if(!this.locallyProcessed(cmd)){
+            socket.send(cmd);
+        }
+    }
+    
     keyboardPressed=(e)=>{
         if(e.keyCode==13){ //enter
             this.onAddOutputRow({type:"stdin",data:e.target.value});
-            if(!this.locallyProcessed(e.target.value)){
-                socket.send(e.target.value);
-            }
+            this.stdin(e.target.value);
             e.target.value="";
         }
     }
@@ -172,11 +177,7 @@ class Terminal extends React.Component{
 
     render(){
         return (<Window className="terminal" title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
-            <div className='terminal-body' onClick={this.clickOnTerminal} 
-                onLoad={()=>{
-
-
-                }}>
+            <div className='terminal-body' onClick={this.clickOnTerminal} >
             {this.state.output_rows.map((row,i)=>{
                 return this.renderOutputRow(row,i);
             })}
