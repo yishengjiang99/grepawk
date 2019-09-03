@@ -41,6 +41,7 @@
     "promise": "^8.0.3",
     "request": "^2.88.0",
     "rtcpeerconnection": "^8.4.0",
+    "typescript": "^3.6.2",
     "utf8": "^3.0.0",
     "uuid": "^3.3.2",
     "video-stream-merger": "^3.3.1",

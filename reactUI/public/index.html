@@ -8,30 +8,31 @@
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="grepawk.com" />
   <link rel="apple-touch-icon" href="logo192.png" />
-  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
   <script src="js/fa.js"></script>
-  <script src="js/adapter-latest.js"></script>
 <body>
   <noscript>You need to enable JavaScript to run this app.</noscript>
   <div id="root"></div>
+  <div id="debug"></div>
 </body>
 <script>
-
-document.addEventListener("window.DOMContentLoaded", function(event){
-  const colors = ['black', 'white'];
-  var updateBlinker=function(count){
-    if(document.getElementById("sdtin")!==document.activeElement){
-      document.getElementById("sdtin-prompt").style.color  ="gray";
-    }else{
-      document.getElementById("sdtin-prompt").style.color = colors[count++ % 2];
-    }
-    setTimeout(function(){
-      updateBlinker(count);
-    },1000);
-  }
-  updateBlinker(0);  
+document.addEventListener("window.DOMContentLoaded", (event)=>{
+  debugger;
+  const vfs = fs();
+  const chromeFS = vfs.init_chrome_fs();
+  alert("hi");
+  debugModeOn();
+  alert("hi");
+  debug("hello world");
 });
+function debug(msg){
+  debugger;
+  document.getElementById("debug").innerHTML+="<br>"+msg;
+}
 
+function debugModeOn(){
+  document.getElementById("root").style.display="none";
+  document.getElementById("debug").style.display="block";
+}
 
 </script>
 </html>

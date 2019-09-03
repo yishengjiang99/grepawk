@@ -2,7 +2,7 @@ import React from 'react'
 import Window from './components/Window'
 import './Terminal.css'
 import Table from './components/Table'
-
+import GFileSelector from './FileExplorer/GFileSelector'
 var socket=null;
 const node_ws_url = window.location.hostname == 'localhost' ?
 "ws://localhost:8081" : "wss://grepawk.com/ws";
@@ -109,7 +109,20 @@ class Terminal extends React.Component{
             case 'table':
                  return(<div key={"op-"+i}><Table clickedCmd={this.stdin} 
                     className="table table-dark" headers={row.data.headers} rows={row.data.rows}></Table></div>)
-            break;
+            case 'imageLink':
+                return (
+                    <div key={"op-"+i}><img src={row.data}></img></div> 
+                )
+            case 'filelink':
+                    return (
+                        <div key={"op-"+i}><iframe src={row.data}></iframe></div> 
+                    )
+            case 'upload':
+                return (<GFileSelector></GFileSelector>);
+               break;
+            default: break;
+
+            
         }
     }
     keyboardLoaded=(e)=>{
@@ -126,9 +139,18 @@ class Terminal extends React.Component{
         var t = cmd_str.split(" ");
         const cmd = t[0];
         const args = t.splice(1);
+        console.log(cmd,args);
         switch(cmd){
-            case 'cam':
             case 'upload':
+                this.onAddOutputRow({type:"upload",data:args[0]});
+                break;  
+            case 'openimage':
+                this.onAddOutputRow({type:"imageLink",data:args[0]});
+                return true;
+            case 'edit':
+                 this.props.ipc(cmd,args);
+                 return true;
+            case 'cam':
             case 'new':
             case 'stream':
             case 'broadcast':
@@ -142,6 +164,7 @@ class Terminal extends React.Component{
 
     }
     stdin=(cmd)=>{
+        this.onAddOutputRow({type:"stdin",cmd});
         if(!this.locallyProcessed(cmd)){
             socket.send(cmd);
         }
@@ -149,8 +172,7 @@ class Terminal extends React.Component{
     
     keyboardPressed=(e)=>{
         if(e.keyCode==13){ //enter
-            this.onAddOutputRow({type:"stdin",data:e.target.value});
-            this.stdin(e.target.value);
+                this.stdin(e.target.value);
             e.target.value="";
         }
     }
@@ -159,7 +181,7 @@ class Terminal extends React.Component{
         const stdinPromptString = ">";
         return (<div className='input-line'>
                     <div id='stdin-prompt' className='prompt'> > </div>
-                    <input autofocus="true"   
+                    <input autoFocus={true}  
                          onLoad={this.keyboardLoaded}
                            onKeyDown={this.keyboardPressed}
                            size='80' 
@@ -167,7 +189,7 @@ class Terminal extends React.Component{
                            autoComplete="off"
                            className='cmdline input-line' />
                 </div>
-                )
+        )
     }
 
     clickOnTerminal=(e)=>{

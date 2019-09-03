@@ -22,8 +22,7 @@ app.use("/lib", express.static("lib"));
 app.use("/rct", express.static("reactUI/build/"));
 app.use("/queue", queue);
 app.use("/file", file);
-app.use("/files", file);
-
+app.use("/api/files", file);
 
 const video = require("./routes/video");
 app.use("/video",video); 
