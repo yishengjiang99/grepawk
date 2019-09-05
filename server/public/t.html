@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="grepawk.com" />
+  <script src='js/fs.js'></script>
+
+<body>
+  <style>
+    body {
+      overflow: hidden;
+    }
+
+    .desktop {
+      min-width: 100vw;
+      min-height: calc(100vh - 18px);
+      background-color: rgb(54, 120, 120);
+      display:none;
+    }
+
+    .prompt {
+      position: absolute;
+      width: 700px;
+      top: 400px;
+      left: calc((100vw - 700px)/2);
+      background-color: white;
+      margin: 20 auto;
+
+    }
+  </style>
+  <div class='desktop'>
+    <div class='prompt'></div>
+
+
+  </div>
+  <div class='footer'></div>
+  <div id="debug"></div>
+</body>
+<script>
+function errorHandler(e){}
+window.debug = function (msg) {
+    if (typeof msg === 'object') {
+      var msg = "<pre>"+JSON.stringify(msg)+"</pre>";
+    }
+    document.getElementById("debug").innerHTML += "<br>" + msg;
+  }
+
+window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
+
+function dirname(path) {
+     return path.match(/.*\//);
+}
+
+function basename(path) {
+     return path.match(/\/.*/);
+}
+
+var Vfs = function(props){
+  var mnt_points=[
+        '/',                 'root',                   ['chrome','local_hd','cloud_hd', 'social_media','email'],
+        '/chrome',           'Local File System',      [],
+        '/local_hd',         'My Computer',            ["C:","D:","/User"],
+        '/cloud hd',         'Remote Disk',            ['Drop Box', 'Google Docs', 'MS Azure'],
+        '/social_media',     'My Social Meida',        ['Facebook', 'Instagram', 'PayPal', 'Bank of America', 'LinkedIn'],
+        '/email',            'IMAP',                   ['gmail']
+  ];
+
+  var folders;
+  var get_fs_sources = function(start=0){
+    folders = folders || {};
+    var i;
+    for(i=start; i<mnt_points.length; i++){
+        if(i % 3 === 0) folders[mnt_points[i]]   = {index: i, 'path':mnt_points[i]};
+        if(i % 3 === 1) folders[mnt_points[i-1]].name = mnt_points[i];
+        if(i % 3 === 2) folders[mnt_points[i-2]].children = mnt_points[i] || [];
+    }
+    return folders;
+  } 
+
+  var folders = get_fs_sources();
+
+
+  var mkdir = (full_path, name="")=>{
+    mnt_points.push(full_path);
+    mnt_points.push(name);
+    mnt_points.push([]);
+    var dir = dirname(full_path);
+    get_fs_sources(mnt_points.length-5);
+  }
+
+  var props = props ||{};
+  var rootDir;
+  var localFS;
+  var errorHandler=function(e){};
+  var onInitFs = (fileSystem)=>{
+    localFS=fileSystem;
+    localFS.root.getDirectory("grepawk",{create:true},function(dir){
+      rootDir=dir;
+    },errorHandler);
+  }
+
+  window.requestFileSystem(window.PERSISTENT, 1024*1024,onInitFs,errorHandler);
+
+  return{
+    mkdir: mkdir,
+    file_get_content: (path)=>{
+      if(!localFS) throw new Error("localFS is null");
+      return new Promise(function(resolve,reject){
+        localFs.root.get_file(path,resolve,reject);
+      })
+    },
+
+    list_files:(path)=>{
+      if(!localFS) throw new Error("localFS is null");
+      return new Promise(function(resolve,reject){
+        localFs.root.get_file(path,resolve,reject);
+      })
+    },
+    get_fs_sources:get_fs_sources,
+    
+    toString: function(){
+      var vfs = Vfs();
+
+    }
+  }
+}
+
+var vfs = Vfs();
+vfs.mkdir("/Notes/javascript");
+vfs.mkdir("/Notes/php");
+
+
+var ff=vfs.get_fs_sources();
+
+debug(ff);
+
+
+  // var vfs = function vfs() {
+  //   var requestedBytes = 1024 * 1024 * 100; // 100MB
+
+  //   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem || alert('you lose');
+  //   var localDB;
+  //   var remoteDBs = [];
+
+  //   navigator.webkitPersistentStorage.requestQuota(
+  //     requestedBytes,
+  //     function (grantedBytes) {
+  //       window.requestFileSystem(PERSISTENT, grantedBytes, onInitFs, errorHandler);
+  //     },
+  //     function (e) {
+  //       console.log('Error', e);
+  //     }
+  //   );
+
+  // }
+
+
+</script>
+<!-- <script>
+  window.onerror = function myErrorHandler(errorMsg, url, lineNumber) {
+    alert("Error occured: " + errorMsg + " url " + url + ": " + lineNumber); //or any message
+    return false;
+  }
+
+
+  var debug = function (msg) {
+    if (typeof msg === 'object') {
+      var msg = Object.getOwnPropertyNames(msg).filter(item => typeof obj[item] === 'function')
+    }
+    document.getElementById("debug").innerHTML += "<br>" + msg;
+  }
+
+  function debugModeOn() {
+    document.getElementById("root").style.display = "none";
+    document.getElementById("debug").style.display = "block";
+  }
+
+  function handleError(e) {
+    console.log(e);
+  }
+  var requestedBytes = 1024 * 1024 * 100; // 100MB
+  var requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
+
+  function onFilesystemRequestSuccess(localdb, b, c) {
+
+  }
+
+
+  var createFile = (fileName) => {
+    return new Promise((resolve, reject) => {
+      requestFileSystem("persistent", requestedBytes,
+        (localdb) => {
+          localdb.root.getFile(fileName, {
+            create: true
+          }, (fileEntry) => {
+            resolve(fileEntry);
+          }, (error) => {
+            reject(error);
+          });
+        }, (error) => {
+          reject(error);
+        });
+    })
+  }
+  
+  var requestFileSystemAsync = function (config){
+    var config = config || {};
+    var fs;
+    var requestedBytes = config.requestedBytes || 1024 * 1024 * 100; // 100MB
+
+    return new Promise((resolve,reject)=>{
+      if(fs) {
+        resolve(fs);
+      }else{
+        var requestedBytes = 1024 * 1024 * 100; // 100MB
+        requestFileSystem("persistent", requestedBytes, resolve,reject);
+      }
+    });
+  }
+    
+  var ls = (path)=>{
+    var edges=[];
+    var _ls = function(){
+
+    }
+  }
+  var mkdir = (dirname) => {
+    return new Promise((resolve, reject) => {
+      requestFileSystem("persistent", requestedBytes,
+        (localdb) => {
+          localdb.root.getFile(dirname, {
+            create: true
+          }, (dirEntry) => {
+            resolve(dirEntry);
+          }, (error) => {
+            reject(error);
+          });
+        }, (error) => {
+          reject(error);
+        });
+    })
+  }
+  var requestedBytes = 1024*1024*10; // 10MB
+
+navigator.webkitPersistentStorage.requestQuota (
+    requestedBytes, function(grantedBytes) {  
+        window.requestFileSystem(PERSISTENT, grantedBytes, onInitFs, errorHandler);
+    }, function(e) { console.log('Error', e); }
+);
+window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+
+
+
+  var init_example1 = async function () {
+    try {
+      await createFile("hello.txt");
+      await createFile("image0.jpg");
+      await mkdir("logs");
+
+      debug(dir);
+
+
+      debug("fh got");
+    } catch (e) {
+      alert(e.message);
+    }
+    //  var fh = await createFile("hello.txt");
+  }
+
+  runfn();
+</script> -->
+
+</html>

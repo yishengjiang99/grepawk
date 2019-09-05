@@ -1,0 +1,144 @@
+<html>
+<head>
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+<style>
+ .container{
+   height:100%;
+   padding-top: 25px;
+   background-color: gray;
+   max-width: 100%;
+   margin-left: 25px;
+   margin-right: 25px;
+ }
+ .row{
+  padding-left:12.5px;
+  padding-right:12.5x;
+ }
+ .column{
+   padding-left:12px;
+   padding-right:12px;
+ }
+ 
+ .col1  .card-header{
+   background-color:#8e6e95;
+ }
+ .col2  .card-header{
+   background-color: #39A59C;
+ }
+ .col3  .card-header{
+   background-color: #344759;
+ }
+
+ .col4  .card-header{
+   background-color: #E8741E;
+ }
+  
+</style>
+</head>
+<body>
+<div class=container>
+  <div class=row>
+   <div class='col-md-3 column col1'>
+     <div class='card-header'> winnie</div>
+     <div class='cards'>
+      <div class='card'>card1</div>
+      <div class='card'>card1</div>
+     </div>
+     <div class='card add'>add</div>
+   </div>
+   <div class='col-md-3 column col2'>
+     <div class='card-header'> bob</div>
+     <div class='cards'>
+      <div class='card'>card1</div>
+      <div class='card'>card1</div>
+     </div>
+     <div class='card add'>add</div>
+
+   </div>
+
+   <div class='col-md-3 column col3'>
+     <div class='card-header'> thomas</div>
+     <div class='cards'>
+      <div class='card'>card1</div>
+      <div class='card'>card1</div>
+     </div>
+     <div class='card add'>add</div>
+
+   </div>
+
+   <div class='col-md-3 column col4'>
+     <div class='card-header'> george</div>
+     <div class='cards'>
+      <div class='card'>card1</div>
+      <div class='card'>card1</div>
+     </div>
+     <div class='card add'>add</div>
+
+   </div>
+  </div>
+</div>
+<div id='debug'></div>
+<script>
+  $(document).ready(function(){
+    var con = new RTCPeerConnection();
+    con.onicecandidate=(e)=>{
+      $("#debug").append(JSON.stringify(e));
+    }
+   $(".card").each(function(index){
+     if($(this).hasClass("add")) return; 
+     var parent = $(this).parent().parent();
+     if(parent.hasClass("col2") || parent.hasClass("col3")){
+        var val = $(this).html();
+        $(this).html("<div class='left'> < </div>" + val + "<div class='right'> > </div>");
+     }else if(parent.hasClass("col1")){
+        var val = $(this).html();
+        $(this).html(val + "<div class='right'> > </div>");
+     }else{
+        var val = $(this).html();
+        $(this).html(val + "<div class='right'> < </div>");
+     }
+   });
+   $(".container").on("click", ".right", function(){
+       var card=$(this).parent().clone();
+       var nextcol =$(this).parent().parent().parent().next().find(".cards");
+       if(nextcol.parent().hasClass("col4")){
+          card.find(".right").remove();
+       }
+       if(nextcol.parent().hasClass("col2") || nextcol.parent().hasClass("col3")){
+        
+         if(card.find(".left").length==0) card.prepend("<div class='left'> < </div>");
+      }
+       nextcol.append(card);
+       $(this).parent().remove();
+    });
+
+   $(".container").on("click", ".left", function(){
+       var card=$(this).parent().clone();
+       var prevcol = $(this).parent().parent().parent().prev().find(".cards");
+       if(prevcol.parent().hasClass("col1")){
+          card.find(".left").remove(); 
+       }
+       if(prevcol.parent().hasClass("col2") || prevcol.parent().hasClass("col3")){
+          if(card.find(".right").length==0) card.append("<div class='right'> > </div>");
+      }
+       prevcol.append(card);
+       $(this).parent().remove();
+    });
+   $('.add').click(function(){
+     var task = window.prompt("add task");
+     if(task){
+       if($(this).parent().hasClass("col4")){
+         $(this).parent().find(".cards").append("<div class='card'><div class='left'> < </div>"+task+"</div>");
+       }else if($(this).parent().hasClass("col1")){
+         $(this).parent().find(".cards").append("<div class='card'>"+task+"<div class='right'> > </div></div>");
+       }else{
+         $(this).parent().find(".cards").append("<div class='card'><div class='left'> < </div>"+task+"<div class='right'> > </div></div>");
+       }
+     }
+   });
+ });
+</script> 
+</body>
+</html>

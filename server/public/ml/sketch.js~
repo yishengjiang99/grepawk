@@ -1,0 +1,21 @@
+// Initialize the Image Classifier method with MobileNet. A callback needs to be passed.
+let classifier;
+
+function preload() {
+  classifier = ml5.soundClassifier('SpeedCommands18w',{probabilityThreshold:0.7});
+}
+
+function setup() {
+  createCanvas(400,400);
+  classifier.classify(gotResult);
+}
+
+// A function to run when we get any errors and the results
+function gotResult(error, results) {
+  // Display error in the console
+  if (error) {
+    console.error(error);
+  } else {
+    console.log(results);
+  }
+}
