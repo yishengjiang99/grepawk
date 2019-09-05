@@ -154,10 +154,11 @@ class Window extends React.Component{
                 {this.renderNavTop()}
                 <div className='body'>
                   {this.props.children}
-                      <div className="footer" onMouseDown={this.onCornerMouseDown}>
+
+                </div>
+                <div className="footer" onMouseDown={this.onCornerMouseDown}>
                         <span>{this.props.windowInfo}</span>
                         <span className='corner' style={corderStyle}></span>
-                    </div>
                 </div>
           </div>
        ) 

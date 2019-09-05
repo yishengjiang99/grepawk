@@ -17,7 +17,12 @@ class Desktop extends React.Component{
         userInfo:{name:"guest",xp:0,gold:0},
         quests:[],
         icons:[
-            {name:"linode",title:"My Comuter",cmd:"finder", args:[]},
+            {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
+            {name:"folder",     title:"Public Files",     cmd:"finder", args:["public"]},
+            {name:"folder",     title:"Google Drive",    cmd:"finder", args:["google"]},
+            {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
+            {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
+
             {name:"terminal",title:"terminal",cmd:"tty", args:[]},
             {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:[]},
             {name:"play-circle",title:"Watch Hearthstone", cmd:"watch", args:["rank_5_rogue"]},
@@ -101,9 +106,9 @@ class Desktop extends React.Component{
                         <iframe width="90%" height="80%" src={proc.url}></iframe>
                     )
                 }else if(proc.name==='finder'){
-                    var xpath = proc.args[0] || "/";
+                    var type = proc.args[0] || "";
                     return (
-                        <Finder xpath={xpath}></Finder>
+                        <Finder ipc={this.ipc} title="Finder" fs_type={type}></Finder>
                     )
                 }
             })
@@ -131,15 +136,14 @@ class Desktop extends React.Component{
     render(){
         return (
             <div className='desktop'>
-                <nav className='navbar navbar-light bg-light'>
+                <nav style={{width:"100vw",height:"18px"}} className='navbar navbar-light bg-light'>
                     <a className="navbar-brand" href="#">GrepAwk</a>
                     {this.renderHud()}
                 </nav>
-                <div style={{top:"", position:"relative", width:"100%", height:"100%"}} >
+                <div style={{top:"18px", position:"absolute", width:"100vw", height:"calc(100% - 18px)"}} >
                     {this.renderBackground()}
                     {this.renderBody()}
                     {this.renderQuestView()}
-
                 </div>
 
                 

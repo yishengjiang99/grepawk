@@ -9,8 +9,6 @@ const path = require("path");
 const port = process.env.ws_port || 8081
 const db = require("./lib/db");
 
-
-
 const send_json_resonse = function (ws, json) {
     ws.send(JSON.stringify(json));
 }

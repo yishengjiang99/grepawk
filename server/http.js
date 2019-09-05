@@ -15,6 +15,13 @@ const bodyParser = require('body-parser');
 const file = require("./routes/file");
 app.use(bodyParser.json());
 
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
+
+  next();
+});
+
 app.set('view engine', 'ejs');
 app.use("/admin", admin);
 app.use("/bt", bt);
@@ -75,12 +82,6 @@ app.get("/", async function (req, res) {
 })
 
 
-
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-  next();
-});
-
 app.get("/oauth/reddit", function (req, res) {
   var url = "https://www.reddit.com/api/v1/authorize";
   url += "?client_id=" + process.env.REDDIT_CLIENT_ID;
@@ -133,6 +134,7 @@ app.get("/google_login", function (req, res) {
 
   res.redirect(url);
 });
+
 const url = require('url')
 
 app.get("/cb", function (req, res) {

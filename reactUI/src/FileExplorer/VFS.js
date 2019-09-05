@@ -1,11 +1,16 @@
-window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
-window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
 
+var Vfs = function(type){
+  if(type=='chrome') return chrome_fs();
+  else if(type=='public') return az_fs();
+}
 const IMG_EXTS    = /\.(gif|jpg|jpeg|tiff|png)$/i;
 const VIDEO_EXTS  = /\.(mov|mp4|m4a|ogg)$/i;
 
 
+
 var chrome_fs = function(){
+  window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
+  window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
   var localFS;
   function g_init_local_fs(){
     return new Promise((resolve,reject)=>{
@@ -18,13 +23,13 @@ var chrome_fs = function(){
   function g_file_get_content(path){
     return new Promise(async (resolve,reject)=>{
       if(!localFS) localFS = await g_init_local_fs();
-      localFS.getFile(path, {}, function(entry){
-  
+      localFS.getFile(path, {create:false,exclusive:false}, function(entry){
         entry.file(function(file){
+          var _file=file;
           var reader = new FileReader();
           var readType = 'text';
           reader.onloadend=function(e){
-            resolve({type:readType, payload:this.result});
+            resolve({type:readType, payload:this.result,file:_file});
           }
           reader.onerror=function(e){
             reject(new Error("reader failed"));
@@ -60,16 +65,46 @@ var chrome_fs = function(){
       }, reject);
     })
   }  
-  function g_list_local_files(path){
-    return new Promise(async (resolve, reject)=>{
-      g_init_local_fs().then(fsroot=>{
-        fsroot.getDirectory(path,{create:false}, function(directory){
-          directory.createReader().readEntries(function(entries){
-            resolve(entries);
-          })
-        }, reject);
 
-      }).catch(reject);
+  function getDirEntriesSync(path){
+    return new Promise(async (resolve,reject)=>{
+      let fsroot = await g_init_local_fs();
+      fsroot.getDirectory(path, {create:false}, function(directory){
+        directory.createReader().readEntries(function(entries){
+          resolve(entries);
+        });
+      },reject);
+    });
+  }
+  function g_list_local_files(path){    
+    return new Promise(async (resolve, reject)=>{
+      let root_node = {
+        name: path,
+        fullPath:'',
+        id: 0
+      }
+      let queue = [];
+      let nodes = [];
+      let edges = [];
+      queue.push(root_node);
+      nodes.push(root_node);
+      edges[0]=[];
+      let parent;
+      while(queue.length>0){
+        parent = queue.pop();
+        parent.id = parent.id || 0;
+        let entries = await getDirEntriesSync(parent.name);
+        entries.forEach(entry=>{
+          entry.id = nodes.length;
+          nodes.push(entry);
+          edges[parent.id] = edges[parent.id] || [];
+          edges[parent.id].push(entry.id);
+          if(entry.isDirectory){
+            queue.push(entry);
+          }
+        })
+      }
+      resolve([nodes, edges]);
     });
   }
 
@@ -130,9 +165,36 @@ var chrome_fs = function(){
   }
 }
 
-var Vfs = function(type){
-  if(type='chrome') return chrome_fs();
+var az_fs = function(){
+  const NODE_API_HOSTNAME =  window.location.hostname == 'localhost' ? 
+                          "http://localhost:8080" 
+                        : "https://grepawk.com/node";
+  return {
+    get_files: function(path){
+      return new Promise((resolve,reject)=>{
+        let url = NODE_API_HOSTNAME+"/file/azure/list?path="+path;
+        fetch(url)
+        .then((resp)=>{
+          return resp.json();
+        })
+        .then(resolve).catch(err=>{
+          alert(err.message);
+          reject(err);
+        });
+      })
+    },
+    file_get_content: async function(path){
+
+    },
+    file_put_content: async function(path, content){
+
+    },
+    upload_files: async function(files){
+
+    }
+  }
 }
+
 
 
 export default Vfs;

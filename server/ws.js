@@ -25,7 +25,7 @@ console.log("listening on " + port)
 var users = {};
 var spawned_procs = {};
 
-const root_path = __dirname + "/world";
+const root_path = __dirname + "/../world";
 const send_json_resonse = function (ws, json) {
     ws.send(JSON.stringify(json));
 }

@@ -7,7 +7,11 @@
 body{
   overflow:hidden;
 }
-
+.anchor{
+  position:relative;
+  width:100%;
+  height:100%;
+}
 .quest-list{
   position:absolute;
   top:50px;

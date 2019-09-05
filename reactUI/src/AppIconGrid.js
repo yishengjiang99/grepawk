@@ -24,8 +24,8 @@ class AppIconGrid extends React.Component{
                     const iconStyle ={
                         gridColumnStart:col,
                         gridColumnEnd: col+1,
-                        gridRowStart:row,
-                        gridRowEnd:row+1,
+                        gridRowStart:row-1,
+                        gridRowEnd:row,
                         width:50,
                         height:50,
                         borderColor:"black",

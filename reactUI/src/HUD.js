@@ -1,7 +1,8 @@
 import React from 'react'
 const hudStyle={
   float:'right',
-  marginRight:"15px"          
+  marginRight:"15px",
+  height:"20px",          
 }
 class HUD extends React.Component{
     constructor(props){
