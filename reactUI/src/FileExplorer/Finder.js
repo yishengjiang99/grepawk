@@ -53,42 +53,83 @@ class Finder extends React.Component{
             alert(e.message);
         }
     }
+    prompt_array = (questions)=>{
+        var anwsers=[];
+        questions.forEach((q,idx)=>{
+            anwsers.push(prompt("question: "+q));            
+        })
+        return anwsers;
+    }
     renderPreview = ()=>{
         const previewStyle={
             position:"absolute",
-            left: "50%",
+            left: "55%",
             top: 0,
-            height: "100%",
-            width: "49%",
-            backgroundColor:"white"
+            height: "70%",
+            width: "40%",
+            backgroundColor:"transparent"
         }
+        const file = this.state.previewFile;
+        if(!file) return null;
 
+        return (
+            <table style={previewStyle}>            
+                <tr>
+                    <td colspan={4}>
+                        {this.renderPreviewContent()}
+                    </td>
+                </tr>     
+                <tr>
+                    <td colspan={4}>
+                        <p>Size: {file.size}</p>
+                        <p>Type: {file.type}</p>
+                    </td>
+                </tr>  
+                <tr>
+                    <td colspan={2}>
+                        <button class='btn btn-primary' onClick={(e)=>{
+                            var answers = this.prompt_array(['category','price']);
+                            Vfs.api_post_json("/files/publish", answers).then(response=>{
+                                var text = response.responseText || JSON.stringify(response);
+                                alert(text);
+                            }).catch((err)=>
+                            { 
+                                alert(err.message);
+                            })
+                        }}> Publish </button>
+                    </td>
+                    <td colspan={2}>
+                        <button class='btn btn-primary'>Share</button>
+                    </td>
+                </tr>                 
+            </table>
+        )
+    }
+
+    renderPreviewContent = () =>{
         if(this.state.previewURL!==null){
-            return(
-            <div style={previewStyle}>
-                <img height="50%" width="100%" src={this.state.previewURL}></img>
-                {this.renderFileInfo(this.state.previewFile)}
-            </div>)
+            return(<img height="50%" width="100%" src={this.state.previewURL}></img>);
         }else if(this.state.previewText!==null){
-            return (
-                <div style={previewStyle}>
-                    <div height="50%" widht="100%">{this.state.previewText}</div>
-                    {this.renderFileInfo(this.state.previewFile)}
-                </div>
-            )
+            return (<div height="50%" widht="100%">{this.state.previewText}</div>);
         }
 
     }
     renderFileInfo = (file) =>{
         if(!file) return  ("");
         return (
-            <div>
-                <p>Size: {file.size}</p>
-                <p>Type: {file.type}</p>
-                {/* <p>Last Modified: {file.lastModifiedDate}</p> */}
-            </div>
+            <table>
+                <tr>
+                    <td colspan={4}>
+                        <p>Size: {file.size}</p>
+                        <p>Type: {file.type}</p>
+                    </td>
+                </tr>
+
+               
+            </table>
         )
     }
+
     clickedFile=async (file)=>{
         try{
             var preview_content = await this.vfs.file_get_content(file.fullPath);

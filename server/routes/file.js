@@ -41,6 +41,9 @@ router.get("/azure/list", async function(req, res){
   res.json([nodes, edges]);
 });
 
+router.post("/publish", function(req,res){
+  res.json({'status':'ok'});
+});
 
 router.get("/", async function(req, res){
   res.json(await db.query("select * from fs_graph where type='dir'"));

@@ -5,8 +5,18 @@ const httpport = 8080
 const db = require("./lib/db");
 const xfs = require("./lib/xfs");
 const path = require("path");
+
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
+  next();
+});
+
+
 const request = require('request');
 const formidable = require('formidable')
+
+
 
 const admin = require("./routes/admin");
 const bt = require("./routes/bt");
@@ -14,13 +24,6 @@ const queue = require("./routes/queue");
 const bodyParser = require('body-parser');
 const file = require("./routes/file");
 app.use(bodyParser.json());
-
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT");
-
-  next();
-});
 
 app.set('view engine', 'ejs');
 app.use("/admin", admin);

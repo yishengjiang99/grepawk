@@ -3,6 +3,7 @@ var Vfs = function(type){
   if(type=='chrome') return chrome_fs();
   else if(type=='public') return az_fs();
 }
+
 const IMG_EXTS    = /\.(gif|jpg|jpeg|tiff|png)$/i;
 const VIDEO_EXTS  = /\.(mov|mp4|m4a|ogg)$/i;
 
@@ -165,10 +166,10 @@ var chrome_fs = function(){
   }
 }
 
+const NODE_API_HOSTNAME =  window.location.hostname;
+
 var az_fs = function(){
-  const NODE_API_HOSTNAME =  window.location.hostname == 'localhost' ? 
-                          "http://localhost:8080" 
-                        : "https://grepawk.com/node";
+
   return {
     get_files: function(path){
       return new Promise((resolve,reject)=>{
@@ -195,7 +196,19 @@ var az_fs = function(){
   }
 }
 
-
+Vfs.api_post_json=function(uri, data){
+  return new Promise((resolve,reject)=>{
+    debugger;
+    var url = "http://localhost/api"+uri;
+    fetch(url,{
+      method:"POST",
+      headers:{
+        'Content-Type':"application/json"
+      },
+      cache:"no-cache"
+    }).then(resp=>resp.json()).then(resolve).catch(reject);
+  })
+}
 
 export default Vfs;
 
