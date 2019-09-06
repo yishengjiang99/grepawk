@@ -115,7 +115,7 @@ var chrome_fs = function(){
 
   function g_upload_file_sync(fsroot, file){
     return new Promise((resolve,reject)=>{
-      fsroot.getFile(file.name,{create:true, exclusive:false},
+      fsroot.getFile(file.fullPath,{create:true, exclusive:false},
         (fentry)=>{
         fentry.createWriter(function(writer){
           writer.write(file);

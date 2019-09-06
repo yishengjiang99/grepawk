@@ -25,30 +25,34 @@ class Finder extends React.Component{
     }
 
     getFiles = async ()=>{
-        let dirpath = this.state.dirs.join("/");
         let files, edges;
-        [files, edges] = await this.vfs.get_files(dirpath) || [];
+        [files, edges] = await this.vfs.get_files() || [[],[]];
         this.setState({files: files, edges: edges});
     }
 
+    get_full_path = (basename)=>{
+        return this.state.dirs.map(d=>d.name).concat(basename).join("/");
+    }
     add_file=async ()=>{
         var filename = prompt("Enter file name");
         var content = prompt("Enter file content");
-        let dirs = this.state.dirs.concat(filename);
-        let full_path  = dirs.join("/");
+        let full_path  = this.get_full_path(filename);
         await this.vfs.file_put_content(full_path, content, true);
         this.getFiles();
     }
 
     upload_to_vfs =async (event)=>{
         try{
-            let uploadFiles = event.target.files.map(f=>{
-                let fstack = this.state.dirs.push(f.name);
-                f.name = fstack.join("/");
-                return f;
-            })
-            await this.vfs.upload_files(uploadFiles);
-            this.vfs.get_files();
+            var _files = event.target.files || [];
+            if(_files.length<1) return;
+            var uploads=[];
+            for(let i =0; i<_files.length; i++){
+                var item = _files.item(i);
+                item.fullPath = this.get_full_path(item.name);
+                uploads.push(item);
+            }
+            await this.vfs.upload_files(uploads);
+            this.getFiles();
         }catch(e){
             alert(e.message);
         }
@@ -207,16 +211,13 @@ class Finder extends React.Component{
         files_displayed.push(_files[node_id])
        })
 
-       if(files_displayed.length==0){
-        return (
-            <div>No Files</div>
-        )
-       }else{
+
         const bodyStyle={
             position:"absolute",
             top: "20px",
             height: "calc(100% - 60px)",
             left: 0,
+            color:"#D7D7D7",
             width:"47%",
             overflow:"scroll",
             paddingLeft:"2%",
@@ -230,17 +231,20 @@ class Finder extends React.Component{
             left: 0,
             float: "right"
         }
+        
+        
         return (
             <div className='anchor' style={{position:"relative"}}>
                 <div className='file_list' style={bodyStyle}>
-                    {files_displayed.map((file,i) =>{
-                      var rowStyle = {
-                          marginLeft:"20px",
-                          width: "calc(100% - 40px)",
-                          color: "#D7D7D7",
-                          backgroundColor: i % 2 ===0 ? "#2A2A2A" : "#242424",
-                          height:"20px"
-                      }
+                    {files_displayed.length===0 ? (<div>NO Files</div>) 
+                    : files_displayed.map((file,i) =>{
+                        var rowStyle = {
+                            marginLeft:"20px",
+                            width: "calc(100% - 40px)",
+                            color: "#D7D7D7",
+                            backgroundColor: i % 2 ===0 ? "#2A2A2A" : "#242424",
+                            height:"20px"
+                        }
                       return (
                           <div style={rowStyle} onClick={()=>{
                             if(!file.isDirectory){
@@ -258,12 +262,14 @@ class Finder extends React.Component{
                 <div className='Controls' style={ctrlStyle}>
                     <button className='btn' onClick={this.add_file}>Compose</button>
                     {'\u00A0'}{'\u00A0'}
-                    <button className='btn' onClick={this.upload_to_vfs}>Upload</button>
+                    <input type='file' multiple 
+                        className='btn'
+                         onChange={this.upload_to_vfs} />
                 </div>
              </div>
 
         )
-       }
+       
     }
     render() {
       return (
