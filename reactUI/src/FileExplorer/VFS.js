@@ -1,4 +1,3 @@
-
 var Vfs = function(type){
   if(type=='chrome') return chrome_fs();
   else if(type=='public') return az_fs();
@@ -7,20 +6,19 @@ var Vfs = function(type){
 const IMG_EXTS    = /\.(gif|jpg|jpeg|tiff|png)$/i;
 const VIDEO_EXTS  = /\.(mov|mp4|m4a|ogg)$/i;
 
-
-
 var chrome_fs = function(){
   window.requestFileSystem  = window.requestFileSystem || window.webkitRequestFileSystem;
   window.directoryEntry = window.directoryEntry || window.webkitDirectoryEntry;
   var localFS;
   function g_init_local_fs(){
     return new Promise((resolve,reject)=>{
-      window.requestFileSystem(window.PERSISTENT, 1024*1024, function(_localFS){
+      window.requestFileSystem(window.PERSISTENT, 5*1024*1024, function(_localFS){
         localFS= _localFS.root;
         resolve(localFS);
       })
     })
   }
+
   function g_file_get_content(path){
     return new Promise(async (resolve,reject)=>{
       if(!localFS) localFS = await g_init_local_fs();
@@ -46,6 +44,11 @@ var chrome_fs = function(){
         reject(e);
       })
     });
+  }
+  function g_file_meta_sync(fileEntry){
+    return new Promise((resolve,reject)=>{
+      fileEntry.getMetadata(fileEntry,resolve,reject);
+    })
   }
   function g_file_put_contents(path,content,append=true){
     return new Promise(async (resolve,reject)=>{
@@ -95,7 +98,7 @@ var chrome_fs = function(){
         parent = queue.pop();
         parent.id = parent.id || 0;
         let entries = await getDirEntriesSync(parent.name);
-        entries.forEach(entry=>{
+        entries.forEach(async (entry)=>{
           entry.id = nodes.length;
           nodes.push(entry);
           edges[parent.id] = edges[parent.id] || [];
@@ -166,46 +169,65 @@ var chrome_fs = function(){
   }
 }
 
-const NODE_API_HOSTNAME =  window.location.hostname;
 
 var az_fs = function(){
-
+  const NODE_API_HOSTNAME =  window.location.hostname;
+  var sync_api_get_json = function(url){
+    return new Promise((resolve,reject)=>{
+      fetch(url)
+      .then(resp=>resp.json())
+      .then(resolve)
+      .catch(err=>{
+        alert(err.message);
+        reject(err);
+      });
+    })
+  }
+  var sync_api_post_json = function(url,body){
+    return new Promise((resolve,reject)=>{
+      fetch(url,{
+        method: "POST",
+        body: body
+      })
+      .then(resp=>resp.json())
+      .then(resolve)
+      .catch(err=>{
+        alert(err.message);
+        reject(err);
+      });
+    })
+  }
   return {
     get_files: function(path){
-      return new Promise((resolve,reject)=>{
-        let url = NODE_API_HOSTNAME+"/file/azure/list?path="+path;
-        fetch(url)
-        .then((resp)=>{
-          return resp.json();
-        })
-        .then(resolve).catch(err=>{
-          alert(err.message);
-          reject(err);
-        });
-      })
+      let url = NODE_API_HOSTNAME+"/file/azure/list?path="+path;
+      return await sync_api_get_json(url);
     },
     file_get_content: async function(path){
 
+
     },
     file_put_content: async function(path, content){
-
+      await api_post_json("/files/azure?path="+path, {content:content});
     },
     upload_files: async function(files){
-
+      var formData = new FormData();
+      formData.append("files", files);
+      let url = NODE_API_HOSTNAME+"/file/azure/upload";
+      return await sync_api_post_json(url,formData);
     }
   }
 }
 
 Vfs.api_post_json=function(uri, data){
   return new Promise((resolve,reject)=>{
-    debugger;
     var url = "http://localhost/api"+uri;
     fetch(url,{
       method:"POST",
       headers:{
         'Content-Type':"application/json"
       },
-      cache:"no-cache"
+      cache:"no-cache",
+      body: JSON.stringify(data)
     }).then(resp=>resp.json()).then(resolve).catch(reject);
   })
 }
