@@ -45,11 +45,7 @@ var chrome_fs = function(){
       })
     });
   }
-  function g_file_meta_sync(fileEntry){
-    return new Promise((resolve,reject)=>{
-      fileEntry.getMetadata(fileEntry,resolve,reject);
-    })
-  }
+
   function g_file_put_contents(path,content,append=true){
     return new Promise(async (resolve,reject)=>{
       if(!localFS) localFS = await g_init_local_fs();
@@ -139,9 +135,30 @@ var chrome_fs = function(){
   return{
     get_files: async function(path){
       try{
-        return await g_list_local_files(path);
+        var ret= await g_list_local_files(path);
+        return ret;
       }catch(err){  
         alert(err.message);
+        return null;
+      }
+    },
+    file_get_meta: function(fullPath, stdout){
+      try{
+         g_init_local_fs().then((fsroot)=>{
+           fsroot.getFile(fullPath, {}, function(fileEntry){
+             fileEntry.getMetadata((meta)=>{
+                stdout({
+                  size: meta.size || 0,
+                  modificationTime: (meta.modificationTime && meta.modificationTime.toLocaleString().substring(0,14))|| ""
+                });
+             },function(err){
+              stdout("error: "+ err.message);
+            })
+           })
+         })
+      }catch(err){  
+       // alert(err.message);
+        stdout("error "+err.message);
       }
     },
     file_put_content: async function(filename, content){
@@ -171,7 +188,7 @@ var chrome_fs = function(){
 
 
 var az_fs = function(){
-  const NODE_API_HOSTNAME =  window.location.hostname;
+  const NODE_API_HOSTNAME =  window.location.hostname === "localhost" ? "http://localhost" : "https://grepawk.com";
   var sync_api_get_json = function(url){
     return new Promise((resolve,reject)=>{
       fetch(url)
@@ -185,6 +202,7 @@ var az_fs = function(){
   }
   var sync_api_post_json = function(url,body){
     return new Promise((resolve,reject)=>{
+      debugger;
       fetch(url,{
         method: "POST",
         body: body
@@ -198,16 +216,20 @@ var az_fs = function(){
     })
   }
   return {
-    get_files: function(path){
-      let url = NODE_API_HOSTNAME+"/file/azure/list?path="+path;
-      return await sync_api_get_json(url);
+    get_files: async function(path){
+      let url = NODE_API_HOSTNAME+"/api/files/azure/list";
+      var ret= await sync_api_get_json(url);
+      debugger;
+      return ret;
+    },
+    file_get_meta: function(fullPath, stdout){
+      stdout(null);
     },
     file_get_content: async function(path){
 
-
     },
     file_put_content: async function(path, content){
-      await api_post_json("/files/azure?path="+path, {content:content});
+      await Vfs.api_post_json("/files/azure?path="+path, {content:content});
     },
     upload_files: async function(files){
       var formData = new FormData();

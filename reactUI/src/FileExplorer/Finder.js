@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import Window from '../components/Window';
 import Vfs from './VFS';
-import "./Finder.css"
+import GFileListItem from './GFileListItem';
+import "./Finder.css";
+
 class Finder extends React.Component{
     constructor(props){
         super(props);
@@ -238,25 +240,15 @@ class Finder extends React.Component{
                 <div className='file_list' style={bodyStyle}>
                     {files_displayed.length===0 ? (<div>NO Files</div>) 
                     : files_displayed.map((file,i) =>{
-                        var rowStyle = {
-                            marginLeft:"20px",
-                            width: "calc(100% - 40px)",
-                            color: "#D7D7D7",
-                            backgroundColor: i % 2 ===0 ? "#2A2A2A" : "#242424",
-                            height:"20px"
-                        }
                       return (
-                          <div style={rowStyle} onClick={()=>{
-                            if(!file.isDirectory){
-                                this.clickedFile(file)
-                            }else{
-                                this.clickedDir(file);
-                            }
-                          }}>
-                              <span>{file.name}</span>
-                              <span style={{float:"right"}}>{file.isDirectory ? "dir" : "file"}</span>
-                         </div>
-                      )
+                        <GFileListItem 
+                            vfs = {this.vfs}
+                            rowIndex={i}
+                            file={file} 
+                            clickedDir={this.clickedDir}
+                            clickedFile={this.clickedFile}
+                        />
+                    )
                   })}
                 </div>
                 <div className='Controls' style={ctrlStyle}>

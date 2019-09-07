@@ -10,7 +10,12 @@ const request=require("request");
 router.get("/azure/list", async function(req, res){
   let containerName = req.query.path || "";
   var nodes = [];
-  var edges = [];
+  var edges = {};
+  nodes.push({
+    id: 0,
+    name: 'root'
+  });
+  edges[0]=[];
   let containers = await xfs.list_containers2();
   let idx;
   for(idx in containers){
@@ -23,6 +28,7 @@ router.get("/azure/list", async function(req, res){
       type: "dir"
     }
     nodes.push(parent);
+    edges[0].push(parent.id);
     edges[parent.id] = [];
     let files = await xfs.list_files(container);
     for(j in files){
