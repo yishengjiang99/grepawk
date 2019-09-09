@@ -1,7 +1,11 @@
 var Vfs = function(type){
   if(type=='chrome') return chrome_fs();
-  else if(type=='public') return az_fs();
-}
+  else if(type=='public') return api_fs("azure");
+  else if(type=='market') return api_fs("market");
+  else if(type=='feed')   return api_fs("feed");
+  else if(type=='live')   return api_fs("live");
+  else if(type=='admin')   return api_fs("admin");}
+
 
 const IMG_EXTS    = /\.(gif|jpg|jpeg|tiff|png)$/i;
 const VIDEO_EXTS  = /\.(mov|mp4|m4a|ogg)$/i;
@@ -187,10 +191,16 @@ var chrome_fs = function(){
 }
 
 
-var az_fs = function(){
+var api_fs = function(mntType){
+  var mntType = mntType || "azure";
+
   const NODE_API_HOSTNAME =  window.location.hostname === "localhost" ? "http://localhost" : "https://grepawk.com";
+  
+  const API_LIST_NAME = NODE_API_HOSTNAME+"/api/files/"+mntType;
+
   var sync_api_get_json = function(url){
     return new Promise((resolve,reject)=>{
+      alert(url);
       fetch(url)
       .then(resp=>resp.json())
       .then(resolve)
@@ -202,7 +212,6 @@ var az_fs = function(){
   }
   var sync_api_post_json = function(url,body){
     return new Promise((resolve,reject)=>{
-      debugger;
       fetch(url,{
         method: "POST",
         body: body
@@ -217,9 +226,8 @@ var az_fs = function(){
   }
   return {
     get_files: async function(path){
-      let url = NODE_API_HOSTNAME+"/api/files/azure/list";
+      let url = API_LIST_NAME+"/list";
       var ret= await sync_api_get_json(url);
-      debugger;
       return ret;
     },
     file_get_meta: function(fullPath, stdout){

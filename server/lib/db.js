@@ -9,6 +9,10 @@ const uuidv4 = require('uuid/v4');
 require('dotenv').config();
 
 const db = {
+    connect: function(){
+        const client = new Client({connectionString: process.env.PG_CONNNECTION_STRING});
+        return client; 
+    },
     query: function (query, args = []) {
         //systemctl daemon-reload
         return new Promise((resolve, reject) => {

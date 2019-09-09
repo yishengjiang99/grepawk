@@ -6,7 +6,6 @@ const xfs = require("../lib/xfs");
 const path = require("path");
 const request=require("request");
 
-
 router.get("/azure/list", async function(req, res){
   let containerName = req.query.path || "";
   var nodes = [];

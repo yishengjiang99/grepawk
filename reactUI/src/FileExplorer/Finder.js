@@ -195,11 +195,13 @@ class Finder extends React.Component{
             <span style={headerStyle}>
             <a onClick={()=>{
                this.backDir(0)
+               return false;
             }}>{this.state.fs_type+" >"}</a>
 
             {this.state.dirs.map(dir=>{
                return (<a onClick={()=>{
                    this.backDir(dir.id)
+                   return false;
                }}>{dir.name+" >"}</a>)
             })}
             </span>
@@ -236,7 +238,7 @@ class Finder extends React.Component{
         
         
         return (
-            <div className='anchor' style={{position:"relative"}}>
+            <div>
                 <div className='file_list' style={bodyStyle}>
                     {files_displayed.length===0 ? (<div>NO Files</div>) 
                     : files_displayed.map((file,i) =>{

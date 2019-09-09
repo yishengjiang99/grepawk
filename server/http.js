@@ -23,6 +23,7 @@ const bt = require("./routes/bt");
 const queue = require("./routes/queue");
 const bodyParser = require('body-parser');
 const file = require("./routes/file");
+const api = require("./routes/api");
 app.use(bodyParser.json());
 
 app.set('view engine', 'ejs');
@@ -33,6 +34,7 @@ app.use("/rct", express.static("reactUI/build/"));
 app.use("/queue", queue);
 app.use("/file", file);
 app.use("/api/files", file);
+app.use("/api/", api);
 
 const video = require("./routes/video");
 app.use("/video",video); 
