@@ -6,12 +6,19 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.21",
     "@fortawesome/free-solid-svg-icons": "^5.10.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
+    "brace": "^0.11.1",
+    "eslint": "^6.3.0",
     "html-to-react": "^1.4.1",
+    "moment": "^2.24.0",
     "react": "^16.9.0",
+    "react-ace": "^7.0.4",
     "react-dom": "^16.9.0",
     "react-draggable": "^3.3.1",
     "react-keyed-file-browser": "^1.5.2",
-    "react-scripts": "3.1.0"
+    "react-moment": "^0.9.2",
+    "react-scripts": "3.1.0",
+    "react-simple-code-editor": "^0.9.14",
+    "typescript": "^3.6.2"
   },
   "scripts": {
     "start": "react-scripts start",

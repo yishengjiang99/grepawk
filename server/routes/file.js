@@ -6,6 +6,18 @@ const xfs = require("../lib/xfs");
 const path = require("path");
 const request=require("request");
 
+
+router.get("/azure", async function(req,res){
+  const path = req.query.path || "data/file.txt";
+  var parts = path.split("/");
+  xfs.blob_get_content(parts[0], parts[1], function(err){
+    res.status(500).send(err.message);
+  }, function(content){
+    res.end(content);
+  });      
+});
+
+
 router.get("/azure/list", async function(req, res){
   let containerName = req.query.path || "";
   var nodes = [];

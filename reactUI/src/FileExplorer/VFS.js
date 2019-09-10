@@ -142,7 +142,6 @@ var chrome_fs = function(){
         var ret= await g_list_local_files(path);
         return ret;
       }catch(err){  
-        alert(err.message);
         return null;
       }
     },
@@ -153,7 +152,7 @@ var chrome_fs = function(){
              fileEntry.getMetadata((meta)=>{
                 stdout({
                   size: meta.size || 0,
-                  modificationTime: (meta.modificationTime && meta.modificationTime.toLocaleString().substring(0,14))|| ""
+                  modificationTime: meta.modificationTime
                 });
              },function(err){
               stdout("error: "+ err.message);
@@ -190,17 +189,14 @@ var chrome_fs = function(){
   }
 }
 
+const NODE_API_HOSTNAME =  window.location.hostname === "localhost" ? "http://localhost" : "https://grepawk.com";
 
 var api_fs = function(mntType){
-  var mntType = mntType || "azure";
-
-  const NODE_API_HOSTNAME =  window.location.hostname === "localhost" ? "http://localhost" : "https://grepawk.com";
-  
+  var mntType = mntType || "azure";  
   const API_LIST_NAME = NODE_API_HOSTNAME+"/api/files/"+mntType;
 
   var sync_api_get_json = function(url){
     return new Promise((resolve,reject)=>{
-      alert(url);
       fetch(url)
       .then(resp=>resp.json())
       .then(resolve)
@@ -219,7 +215,6 @@ var api_fs = function(mntType){
       .then(resp=>resp.json())
       .then(resolve)
       .catch(err=>{
-        alert(err.message);
         reject(err);
       });
     })
@@ -233,8 +228,18 @@ var api_fs = function(mntType){
     file_get_meta: function(fullPath, stdout){
       stdout(null);
     },
-    file_get_content: async function(path){
-
+    file_get_content: function(path){
+      let url = API_LIST_NAME+"?path="+path;
+      return new Promise((resolve,reject)=>{
+        fetch(url)
+        .then((response)=>{
+          resolve({
+            type: "text",
+            payload:response.body()
+          });
+        })
+        .catch(reject);
+      })
     },
     file_put_content: async function(path, content){
       await Vfs.api_post_json("/files/azure?path="+path, {content:content});
@@ -250,7 +255,7 @@ var api_fs = function(mntType){
 
 Vfs.api_post_json=function(uri, data){
   return new Promise((resolve,reject)=>{
-    var url = "http://localhost/api"+uri;
+    var url = NODE_API_HOSTNAME+"/api"+uri;
     fetch(url,{
       method:"POST",
       headers:{

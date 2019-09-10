@@ -10,10 +10,14 @@ import UIWebView from "./components/UIWebView"
 
 import AppIconGrid from './AppIconGrid';
 import Finder from "./FileExplorer/Finder";
+import SearchBar from "./SearchBar"
+import API from "./APICalls";
+
 
 class Desktop extends React.Component{
     state={
-        processes:[{name:"tty", state:"on"}],
+        processes: [],
+        // processes:[{name:"tty", state:"on"}],
         userInfo:{name:"guest",xp:0,gold:0},
         quests:[],
         icons:[
@@ -22,9 +26,8 @@ class Desktop extends React.Component{
             {name:"folder",     title:"Google Drive",    cmd:"finder", args:["google"]},
             {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
             {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
-
-            {name:"terminal",title:"terminal",cmd:"tty", args:[]},
-            {name:"broadcast-tower",title:"Broadcast", cmd:"stream", args:[]},
+            {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
+            {name:"broadcast-tower", title:"Broadcast", cmd:"stream", args:[]},
             {name:"play-circle",title:"Watch Hearthstone", cmd:"watch", args:["rank_5_rogue"]},
             {name:"editor",title:"Word(sic)"}
           ]
@@ -41,6 +44,12 @@ class Desktop extends React.Component{
             const args = t.splice(1);
             this.ipc(cmd, args);
         }
+        const uuid = API.getUUID();
+        API.api_get_json("/checkin?uuid="+uuid).then(_userInfo=>{
+            this.setState({userInfo:_userInfo});
+        }).catch(err=>{
+            alert("check in failed");
+        })
     }
 
     ipc(cmd, args){
@@ -108,7 +117,7 @@ class Desktop extends React.Component{
                 }else if(proc.name==='finder'){
                     var type = proc.args[0] || "";
                     return (
-                        <Finder ipc={this.ipc} title="Finder" fs_type={type}></Finder>
+                        <Finder userInfo={this.state.userInfo} ipc={this.ipc} title="Finder" fs_type={type}  ipc={this.ipc}></Finder>
                     )
                 }
             })
@@ -122,6 +131,9 @@ class Desktop extends React.Component{
                 xp={this.state.userInfo.xp} 
                 gold={this.state.userInfo.gold} />)
             : null;
+    }
+    renderSearchBar=()=>{
+        return (<SearchBar></SearchBar>)
     }
     renderQuestView(){
         return(
@@ -144,6 +156,7 @@ class Desktop extends React.Component{
                     {this.renderBackground()}
                     {this.renderBody()}
                     {this.renderQuestView()}
+                    {this.renderSearchBar()}
                 </div>
 
                 

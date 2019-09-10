@@ -7,6 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="theme-color" content="#000000" />
   <meta name="description" content="grepawk.com" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <link rel="apple-touch-icon" href="logo192.png" />
   <script src="js/fa.js"></script>
 <body>
@@ -15,17 +16,16 @@
   <div id="debug"></div>
 </body>
 <script>
-document.addEventListener("window.DOMContentLoaded", (event)=>{
-  debugger;
-  const vfs = fs();
-  const chromeFS = vfs.init_chrome_fs();
-  alert("hi");
-  debugModeOn();
-  alert("hi");
-  debug("hello world");
-});
+// document.addEventListener("window.DOMContentLoaded", (event)=>{
+//   debugger;
+//   const vfs = fs();
+//   const chromeFS = vfs.init_chrome_fs();
+//   alert("hi");
+//   debugModeOn();
+//   alert("hi");
+//   debug("hello world");
+// });
 function debug(msg){
-  debugger;
   document.getElementById("debug").innerHTML+="<br>"+msg;
 }
 

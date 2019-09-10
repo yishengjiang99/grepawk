@@ -15,10 +15,10 @@ class Window extends React.Component{
             closed:false,
             isResizing:false,
             isDragging: false,
-            top: 10 || props.top,
-            left: 500 || props.left,
-            width: 800 || props.width, 
-            height: 400 || props.height,
+            top: props.top || 20,
+            left: props.left || 400,
+            width: props.width || 800, 
+            height: props.height || 400,
             lastMouseX: 0,
             lastMouseY: 0
         }
@@ -141,7 +141,8 @@ class Window extends React.Component{
             left:   this.state.maximized    ? 0      : this.state.left ,
             width:  this.state.maximized    ? "100%" : this.state.width,
             cursor: this.state.isResizing   ? "se-resize" : "cursor",
-            height: this.state.minimized    ? 18     : this.state.maximized ? "100%" : this.state.height
+            height: this.state.minimized    ? 18     : this.state.maximized ? "100%" : this.state.height,
+            zIndex: 10
         }
 
         const corderStyle={

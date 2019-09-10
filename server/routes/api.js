@@ -2,8 +2,19 @@ var express = require('express');
 var router = express.Router();
 const db = require("../lib/db");
 
+router.get("/checkin", async function(req, res){
+  const uuid = req.headers['uuid'] || req.query.uuid;
+  if(!uuid){
+    res.status(400).end("uuid in header or query is required");
+    return;
+  }
+  db.get_user(uuid,'123').then(user=>{
+    res.json(user);
+  })
+} )
+
 router.post("/listing", async function(req, res){
-  const uuid = req.headers['uuid'] || "1234";
+  const uuid = req.headers['uuid'] || req.body.uuid || "1234";
   const title = req.body.title; 
    if(!title) {
       res.status(400).end("title required");

@@ -1,5 +1,7 @@
 import React from 'react';
 
+import Moment from 'react-moment';
+
 class GFileListItem extends React.Component{
 
     constructor(props){
@@ -27,20 +29,45 @@ class GFileListItem extends React.Component{
         const rowIndex = this.props.rowIndex;
         const file = this.props.file;
         const sizeStr = this.state.fileMetaDescriptor.size || "0";
-        const modStr =  this.state.fileMetaDescriptor.modificationTime || "";
         const typeStr = this.state.fileMetaDescriptor.type || file.isDirectory ? "dir" : "file";
         var rowStyle = {
-            marginLeft:"20px",
-            width: "calc(100% - 40px)",
+            paddingLeft:"5px",
             color: "#D7D7D7",
             backgroundColor: rowIndex % 2 ===0 ? "#2A2A2A" : "#242424",
-            height:"50px"
+            height:"50px",
+            position:"relative"
         }
-        var spanStyle={
-            marginLeft:"5px",
-           width: "100px"
+        var spanOne={
+            position:"absolute",
+            top: 2,
+            left: 2,
+            width: 20,
+            height: 48
+        }
+        var spanTwo={
+            position:"absolute",
+            top: 2,
+            left: 25,
+            width: 100,
+            height: 48
+        }
+        var spanThree={
+            position:"absolute",
+            top: 2,
+            left: 170,
+            width: 200,
+            height: 48
+        }
+        var spanFour={
+            position:"absolute",
+            top: 2,
+            right: 5,
+            width: 100,
+            height: 48
         }
 
+
+        const faName = file.isDirectory === true ? "fa-folder" : "fa-file";
         return (
             <div style={rowStyle} onClick={()=>{
                 if(!file.isDirectory){
@@ -49,11 +76,20 @@ class GFileListItem extends React.Component{
                     this.props.clickedDir(file);
                 }
               }}>
-                <div>
-                    <span style={spanStyle}>{file.name}</span>
-                    <span style={spanStyle}>{sizeStr}</span>
-                    <span style={spanStyle}>{modStr}</span>
-                    <span style={spanStyle}>{typeStr}</span>
+                  <div>
+                    <span style={spanOne}>
+                        <i className={"fas fa-lg "+faName}> </i>  
+                   </span>
+                   <span style={spanTwo}>{file.name}</span>
+                    <span style={spanThree}>{sizeStr}byte</span>
+                    <span style={spanFour}>
+                        {this.state.fileMetaDescriptor.modificationTime ? 
+                            <Moment
+                                format="YYYY/MM/DD" 
+                                date={this.state.fileMetaDescriptor.modificationTime}
+                            />
+                            :null}
+                    </span>
                 </div>
                 <div>
                     

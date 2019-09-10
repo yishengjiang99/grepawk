@@ -35,6 +35,19 @@ function init_pwd_container_if_neccessary(pwd) {
 }
 const xfs = {
     get_container_name: get_container_name,
+    blob_get_content: function(containerName, blobName, onError, onSuccess){
+      const fh = blobClient.createReadStream(containerName, blobName,(err,fileInfo)=>{
+            if(err) onError(err);
+      });
+      var bufs = [];
+      fh.on('data', data=>{
+        bufs.push(data);
+      });
+      fh.on("end",function(){
+        onSuccess(Buffer.concat(bufs).toString("UTF-8"));
+      });
+
+    },
     stream_blob: function (pwd, blobName, ws) {
         const containerName = get_container_name(pwd);
         const fh = blobClient.createReadStream(containerName, blobName, (err, fileInfo) => {

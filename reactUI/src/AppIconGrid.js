@@ -19,13 +19,13 @@ class AppIconGrid extends React.Component{
         return(
             <div className='app-icon-grid'>
                 {this.props.icons.map((icon,index)=>{
-                    const row = (index+1) % icons_per_column;
-                    const col = Math.floor((index+1) / icons_per_column);
+                    const row = index  % icons_per_column;
+                    const col = Math.floor(index / icons_per_column);
                     const iconStyle ={
                         gridColumnStart:col,
                         gridColumnEnd: col+1,
-                        gridRowStart:row-1,
-                        gridRowEnd:row,
+                        gridRowStart:row,
+                        gridRowEnd:row+1,
                         width:50,
                         height:50,
                         borderColor:"black",
