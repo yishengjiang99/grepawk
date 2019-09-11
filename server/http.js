@@ -25,7 +25,8 @@ const bodyParser = require('body-parser');
 const file = require("./routes/file");
 const api = require("./routes/api");
 app.use(bodyParser.json());
-
+bodyParser({limit: '99MB'});
+//
 app.set('view engine', 'ejs');
 app.use("/admin", admin);
 app.use("/bt", bt);

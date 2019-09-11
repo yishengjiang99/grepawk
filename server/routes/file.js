@@ -72,33 +72,43 @@ router.get("/market/list", async function (req, res) {
   }
 });
 router.post("/azure/upload", function (req, res) {
-  var path = req.query.basepath;
-  const parts = path.split("/");
-  if (parts.length < 2) {
-    throw new Error("..");
+  try{
+    console.log("5");
+    var path = req.query.basepath;
+    const parts = path.split("/");
+    if (parts.length < 2) {
+      throw new Error("..");
+    }
+    console.log("6");
+
+    const containerName = parts[1] || "data";
+    const fileName = parts[2] || req.headers['x-file-name'] || "file.txt";
+    const size = req.headers['x-file-size'];
+    console.log("file", fileName, containerName,size);
+    var pass = new PassThrough();
+    res.write("upload started  for "+fileName);
+    console.log('1');
+    var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, 
+        pass,
+        size,
+        (err, result)=>{
+          if(err) res.end(err.message);
+          else res.write("sending "+fileName);
+        }
+   );
+  
+  
+   speedsummary.on("progress", (e)=>{
+     console.log(speedsummary);
+     var prog = speedsummary.getCompletePercent();
+     res.write(prog+"");
+     if(prog>99) res.end();
+   }) 
+   req.pipe(pass);
+   console.log('2');
+  }catch(e){
+    console.log("EERROR",e);
   }
-  const containerName = parts[1] || "data";
-  const fileName = parts[2] || req.headers['x-file-name'] || "file.txt";
-  const size = req.headers['x-file-size'];
-  console.log("file", fileName, containerName,size);
-  var pass = new PassThrough();
-  var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, 
-      pass,
-      size,
-      (err, result)=>{
-        if(err) res.end(err.message);
-        else res.write("sending "+fileName);
-      }
- );
-
-
- speedsummary.on("progress", (e)=>{
-   console.log(speedsummary);
-   var prog = speedsummary.getCompletePercent();
-   res.write(prog+"");
-   if(prog>99) res.end();
- }) 
- req.pipe(pass);
 });
 
 router.get("/azure/list", async function (req, res) {

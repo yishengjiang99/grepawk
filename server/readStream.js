@@ -31,8 +31,9 @@ wss.on('connection', (ws, request) => {
   if(schema==='azure'){
     const containerName = filePath[0];
     const blobName = filePath[1];
+
     const fh = xfs.blobClient.createReadStream(containerName,blobName);
-    
+       
     ws.send(("Content-Type: "+mime.lookup(blobName)).toString("UTF-8"));
     fh.on("data",data=>ws.send(data));
     fh.on("end", ()=>{
