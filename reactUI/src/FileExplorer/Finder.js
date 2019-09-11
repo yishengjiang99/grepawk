@@ -67,7 +67,7 @@ class Finder extends React.Component{
                 item.fullPath = this.get_full_path(item.name);
                 uploads.push(item);
             }
-            await this.vfs.upload_files(uploads);
+            await this.vfs.upload_files(uploads, this.getFullBasePath());
             this.getFiles();
         }catch(e){
             alert(e.message);
@@ -84,8 +84,8 @@ class Finder extends React.Component{
         const previewStyle={
             position:"absolute",
             left: "55%",
-            top: 0,
-            height: "99%",
+            top: "5%",
+            height: "95%",
             width: "40%",
             backgroundColor:"transparent"
         }
@@ -93,6 +93,9 @@ class Finder extends React.Component{
         if(!file) return null;
         return (
             <div style={previewStyle}>
+                <div className='row'>
+                    {this.state.previewFile.fullPath}
+                </div>
                 <div className='row'>                
                     <div className='md-col-10 ht-70 bg-light'> 
                         {this.renderPreviewContent()}
@@ -220,6 +223,9 @@ class Finder extends React.Component{
             current_node_id:dirId
         });
     }
+    getFullBasePath=()=>{
+        return this.state.fs_type+"/"+this.state.dirs.map(d=>d.name).join("/");
+    }
     renderBreadCrumb=()=>{
         const headerStyle={
             position:"absolute",
@@ -273,9 +279,11 @@ class Finder extends React.Component{
             position:"absolute",
             bottom: "0px",
             height: "40px",
-            width: "100%",
+            width: "95%",
             left: 0,
-            float: "right"
+            float: "right",
+            padding: 5
+
         } 
         return (
             <div>
@@ -294,11 +302,11 @@ class Finder extends React.Component{
                   })}
                 </div>
                 <div className='Controls' style={ctrlStyle}>
-                    <button className='btn' onClick={this.add_file}>Compose</button>
+                    <button className='btn primary' onClick={this.add_file}>Compose</button>
                     {'\u00A0'}{'\u00A0'}
                     {this.state.isUploadingFiles == true ? (
                          <input type='file' multiple 
-                         className='btn'
+                         className='btn primary'
                           onChange={this.upload_to_vfs} />
                     ) : (<button className='btn' onClick={()=>{
                         this.setState({isUploadingFiles:true});

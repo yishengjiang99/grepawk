@@ -164,6 +164,7 @@ const xfs = {
             })
         });
     },
+
     auto_complete_hints: (pwd, ws) => {
         items = [];
         containerName = xfs.get_container_name(pwd);
