@@ -17,7 +17,56 @@ router.get("/azure", async function(req,res){
   });      
 });
 
-
+router.get("/market/list",async function(req,res){
+  const tagQuery = req.query.tag;
+  const titleQuery = req.query.title;
+  const page = req.query.page || 0;
+  const perPage = req.query.perPage || 10;
+  const offset = page * perPage;
+  const limit = perPage;
+  const orderBy = req.query.orderBy || "created_at";
+  const order = req.query.order || "desc";
+  var rows=[];
+  try{
+    if(tagQuery){
+      rows = await db.query(
+        "select content_listing.* \
+         from content_listing join content_list_tags on content_listing.id=list_id \
+         where tag = $1 order by $2 "+order+" limit $3 offset $4", [tagQuery, orderBy, limit, offset])
+    }else if(titleQuery){
+      rows = await db.query(
+        "select content_listing.* \
+         from content_listing \
+         where title ilike $1 order by $2 "+order+" limit $3 offset $4",
+         ["%"+titleQuery+"%", orderBy, limit, offset]);
+    }else{
+      rows = await db.query(
+        "select content_listing.* \
+         from content_listing \
+         order by $1 "+order+"  limit $2 offset $3",
+         [orderBy, limit,offset]);
+    }
+    var nodes = [];
+    var edges = {};
+    nodes.push({
+      id: 0,
+      name: 'root'
+    });
+    edges[0]=[];
+    rows.forEach((row,idx)=>{
+      nodes.push({
+        id: nodes.length,
+        name: row.title,
+        modificationTime: row.updated_at || row.created_at,
+        pricing: row.pricing
+      });
+      edges[0].push(idx);
+    })
+    res.json([nodes,edges]);
+  }catch(e){
+    res.status(500).end(e.message);
+  }
+});
 router.get("/azure/list", async function(req, res){
   let containerName = req.query.path || "";
   var nodes = [];
@@ -34,7 +83,7 @@ router.get("/azure/list", async function(req, res){
     let parent  = {
       name: container,
       id: nodes.length,
-      fullPath: container,
+      fullPath: "az/"+container,
       isDirectory: true,
       type: "dir"
     }
@@ -49,7 +98,7 @@ router.get("/azure/list", async function(req, res){
         name: file.name,
         type: file.contentSettings.contentType,
         isDirectory: false,
-        fullPath: parent.name+"/"+file.name
+        fullPath: "azure/"+parent.name+"/"+file.name
       }
       nodes.push(node);
       edges[parent.id].push(node.id);

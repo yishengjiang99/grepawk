@@ -19,6 +19,7 @@ class Finder extends React.Component{
             previewURL:         null,
             previewText:        null,
             previewFile:        null,
+            previewContentType: "",
             fileBeingPublished: null,
             isUploadingFiles:   false,
             isPublishing:       false, 
@@ -84,42 +85,48 @@ class Finder extends React.Component{
             position:"absolute",
             left: "55%",
             top: 0,
-            height: "70%",
+            height: "99%",
             width: "40%",
             backgroundColor:"transparent"
         }
         const file = this.state.previewFile;
         if(!file) return null;
         return (
-            <table style={previewStyle}>            
-                <tr>
-                    <td colspan={4}>
+            <div style={previewStyle}>
+                <div className='row'>                
+                    <div className='md-col-10 ht-70 bg-light'> 
                         {this.renderPreviewContent()}
-                    </td>
-                </tr>     
-                <tr>
-                    <td colspan={4}>
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className='md-col-10'>
                         <p>Size: {file.size}</p>
                         <p>Type: {file.type}</p>
-                    </td>
-                </tr>  
-                <tr>
-                    <td colspan={2}>
-                        <button class='btn btn-primary' onClick={(e)=>{
+                    </div>
+                </div>
+                <div className='row'>
+                    <div className='md-col-3'>
+                         <button class='btn btn-primary' onClick={(e)=>{
                             this.setState({isPublishing:true, fileBeingPublished:file});
                         }}> Publish </button>
-                    </td>
-                    <td colspan={2}>
-                        <button class='btn btn-primary'>Share</button>
-                    </td>
-                </tr>                 
-            </table>
+                    </div>
+                    <div className='md-col-3'>
+                      <button class='btn btn-primary'>Share</button>
+
+                    </div>
+                </div>
+            </div>
         )
     }
 
     renderPreviewContent = () =>{
         if(this.state.previewURL!==null){
-            return(<img width="80%" height="auto" src={this.state.previewURL}></img>);
+            if(this.state.previewContentType.includes("image")){
+                return(<img style={{objectFit:"fill"}} 
+                    width={320} height={400} src={this.state.previewURL}></img>);
+            }else{
+                return(<iframe width={320} height={400} src={this.state.previewURL}></iframe>)
+            }
         }else if(this.state.previewText!==null){
             return (<div height="50%" width="100%">{this.state.previewText}</div>);
         }
@@ -134,14 +141,38 @@ class Finder extends React.Component{
                         <p>Size: {file.size}</p>
                         <p>Type: {file.type}</p>
                     </td>
-                </tr>
-
-               
+                </tr>               
             </table>
         )
     }
 
     clickedFile=async (file)=>{
+       
+        if(this.props.fs_type==='azure' ||this.props.fs_type==='market'){
+            try{
+                var contentType = '';
+                var fh = await this.vfs.file_get_stream(file.fullPath);
+                var buffers = [];
+                fh.onmessage = (e)=>{
+                    if (e.data && e.data.toString().startsWith("Content-Type: ")) {
+                        contentType = e.data.toString().replace("Content-Type: ","");
+                    }
+                    else if (e.data && contentType) {
+                        buffers = buffers.concat(e.data);
+                        let url =  URL.createObjectURL(new Blob(buffers),{ type: contentType });
+                        this.setState({
+                            previewFile:file, 
+                            previewURL:url, 
+                            previewContentType: contentType
+                        });
+                    }
+                }
+
+            }catch(e){
+                alert(e.lineNumber+":"+e.message);
+            }
+            return;
+        }
         try{
             var preview_content = await this.vfs.file_get_content(file.fullPath);      
             preview_content.type =  preview_content.type || "text";            
@@ -215,11 +246,18 @@ class Finder extends React.Component{
     }
     renderBody2 = ()=>{
        let files_displayed=[];
-       const _edges = this.state.edges[this.state.current_node_id] || [];
        const _files = this.state.files || [];
-       _edges.forEach((node_id)=>{
-            files_displayed.push(_files[node_id])
-       })
+
+
+       if(this.state.edges==='flat'){
+          files_displayed = _files;
+       }else{
+            const _edges = this.state.edges[this.state.current_node_id] || [];
+            _edges.forEach((node_id)=>{
+                files_displayed.push(_files[node_id])
+           })
+       }
+
         const bodyStyle={
             position:"absolute",
             top: "20px",
@@ -290,7 +328,7 @@ class Finder extends React.Component{
     render() {
         const editorStyle={
             width:"80vw",
-            height:"90vh",
+            height:"80%",
             top: "5vh",
             left:"10vw",
             backgroundColor:"black",
@@ -299,7 +337,7 @@ class Finder extends React.Component{
             display:"block"    
         }
       return (
-      <Window width={1000} height={500} left={220} ipc={this.props.ipc} icon='computer' title='My Computer'>
+      <Window width={1000} height={600} left={220} ipc={this.props.ipc} icon='computer' title='My Computer'>
           <div className="anchor">
               {this.renderBreadCrumb()}
               {this.renderBody2()}

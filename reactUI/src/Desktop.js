@@ -22,8 +22,8 @@ class Desktop extends React.Component{
         quests:[],
         icons:[
             {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
-            {name:"folder",     title:"Public Files",     cmd:"finder", args:["public"]},
-            {name:"folder",     title:"Google Drive",    cmd:"finder", args:["google"]},
+            {name:"folder",     title:"Public Files",     cmd:"finder", args:["azure"]},
+            {name:"folder",     title:"Content Market",    cmd:"finder", args:["market"]},
             {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
             {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
             {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
@@ -150,9 +150,15 @@ class Desktop extends React.Component{
             <div className='desktop'>
                 <nav style={{width:"100vw",height:"18px"}} className='navbar navbar-light bg-light'>
                     <a className="navbar-brand" href="#">GrepAwk</a>
+
+                    <ul class="navbar-nav">
+                    <li class="nav-item">
+                         <a class="nav-link btn" href="#">Compose</a>
+                    </li>
+                    </ul>
                     {this.renderHud()}
                 </nav>
-                <div style={{top:"18px", position:"absolute", width:"100vw", height:"calc(100% - 18px)"}} >
+                <div style={{top:"0", position:"absolute", width:"100vw", height:"calc(100% - 18px)"}} >
                     {this.renderBackground()}
                     {this.renderBody()}
                     {this.renderQuestView()}

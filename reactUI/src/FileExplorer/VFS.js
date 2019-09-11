@@ -1,6 +1,6 @@
 var Vfs = function(type){
   if(type=='chrome') return chrome_fs();
-  else if(type=='public') return api_fs("azure");
+  else if(type=='azure') return api_fs("azure");
   else if(type=='market') return api_fs("market");
   else if(type=='feed')   return api_fs("feed");
   else if(type=='live')   return api_fs("live");
@@ -136,7 +136,9 @@ var chrome_fs = function(){
       resolve();
     });
   }
+
   return{
+
     get_files: async function(path){
       try{
         var ret= await g_list_local_files(path);
@@ -220,10 +222,18 @@ var api_fs = function(mntType){
     })
   }
   return {
+    file_get_stream: async function(path){
+      return new Promise((resolve,reject)=>{
+        var ws = new WebSocket("ws://localhost:8085/"+path);
+        ws.onopen=(e)=>{
+          resolve(ws);
+        }
+        ws.onerror=reject;
+      })
+    },
     get_files: async function(path){
       let url = API_LIST_NAME+"/list";
-      var ret= await sync_api_get_json(url);
-      return ret;
+      return await sync_api_get_json(url);
     },
     file_get_meta: function(fullPath, stdout){
       stdout(null);

@@ -34,6 +34,7 @@ function init_pwd_container_if_neccessary(pwd) {
     })
 }
 const xfs = {
+    blobClient: blobClient,
     get_container_name: get_container_name,
     blob_get_content: function(containerName, blobName, onError, onSuccess){
       const fh = blobClient.createReadStream(containerName, blobName,(err,fileInfo)=>{
@@ -235,7 +236,7 @@ const xfs = {
             var results = [];
             var _page_through = function (nextPage) {
                 blobClient.listContainersSegmented(nextPage, (error, result) => {
-                    result.entries.forEach(entry => {
+                    result.entries && result.entries.forEach(entry => {
                         results.push(entry.name);
                     })
                     if (result.continuationToken) {

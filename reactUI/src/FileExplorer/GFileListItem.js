@@ -81,7 +81,7 @@ class GFileListItem extends React.Component{
                         <i className={"fas fa-lg "+faName}> </i>  
                    </span>
                    <span style={spanTwo}>{file.name}</span>
-                    <span style={spanThree}>{sizeStr}byte</span>
+                    {/* <span style={spanThree}>{sizeStr}</span> */}
                     <span style={spanFour}>
                         {this.state.fileMetaDescriptor.modificationTime ? 
                             <Moment
