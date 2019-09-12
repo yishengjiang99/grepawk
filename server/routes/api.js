@@ -26,12 +26,12 @@ router.post("/listing", async function(req, res){
    }
    const tags = req.body.tags || [];
    const description = req.body.description || "";
-  
+  const url = req.body.url || "";  
   try{
    var rows = await db.query(
      "insert into content_listing \
-      (title, description, pricing, author_uuid) \
-      values ($1, $2, $3, $4) returning id", [title, description, price, uuid]);
+      (title, description, pricing, author_uuid, url) \
+      values ($1, $2, $3, $4, $5) returning id", [title, description, price, uuid, url]);
    if(!rows || !rows[0]) throw new Error("insert failed to return ID");
    const listId = rows[0].id;
    tags.forEach(async (tag)=>{

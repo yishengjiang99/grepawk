@@ -12,6 +12,7 @@ import AppIconGrid from './AppIconGrid';
 import Finder from "./FileExplorer/Finder";
 import SearchBar from "./SearchBar"
 import API from "./APICalls";
+import Composer from "./FileExplorer/Composer"
 
 
 class Desktop extends React.Component{
@@ -27,9 +28,9 @@ class Desktop extends React.Component{
             {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
             {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
             {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
-            {name:"broadcast-tower", title:"Broadcast", cmd:"stream", args:[]},
-            {name:"play-circle",title:"Watch Hearthstone", cmd:"watch", args:["rank_5_rogue"]},
-            {name:"editor",title:"Word(sic)"}
+            {name:"broadcast-tower", title:"Broadcast", cmd:"stream",   args:[]},
+            {name:"play-circle", title:"Watch Hearthstone", cmd:"watch", args:["r5rogue"]},
+            {name:"shipping-fast",title:"Write Javascript", cmd:"compose", args:['javascript']}
           ]
     }
     constructor(props){
@@ -75,6 +76,7 @@ class Desktop extends React.Component{
             case "tty":
             case "compose":
             case "finder":
+           
                 var plist = this.state.processes.concat({"name":cmd,"args":args});
                 this.setState({processes:plist});
                 break;
@@ -118,6 +120,10 @@ class Desktop extends React.Component{
                     var type = proc.args[0] || "";
                     return (
                         <Finder userInfo={this.state.userInfo} ipc={this.ipc} title="Finder" fs_type={type}  ipc={this.ipc}></Finder>
+                    )
+                }else if(proc.name==="compose"){
+                    return(
+                        <Composer></Composer>
                     )
                 }
             })

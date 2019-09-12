@@ -73,9 +73,7 @@ router.get("/market/list", async function (req, res) {
 });
 router.post("/azure/upload", function (req, res) {
   try{
-    console.log("5");
     var path = req.query.basepath;
-    console.log("6",path);
 
     const parts = path.split("/");
     if (parts.length < 2) {
@@ -87,12 +85,11 @@ router.post("/azure/upload", function (req, res) {
     const size = req.headers['x-file-size'];
     console.log("file", fileName, containerName,size);
     var pass = new PassThrough();
-    res.write("upload started  for "+fileName);
-    res.flush();
-    console.log('1');
-    var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, 
-        pass,
-        size,
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+
+    res.write("started upload<br>");
+
+    var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, pass, size,
         (err, result)=>{
           if(err) res.end(err.message);
           else res.write("writing "+fileName);
@@ -103,12 +100,11 @@ router.post("/azure/upload", function (req, res) {
    speedsummary.on("progress", (e)=>{
      console.log(speedsummary);
      var prog = speedsummary.getCompletePercent();
-     res.write(fileName+": "+prog);
+     res.write(fileName+": "+prog+"<br>");
      res.flush();
-     if(prog>99) res.end("uploaded "+fileName);
+     if(prog>99) res.end(`uploaded: azure/${containerName}/${fileName}`);
    }) 
    req.pipe(pass);
-   console.log('2');
   }catch(e){
     console.log("EERROR",e);
   }

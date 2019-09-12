@@ -96,6 +96,12 @@ class Finder extends React.Component{
         if(!file) return null;
         return (
             <div style={previewStyle}>
+                {this.state.updateMessage ? (
+                <div className='row'>
+                    <div className='col-md-12' style={{height:30, overflow:'scroll'}}>
+                        {this.state.updateMessage}
+                    </div>
+                </div>) : null}
                 <div className='row'>
                     {this.state.previewFile.fullPath}
                 </div>
@@ -314,17 +320,17 @@ class Finder extends React.Component{
                     ) : (<button className='btn' onClick={()=>{
                         this.setState({isUploadingFiles:true});
                     }}>Upload</button>)}
-                    {this.state.updateMessage}
                 </div>
              </div>
         )
     }
     publishFile=async (responses)=>{
-        await this.vfs.upload_file_market(this.state.fileBeingPublished);
+        let xpath = await Vfs.upload_file_market(this.state.fileBeingPublished);
         Vfs.api_post_json("/listing",{
             uuid: this.props.userInfo.uuid,
             title: responses.title,
             price: responses.price,
+            url:    xpath, 
             tags: responses.tags.split(",")
         }).then(resp=>{
             if(resp.status==='OK'){
