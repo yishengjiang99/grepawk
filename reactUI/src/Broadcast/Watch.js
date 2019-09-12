@@ -77,6 +77,10 @@ class Watch extends React.Component {
   render() {
     return (
       <Window
+        top={20}
+        left={60}
+        width={1200}
+        height={600}
         className="watch-stream"
         title={this.props.title}
         pid={this.props.pid}

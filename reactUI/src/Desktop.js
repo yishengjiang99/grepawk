@@ -43,6 +43,8 @@ class Desktop extends React.Component{
             var xpath = window.location.pathname.split("/").splice(1);
             if(xpath.length===1){
                 this.ipc("watch", xpath);
+            }else if(xpath.length==2){
+                this.ipc(xpath[0], xpath.splice(1));
             }   
         }
         else if(window.location.search){

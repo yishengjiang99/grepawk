@@ -15,10 +15,10 @@
 
 .console-watcher {
     position: absolute;
-    top: 70%;
-    left: 0%;
-    width: 32%;
-    height: 30%;
+    top: 90%;
+    left: 10%;
+    width: 70%;
+    height: 10%;
     background:black;
     color: white;
     overflow-y: scroll;

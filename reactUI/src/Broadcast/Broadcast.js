@@ -8,7 +8,7 @@ import BroadcastClient from "./BroadcastClient";
 const streamHost = "https://grepawk.com/watch/";
 const defaultDimensions ={
     screenshare: [0,0,100,100],
-    webcam: [0, 80, 20,20],
+    webcam: [80, 80, 20,20],
     audio: [90,0,10,10],
     text:[5,5,80, 10],
     picture:[0, 10, 20,20]
