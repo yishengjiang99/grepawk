@@ -38,7 +38,6 @@ class MediaObject extends React.Component{
                     {streamType=="audio"       ? this.renderAudio(stream) : null}
                     {streamType=="text"        ? this.renderText(stream) : null}
                     {streamType=="image"        ? this.renderImage(stream) : null}
-
                 </div>
             )
         }

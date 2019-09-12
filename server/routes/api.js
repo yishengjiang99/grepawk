@@ -30,8 +30,8 @@ router.post("/listing", async function(req, res){
   try{
    var rows = await db.query(
      "insert into content_listing \
-      (title, description, pricing, author_uuid, url) \
-      values ($1, $2, $3, $4, $5) returning id", [title, description, price, uuid, url]);
+      (title, description, pricing, author_uuid, url, created_at, updated_at) \
+      values ($1, $2, $3, $4, $5, now(), now()) returning id", [title, description, price, uuid, url]);
    if(!rows || !rows[0]) throw new Error("insert failed to return ID");
    const listId = rows[0].id;
    tags.forEach(async (tag)=>{

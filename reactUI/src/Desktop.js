@@ -39,7 +39,13 @@ class Desktop extends React.Component{
     }
 
     componentDidMount(){
-        if(window.location.search){
+        if(window.location.pathname!=='/'){
+            var xpath = window.location.pathname.split("/").splice(1);
+            if(xpath.length===1){
+                this.ipc("watch", xpath);
+            }   
+        }
+        else if(window.location.search){
             var t = window.location.search.replace("?","").split("/");
             const cmd = t[0];
             const args = t.splice(1);

@@ -20,6 +20,7 @@ class Broadcast extends React.Component {
     webcam: false,
     audio: false,
     streamElements:{},
+    additionalStreamParts: [],
     broadcasting: false,
     broadcastEvents:[],
   };
@@ -47,9 +48,17 @@ class Broadcast extends React.Component {
     }
     this.setState({streamElements:cstate});
   }
-  componentDidMount() {
 
+  updateAdditionalStreamElements=(type,mediaObject,dimensions)=>{
+    let parts = this.state.additionalStreamParts;
+    parts.push([type, mediaObject,dimensions]);
+    this.setState({additionalStreamParts:parts});
+    if(mediaObject!==null && this.state.broadcasting===true){
+        this.broadcastClient.addStream(mediaObject, dimensions);
+        this.onBroadcastEvent("Adding stream "+type);
+    }
   }
+
   renderObjectives = () =>{
 
   }
@@ -58,7 +67,13 @@ class Broadcast extends React.Component {
       return (
             <div>
             {parts.map(part=>{return (
-                <MediaObject mediaObject={this.state.streamElements[part]}></MediaObject>)})}   
+                <MediaObject mediaObject={this.state.streamElements[part]}></MediaObject>)})
+             }   
+             {this.state.additionalStreamParts.map(part=>{
+                 return (
+                     <MediaObject mediaObject={part}></MediaObject>
+                 )
+             })}
             </div>         
       )
   }
@@ -85,17 +100,16 @@ class Broadcast extends React.Component {
            case "audio":
                 stream = turnOn ? await this.broadcastClient.requestUserStream(control) 
                                     : await this.broadcastClient.removeStream(existingStream);
-
                 this.updateStreamElements(control, stream, defaultDimensions[control]);
                 this.setState({audio:turnOn});
                 break;
             case 'text':
                 var text=prompt("Enter Text");
-                this.updateStreamElements("text", text, defaultDimensions[control]);
+                this.updateAdditionalStreamElements("text", text, defaultDimensions[control]);
                 break;
             case 'picture':
                 var pictureUrl=prompt("Enter Picture URL");
-                this.updateStreamElements("text", pictureUrl, defaultDimensions[control]);
+                this.updateAdditionalStreamElements("text", pictureUrl, defaultDimensions[control]);
                 break;
             default: break;
       }
@@ -118,17 +132,16 @@ class Broadcast extends React.Component {
   }
 
   startBroadcasting = async ()=>{
-      var channelName = this.channelName
       if(!this.channelName){
         this.channelName=prompt("What channel name do you want?");
       }
       if(!this.channelName){
           return;
       }
-      var r = window.confirm("Start broadcasting at https://grepawk.com/c/"+channelName+" now?");
+     var r = window.confirm("Start broadcasting at https://www.grepawk.com/watch/"+this.channelName+" now?");
 
     if(r){
-        this.broadcastClient.startBroadcast(channelName);
+        this.broadcastClient.startBroadcast(this.channelName);
         Object.values(this.state.streamElements).forEach((streamElements)=>{
             if(streamElements[1]!==null){
                 this.broadcastClient.addStream(streamElements[1],streamElements[2]);
