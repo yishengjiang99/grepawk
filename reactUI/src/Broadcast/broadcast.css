@@ -16,17 +16,17 @@
     position: absolute;
     width: 70%;
     height: 70%;
-    top: 5%;
-    left: 10%;
+    top: 6%;
+    left: 20%;
     background-color: gray;
 }
 
 .controls {
     position: absolute;
-    top: 0;
+    top: 6%;
     left: 0;
-    width: 10%;
-    height: 100%;
+    width: 20%;
+    height: 70%;
     padding: 0 5px;
 }
 
@@ -34,7 +34,7 @@
 .console {
     position: absolute;
     top: 75%;
-    left: 10%;
+    left: 0;
     width: 90%;
     height: 20%;
     background-color: black;

@@ -4,11 +4,17 @@ import Draggable from 'react-draggable'; // The default
 
 class MediaObject extends React.Component{
 
-    renderVideo=(stream,width,height)=>{
+    renderVideo=(stream)=>{
         
         return (<Video width={"100%"} height={"100%"} media={stream}></Video>)
     }
  
+    renderText=(text)=>{
+        return (<div>{text}</div>)
+    }
+    renderImage=(pictureUrl)=>{
+        return (<img src={pictureUrl}></img>);
+    }
     renderAudio=()=>{
         return (<div>todo</div>)
     }
@@ -30,6 +36,9 @@ class MediaObject extends React.Component{
                     {streamType=="screenshare" ? this.renderVideo(stream) : null}
                     {streamType=="webcam"      ? this.renderVideo(stream) : null}
                     {streamType=="audio"       ? this.renderAudio(stream) : null}
+                    {streamType=="text"        ? this.renderText(stream) : null}
+                    {streamType=="image"        ? this.renderImage(stream) : null}
+
                 </div>
             )
         }
@@ -40,6 +49,8 @@ class MediaObject extends React.Component{
                     {streamType=="screenshare" ? this.renderVideo(stream) : null}
                     {streamType=="webcam"      ? this.renderVideo(stream) : null}
                     {streamType=="audio"       ? this.renderAudio(stream) : null}
+                    {streamType=="text"        ? this.renderText(stream) : null}
+                    {streamType=="image"        ? this.renderImage(stream) : null}
                 </div>
             </Draggable>
 

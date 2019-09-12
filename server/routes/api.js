@@ -46,7 +46,7 @@ router.get("/listing",async function(req,res){
   const tagQuery = req.query.tag;
   const titleQuery = req.query.title;
   const page = req.query.page || 0;
-  const perPage = req.query.perPage || 10;
+  const perPage = req.query.perPage || 100;
   const offset = page * perPage;
   const limit = perPage;
   const orderBy = req.query.orderBy || "created_at";

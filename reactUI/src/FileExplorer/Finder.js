@@ -4,7 +4,7 @@ import Vfs from './VFS';
 import GFileListItem from './GFileListItem';
 import "./Finder.css";
 import Modal from "../components/Modal";
-import AceEditor from 'react-ace';
+import Composer from "./Composer";
 
 class Finder extends React.Component{
     constructor(props){
@@ -16,6 +16,7 @@ class Finder extends React.Component{
             fs_type:        props.fs_type || "chrome",
             files:          props.files   || [], 
             edges:          props.edges   || [],
+            updateMessage:       "", 
             previewURL:         null,
             previewText:        null,
             previewFile:        null,
@@ -67,7 +68,9 @@ class Finder extends React.Component{
                 item.fullPath = this.get_full_path(item.name);
                 uploads.push(item);
             }
-            await this.vfs.upload_files(uploads, this.getFullBasePath());
+            await this.vfs.upload_files(uploads,this.getFullBasePath(), (update)=>{
+                this.setState({updateMessage:update});
+            });
             this.getFiles();
         }catch(e){
             alert(e.message);
@@ -311,13 +314,13 @@ class Finder extends React.Component{
                     ) : (<button className='btn' onClick={()=>{
                         this.setState({isUploadingFiles:true});
                     }}>Upload</button>)}
-                   
+                    {this.state.updateMessage}
                 </div>
              </div>
         )
     }
-    publishFile=(responses)=>{
-       
+    publishFile=async (responses)=>{
+        await this.vfs.upload_file_market(this.state.fileBeingPublished);
         Vfs.api_post_json("/listing",{
             uuid: this.props.userInfo.uuid,
             title: responses.title,
@@ -334,16 +337,6 @@ class Finder extends React.Component{
         })
     }
     render() {
-        const editorStyle={
-            width:"80vw",
-            height:"80%",
-            top: "5vh",
-            left:"10vw",
-            backgroundColor:"black",
-            color:"white",
-            position: "fixed",
-            display:"block"    
-        }
       return (
       <Window width={1000} height={600} left={220} ipc={this.props.ipc} icon='computer' title='My Computer'>
           <div className="anchor">
@@ -365,24 +358,18 @@ class Finder extends React.Component{
                 title='Publish Content' />) 
           : null}
 
-          {this.state.isComposing !== false ? 
-            (
-                <Modal
-                    style={editorStyle}
-                    onClose={()=>{this.setState({isComposing:false})}}
-                    title={this.state.composingTitle}
-                >
-                    <AceEditor
-                    mode="javascript"
-                    theme="github"
-                    value={this.state.composingContent || ""}
-                    onChange={content=>this.setState({composingContent: content})}
-                    name={this.state.composingTitle}
-                    editorProps={{$blockScrolling: true}}
-                  />
-                </Modal>
-            ) 
-          : null}
+          {this.state.isComposing !== false 
+            ? (
+            <Composer
+                vfs={this.vfs}
+                mode={"javascript"}
+                path={this.getFullBasePath()+"/"+this.state.composingTitle}
+                value={this.state.composingContent || ""}
+                onChange={content=>this.setState({composingContent: content})}
+                name={this.state.composingTitle}
+                onClose={()=>{this.setState({isComposing:false})}}
+            ></Composer>) 
+            : null}
 
       </Window>)
     }

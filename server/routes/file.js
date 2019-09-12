@@ -75,11 +75,12 @@ router.post("/azure/upload", function (req, res) {
   try{
     console.log("5");
     var path = req.query.basepath;
+    console.log("6",path);
+
     const parts = path.split("/");
     if (parts.length < 2) {
       throw new Error("..");
     }
-    console.log("6");
 
     const containerName = parts[1] || "data";
     const fileName = parts[2] || req.headers['x-file-name'] || "file.txt";
@@ -87,13 +88,14 @@ router.post("/azure/upload", function (req, res) {
     console.log("file", fileName, containerName,size);
     var pass = new PassThrough();
     res.write("upload started  for "+fileName);
+    res.flush();
     console.log('1');
     var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, 
         pass,
         size,
         (err, result)=>{
           if(err) res.end(err.message);
-          else res.write("sending "+fileName);
+          else res.write("writing "+fileName);
         }
    );
   
@@ -101,8 +103,9 @@ router.post("/azure/upload", function (req, res) {
    speedsummary.on("progress", (e)=>{
      console.log(speedsummary);
      var prog = speedsummary.getCompletePercent();
-     res.write(prog+"");
-     if(prog>99) res.end();
+     res.write(fileName+": "+prog);
+     res.flush();
+     if(prog>99) res.end("uploaded "+fileName);
    }) 
    req.pipe(pass);
    console.log('2');
@@ -194,7 +197,6 @@ router.get("/edit", function (req, res, next) {
         context: req.query.context
       }
       res.render("editor", data);
-
     })
   }
 

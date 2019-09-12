@@ -10,7 +10,8 @@ const defaultDimensions ={
     screenshare: [0,0,100,100],
     webcam: [0, 80, 20,20],
     audio: [90,0,10,10],
-    textBanner:[5,5,80, 10]
+    text:[5,5,80, 10],
+    picture:[0, 10, 20,20]
 }
 
 class Broadcast extends React.Component {
@@ -88,6 +89,14 @@ class Broadcast extends React.Component {
                 this.updateStreamElements(control, stream, defaultDimensions[control]);
                 this.setState({audio:turnOn});
                 break;
+            case 'text':
+                var text=prompt("Enter Text");
+                this.updateStreamElements("text", text, defaultDimensions[control]);
+                break;
+            case 'picture':
+                var pictureUrl=prompt("Enter Picture URL");
+                this.updateStreamElements("text", pictureUrl, defaultDimensions[control]);
+                break;
             default: break;
       }
   }
@@ -135,9 +144,9 @@ class Broadcast extends React.Component {
 
   renderControls = () => {
     return (
-        <ul className="list-group controls">
+        <ul className="list-group controls"> 
             {
-                ["screenshare","webcam","audio"].map(control=>{
+                ["screenshare","webcam","audio","picture","text"].map(control=>{
                     var isOn = this.state[control];
                     var text = isOn ? control+" off" : control;
                     var btnClass = isOn ? "btn btn-secondary" : "btn btn-primary";
@@ -165,7 +174,7 @@ class Broadcast extends React.Component {
   }
   render() {
     return (
-      <Window
+      <Window  width={1000} height={600} left={220}
         className="stream"
         title={this.props.title}
         pid={this.props.pid}
@@ -181,7 +190,6 @@ class Broadcast extends React.Component {
                 {this.renderPreview()}
             </div>
             <div className="console">{this.renderConsole()}</div>
-
           <div className="objectives">{this.renderObjectives()}</div>
         </div>
       </Window>
