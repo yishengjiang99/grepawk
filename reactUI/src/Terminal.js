@@ -100,10 +100,10 @@ class Terminal extends React.Component{
             case 'stderr':
                 var redStyle={color:"red"};
                 return (<pre key={"op-"+i}> <span style={redStyle}>{row.data}</span></pre>)
-            case 'stdin':              
+            case 'stdin':      
                 return (<div className='input-line' key={"op-"+i}>
                             <div className='prompt'>></div> 
-                            <input className='cmdline input-line' disabled  value={row.data} />
+                            <input className='cmdline input-line' disabled  value={row.cmd} />
                         </div>);
             case 'table':
                  return(<div key={"op-"+i}><Table clickedCmd={this.stdin} 
