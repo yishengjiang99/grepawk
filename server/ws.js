@@ -25,7 +25,7 @@ console.log("listening on " + port)
 var users = {};
 var spawned_procs = {};
 
-const root_path = __dirname + "/../world";
+const root_path = __dirname + "/world";
 const send_json_resonse = function (ws, json) {
     ws.send(JSON.stringify(json));
 }
@@ -41,6 +41,7 @@ function setUserForWs(ws, user) {
 wss.on('connection', (ws, request) => {
     var user;
     ws.on('message', async message => {
+        console.log(message);
         try {
             if (user && user.uuid && spawned_procs[user.uuid]) {
                 if (message === 'esc') {
@@ -279,6 +280,7 @@ wss.on('connection', (ws, request) => {
                     }
                     var cd_parts = args[0].split("/");
                     var current_pwd = user.cwd.split("/");
+                    ws.send("heading to "+args[0]);
                     cd_parts.forEach((elem, index) => {
                         if (elem == '..') {
                             if (current_pwd.length > 0) current_pwd.pop();
@@ -313,12 +315,14 @@ wss.on('connection', (ws, request) => {
                         ws.send("stdout: " + containerName + " created");
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
-                    xfs.auto_complete_hints(cwd, ws);
+                    //ws.send("You look around in "+cwd);
+                   // xfs.auto_complete_hints(cwd, ws);
                     //xfs.list_files_table(cwd, ws);
                 case 'echo':
                 case 'touch':
                     console.log(cwd);
                     try {
+                        console.log("exec msg", message);
                         exec(message, {
                             cwd: cwd
                         }, (err, stdout, stderr) => {

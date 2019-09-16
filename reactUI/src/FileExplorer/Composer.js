@@ -1,6 +1,8 @@
 import React from 'react';
 import Modal from '../components/Modal';
 import AceEditor from 'react-ace';
+import Window from '../components/Window';
+import SearchBar from "../SearchBar";
 
 const editorStyle={
     width:"800px",
@@ -15,7 +17,12 @@ const editorStyle={
 class Composer extends React.Component{
     constructor(props){
         super(props);
+        this.editor = React.createRef();
+        //this.focusEditor = ()=>this.editor.props.onFocus();
 
+    }
+    componentDidMount(){
+       // this.focusEditor();
     }
     onSave=()=>{
         alert(this.props.value);
@@ -26,20 +33,29 @@ class Composer extends React.Component{
     }
     render(){
         return(
-            <Modal style={editorStyle}
-                onClose={this.props.onClose}
-                title={this.props.name}
-                onSave={this.onSave}
-            >
-                <AceEditor
-                    width={700}
-                    mode={this.props.mode}
-                    theme="github"
-                    value={this.props.value}
-                    onChange={this.props.onChange}
-                    name={this.props.title} 
-                />
-            </Modal> 
+            <Window width={1000} height={600} left={220} 
+            ipc={this.props.ipc} 
+            icon='computer' title='Compose Stream/Video'>
+                <SearchBar 
+                    autoFocus={false}
+                    verbSuggestions={['radio', 'scan', 'gif', 'clip', 'mime', 'ppt']}
+                    additionalSuggestionGraph={"http://localhost/api/autocomplete"}
+                    searchBarStyle={{
+                                position: 'absolute',
+                                left: "10%",
+                                width:"80%",
+                                top:"15%"
+
+                            }}
+                    placeholderText={"Compose tracks"}
+                    searchBarStyleTyping={{
+                        position: 'absolute',
+                        left: "10%",
+                        width:"80%",
+                        top:"15%"
+                    }}                
+                ></SearchBar>
+            </Window> 
         )
     }
 }

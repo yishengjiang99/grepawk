@@ -22,14 +22,14 @@ class Desktop extends React.Component{
         userInfo:{name:"guest",xp:0,gold:0},
         quests:[],
         icons:[
-            {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
+            // {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
             {name:"folder",     title:"Public Files",     cmd:"finder", args:["azure"]},
-            {name:"folder",     title:"Content Market",    cmd:"finder", args:["market"]},
-            {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
-            {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
+            // {name:"folder",     title:"Content Market",    cmd:"finder", args:["market"]},
+            // {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
+            // {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
             {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
             {name:"broadcast-tower", title:"Broadcast", cmd:"stream",   args:[]},
-            {name:"play-circle", title:"Watch Hearthstone", cmd:"watch", args:["r5rogue"]},
+            // {name:"play-circle", title:"Watch Hearthstone", cmd:"watch", args:["r5rogue"]},
             {name:"shipping-fast",title:"Write Javascript", cmd:"compose", args:['javascript']}
           ]
     }
@@ -52,6 +52,8 @@ class Desktop extends React.Component{
             const cmd = t[0];
             const args = t.splice(1);
             this.ipc(cmd, args);
+        }else{
+            this.ipc("tty",[]);
         }
         const uuid = API.getUUID();
         API.api_get_json("/checkin?uuid="+uuid).then(_userInfo=>{

@@ -166,26 +166,26 @@ const xfs = {
     },
 
     auto_complete_hints: (pwd, ws) => {
-        items = [];
-        containerName = xfs.get_container_name(pwd);
-        xfs.list_files(containerName).then(data => {
-            data.forEach((file) => {
-                items.push(file.name)
-            })
-            fs.readdir(pwd, (err, files) => {
-                if (err) {
-                    ws.send(items);
-                    ws.send("stderr: error reading fs");
-                    return;
-                }
-                items = items.concat(files);
-                ws.send(JSON.stringify({
-                    hints: items
-                }));
-            });
-        }).catch(err => {
-            ws.send("stderr: " + err.message);
-        })
+        // items = [];
+        // containerName = xfs.get_container_name(pwd);
+        // xfs.list_files(containerName).then(data => {
+        //     data.forEach((file) => {
+        //         items.push(file.name)
+        //     })
+        //     fs.readdir(pwd, (err, files) => {
+        //         if (err) {
+        //             ws.send(items);
+        //             ws.send("stderr: error reading fs");
+        //             return;
+        //         }
+        //         items = items.concat(files);
+        //         ws.send(JSON.stringify({
+        //             hints: items
+        //         }));
+        //     });
+        // }).catch(err => {
+        //     ws.send("stderr: " + err.message);
+        // })
 
     },
     tabular_list_view: function (entries) {

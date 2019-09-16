@@ -12,6 +12,45 @@ class SearchBar extends React.Component{
         }
         this.keyboardInput = React.createRef();
         this.focusTextInput = this.focusTextInput.bind(this);
+        this.verbSuggestions = props.verbSuggestions && this.props.verbSuggestions.map(verb=>{
+            return {
+                cmd: verb, 
+                description: verb
+            }
+        })  || [
+            {
+                cmd: 'search',
+                description: 'disocver files and file content'
+            },
+            {
+                cmd: 'compose',
+                description: 'create content'
+            },
+            {
+                cmd: 'request',
+                description: 'request document, script, or live consulting'
+            },
+            {
+                cmd: 'neighbors',
+                description: 'visit a neighbor and discover their content'
+            },
+            {
+                cmd: 'radio',
+                description: 'listen to radio'
+            },
+            {
+                cmd: 'share',
+                description: 'share security peer-to-peer'
+            },
+            {
+                cmd: 'broadcast',
+                description: 'live stream'
+            },
+            {
+                cmd: 'connect',
+                description: 'with people or IP addresses'
+            }
+        ]
     }
 
     focusTextInput() {
@@ -19,6 +58,9 @@ class SearchBar extends React.Component{
     }
 
     componentDidMount(){
+        if(this.props.autoFocus){
+            this.focusTextInput();
+        }
         this.updateAutoSuggest();
     }
 
@@ -57,61 +99,34 @@ class SearchBar extends React.Component{
     }
 
     updateAutoSuggest=(inputString)=>{
-        if(!inputString){
-            this.setState({
-                autoSuggestions:[
-                    {
-                        cmd: 'search',
-                        description: 'disocver files and file content'
-                    },
-                    {
-                        cmd: 'compose',
-                        description: 'create content'
-                    },
-                    {
-                        cmd: 'request',
-                        description: 'request document, script, or live consulting'
-                    },
-                    {
-                        cmd: 'neighbors',
-                        description: 'visit a neighbor and discover their content'
-                    },
-                    {
-                        cmd: 'radio',
-                        description: 'listen to radio'
-                    },
-                    {
-                        cmd: 'share',
-                        description: 'share security peer-to-peer'
-                    },
-                    {
-                        cmd: 'broadcast',
-                        description: 'live stream'
-                    },
-                    {
-                        cmd: 'connect',
-                        description: 'with people or IP addresses'
-                    }
-                ]
-            })
+        var typingFirstWord = !inputString || inputString.split(" ").length<2;
+        var typingSecondWord = !typingFirstWord && inputString.split(" ").length<2;
+        var currentWord = inputString && inputString.split(" ").pop() || "";
 
+        if(typingFirstWord){
+            var matches = this.verbSuggestions.filter(suggestion=>{
+              return !currentWord || suggestion.cmd.includes(currentWord);
+            });
+            
+            this.setState({autoSuggestions: matches});
         }
     };
 
     render(){
-        const searchBarStyle={
+        const searchBarStyle= this.props.searchBarStyle || 
+        {
             position: 'fixed',
             right: 150,
             top: 160,
             zIndex:-10
         }
 
-        const searchBarStyleTyping={
+        const searchBarStyleTyping= this.props.searchBarStyleTyping || 
+        {
             position: 'fixed',
             right: 150,
             top: 40,
             zIndex:"1 !important"
-
         }
 
         return (

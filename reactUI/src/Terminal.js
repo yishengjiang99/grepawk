@@ -93,7 +93,6 @@ class Terminal extends React.Component{
     }
 
     renderOutputRow=(row,i)=>{
-
         switch(row.type){
             case 'stdout':
             case 'text':
@@ -198,8 +197,12 @@ class Terminal extends React.Component{
 
 
     render(){
+        const fontStyle={
+            color: "white",
+           backgroundColor:"black"
+        }
         return (<Window className="terminal" title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
-            <div className='terminal-body' onClick={this.clickOnTerminal} >
+            <div style={fontStyle} className='terminal-body' onClick={this.clickOnTerminal} >
             {this.state.output_rows.map((row,i)=>{
                 return this.renderOutputRow(row,i);
             })}
