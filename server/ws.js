@@ -258,7 +258,7 @@ wss.on('connection', (ws, request) => {
                     ws.quests = await quests.list(user);
                     send_json_resonse(ws,{quests:ws.quests});
                     xfs.send_description(cwd, ws);
-                    xfs.auto_complete_hints(cwd, ws);
+                    //xfs.auto_complete_hints(cwd, ws);
                     break;
                 case 'shout':
                     console.log('shouting');
@@ -292,12 +292,12 @@ wss.on('connection', (ws, request) => {
                     ws.send(JSON.stringify({
                         userInfo: user
                     }));
-                    xfs.init_pwd_container_if_neccessary(cwd);
-                    xfs.list_files_table(cwd, ws);
+                    //xfs.init_pwd_container_if_neccessary(cwd);
+                    //xfs.list_files_table(cwd, ws);
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
                     //quests.send_quests(user, ws);
-                    xfs.auto_complete_hints(cwd, ws);
+                    //xfs.auto_complete_hints(cwd, ws);
                     break;
                     //break;
                 case 'pwd':
@@ -314,7 +314,7 @@ wss.on('connection', (ws, request) => {
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
                     xfs.auto_complete_hints(cwd, ws);
-                    xfs.list_files_table(cwd, ws);
+                    //xfs.list_files_table(cwd, ws);
                 case 'echo':
                 case 'touch':
                     console.log(cwd);
