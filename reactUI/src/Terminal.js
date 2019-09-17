@@ -3,23 +3,34 @@ import Window from './components/Window'
 import './Terminal.css'
 import Table from './components/Table'
 import GFileSelector from './FileExplorer/GFileSelector'
+import BroadcastClient from "./Broadcast/BroadcastClient"
+import Composer from "./Composer";
 var socket=null;
 const node_ws_url = window.location.hostname == 'localhost' ?
 "ws://localhost:8081" : "wss://grepawk.com/ws";
 
 class Terminal extends React.Component{
-    state={
-       socket,
-       output_rows:[],
-       output_cursor_position:0,
-       uuid: getUUID()
-    }
+
 
     constructor(props){
         super(props)
         this.prompt=React.createRef();
         this.promptInput = React.createRef();
+        this.broadclient = BroadcastClient({
+            onEvent: this.onBroadcastEvent,
+            console: "stdin2"
+        })
+        this.state={
+            socket,
+            output_rows:[],
+            output_cursor_position:0,
+            uuid: getUUID(),
+            canvasStream:null,
+            canvasStream2: null,
+            foregroundPid: null
+         }
     }
+
     initSocket=()=>{
         return new Promise((resolve, reject) => {
             if (socket && socket.readyState === WebSocket.OPEN) {
@@ -92,8 +103,31 @@ class Terminal extends React.Component{
     //  window.terminalDidMount();
     }
 
+    onBroadcastEvent = (evt)=>{
+        alert(evt);
+    }
+    composeCmd=(cmd,args)=>{
+        switch(cmd){
+            case "webcam":
+            case "screenshare":
+            case "audio":
+                this.broadclient.requestUserStream(cmd).then(stream=>{
+
+                })
+
+
+                 
+
+
+              
+        }
+
+    }
+
     renderOutputRow=(row,i)=>{
         switch(row.type){
+            case 'compose':
+                return (<Composer title="Compose Tracks" ipc={this.composeCmd}></Composer>);
             case 'stdout':
             case 'text':
                 return (<pre key={"op-"+i}> {row.data}</pre>)
@@ -140,12 +174,13 @@ class Terminal extends React.Component{
         const args = t.splice(1);
         console.log(cmd,args);
         switch(cmd){
+            case 'compose':
+                this.setState({foregroundPid:'compopse'});
             case 'upload':
-                this.onAddOutputRow({type:"upload",data:args[0]});
-                break;  
             case 'openimage':
-                this.onAddOutputRow({type:"imageLink",data:args[0]});
-                return true;
+                this.onAddOutputRow({type:cmd,data:args[0]});    
+
+                break;        
             case 'edit':
                  this.props.ipc(cmd,args);
                  return true;
