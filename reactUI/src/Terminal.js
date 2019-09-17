@@ -10,8 +10,6 @@ const node_ws_url = window.location.hostname == 'localhost' ?
 "ws://localhost:8081" : "wss://grepawk.com/ws";
 
 class Terminal extends React.Component{
-
-
     constructor(props){
         super(props)
         this.prompt=React.createRef();
@@ -27,7 +25,8 @@ class Terminal extends React.Component{
             uuid: getUUID(),
             canvasStream:null,
             canvasStream2: null,
-            foregroundPid: null
+            foregroundPid: null,
+            composerPhase: 'root'        
          }
     }
 
@@ -47,6 +46,22 @@ class Terminal extends React.Component{
               clearTimeout(timeoutId);
               socket.send("check-in " + this.state.uuid);
               resolve();
+            }
+            socket.onmessage=(event)=>{
+                if (typeof event.data === 'object') {
+                    var image = new Image();
+                    image.src = URL.createObjectURL(event.data);
+                    this.onAddOutputRow({type:"image",data:image})
+                } 
+                else if (event.data && event.data.startsWith("stdout: ")) {
+                    var stdout = event.data.replace("stdout: ", "");
+                    this.onAddOutputRow({type:"text",data:stdout})
+                }else if (event.data && event.data.startsWith("stderr: ")) {
+                    var stdout = event.data.replace("stderr: ", "");
+                    this.onAddOutputRow({type:"text",data:stdout})
+                }else{
+                    this.parseAPIResponse(JSON.parse(event.data));
+                }
             }
             var timeoutId=setTimeout(() => {
                 if(socket.readyState!==WebSocket.OPEN){
@@ -84,50 +99,22 @@ class Terminal extends React.Component{
     
    async componentDidMount(){
         await this.initSocket();
-        socket.onmessage=(event)=>{
-            if (typeof event.data === 'object') {
-                var image = new Image();
-                image.src = URL.createObjectURL(event.data);
-                this.onAddOutputRow({type:"image",data:image})
-            } 
-            else if (event.data && event.data.startsWith("stdout: ")) {
-                var stdout = event.data.replace("stdout: ", "");
-                this.onAddOutputRow({type:"text",data:stdout})
-            }else if (event.data && event.data.startsWith("stderr: ")) {
-                var stdout = event.data.replace("stderr: ", "");
-                this.onAddOutputRow({type:"text",data:stdout})
-            }else{
-                this.parseAPIResponse(JSON.parse(event.data));
-            }
-        }
-    //  window.terminalDidMount();
     }
 
     onBroadcastEvent = (evt)=>{
         alert(evt);
     }
     composeCmd=(cmd,args)=>{
-        switch(cmd){
-            case "webcam":
-            case "screenshare":
-            case "audio":
-                this.broadclient.requestUserStream(cmd).then(stream=>{
-
-                })
-
-
-                 
-
-
-              
-        }
-
     }
 
     renderOutputRow=(row,i)=>{
         switch(row.type){
             case 'compose':
-                return (<Composer title="Compose Tracks" ipc={this.composeCmd}></Composer>);
+                return (<Composer 
+                    title="Compose Tracks" 
+                    phase={this.state.composerPhase}
+                    ipc={this.composeCmd}>
+                    </Composer>);
             case 'stdout':
             case 'text':
                 return (<pre key={"op-"+i}> {row.data}</pre>)
@@ -166,21 +153,25 @@ class Terminal extends React.Component{
         e.target.offsetHeight=1000;
     }
 
-    locallyProcessed(cmd_str){
+    locallyProcessed=(cmd_str)=>{
         if(!cmd_str) return false;
 
         var t = cmd_str.split(" ");
         const cmd = t[0];
         const args = t.splice(1);
-        console.log(cmd,args);
+        if(this.state.foregroundPid==="compose"){
+            this.setState({
+                composerState:cmd
+            })
+            return true;
+        }
         switch(cmd){
             case 'compose':
-                this.setState({foregroundPid:'compopse'});
+                this.setState({foregroundPid:'compose'});
             case 'upload':
             case 'openimage':
                 this.onAddOutputRow({type:cmd,data:args[0]});    
-
-                break;        
+                return true;       
             case 'edit':
                  this.props.ipc(cmd,args);
                  return true;
@@ -212,9 +203,9 @@ class Terminal extends React.Component{
     }
 
     renderInputBar = () => {
-        const stdinPromptString = ">";
+        const stdinPromptString = this.state.foregroundPid || "";
         return (<div className='input-line'>
-                    <div id='stdin-prompt' className='prompt'> > </div>
+                    <div id='stdin-prompt' className='prompt'> {stdinPromptString}> </div>
                     <input autoFocus={true}  
                          onLoad={this.keyboardLoaded}
                            onKeyDown={this.keyboardPressed}

@@ -106,7 +106,7 @@ class Desktop extends React.Component{
                 if(proc.state==='off') return null;
                 if(proc.name === 'tty'){
                     return (
-                        <Terminal key='tty1' pid={pid} title='tty' ipc={this.ipc}/>
+                        <Terminal key='tty1' pid={pid} title='Telnet' ipc={this.ipc}/>
                     );
                 }else if(proc.name==='camera'){
                     return (

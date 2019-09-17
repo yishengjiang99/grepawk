@@ -8,6 +8,8 @@
     box-align: stretch;
     clear: both;
     margin-top:15px;
+    margin-bottom:15px;
+    padding-bottom:10px;
 
   }
   .input-line > div:nth-child(2) {
