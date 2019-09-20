@@ -123,7 +123,7 @@ class Terminal extends React.Component{
                 return (<pre key={"op-"+i}> <span style={redStyle}>{row.data}</span></pre>)
             case 'stdin':      
                 return (<div className='input-line' key={"op-"+i}>
-                            <div className='prompt'>></div> 
+                            <div className='prompt'>{this.state.foregroundPid}></div> 
                             <input className='cmdline input-line' disabled  value={row.cmd} />
                         </div>);
             case 'table':
