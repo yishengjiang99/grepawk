@@ -21,6 +21,9 @@ function sendError(connection, msg) {
 
 var broadcasts = {}
 var connections = {};
+var nodes = [];
+var node_edge_stats = {}; //hashmap of arrays with node idx being key
+
 
 function generateUUID() { // Public Domain/MIT
    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
@@ -43,6 +46,12 @@ wss.on('connection', function (connection) {
                sendTo(to_connection, data);
             }
             break;
+         case 'register_connection':
+            if(data.offer){
+              var node = {id: nodes.length, sdp: offer};
+              nodes.push(node);
+            }
+         break;
          case 'register_stream':
             if (!data.channel) {
                sendError(connection, "channel is required");
@@ -57,7 +66,13 @@ wss.on('connection', function (connection) {
             sendTo(connection, {
                type: "registered",
                host_uuid: connection.uuid
-            })
+            });
+            if(nodes.length){
+              sendTo(connection,{
+                 type:"available_nodes",
+                 nodes: nodes
+              });
+            }
             console.log(broadcasts);
             break;
 
