@@ -351,3 +351,4 @@ require("./http.js");
 require("./ice.js");
 require("./stream_signal.js");
 require("./readStream.js");
+require("./writeStream.js");

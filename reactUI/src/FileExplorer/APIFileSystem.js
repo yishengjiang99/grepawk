@@ -1,7 +1,7 @@
 import { EROFS } from "constants";
 
 const NODE_API_HOSTNAME =  window.location.hostname === "localhost" ? "http://localhost" : "https://grepawk.com";
-const NODE_STDOUT =  window.location.hostname === "localhost" ? "ws://localhost:8085" : "https://grepawk.com/stdout";
+const NODE_STDOUT =  window.location.hostname === "localhost" ? "ws://localhost:8085" : "wss://grepawk.com/stdout";
 
 var api_fs = function(mntType){
   var fileMap = {};

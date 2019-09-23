@@ -22,9 +22,9 @@ class Desktop extends React.Component{
         userInfo:{name:"guest",xp:0,gold:0},
         quests:[],
         icons:[
-            // {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
+            {name:"folder",     title:"Local Files",     cmd:"finder", args:["chrome"]},
             {name:"folder",     title:"Public Files",     cmd:"finder", args:["azure"]},
-            // {name:"folder",     title:"Content Market",    cmd:"finder", args:["market"]},
+            {name:"folder",     title:"Content Market",    cmd:"finder", args:["market"]},
             // {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
             // {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
             {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
