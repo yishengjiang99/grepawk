@@ -1,0 +1,20 @@
+{
+  "name": "desktop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@novnc/novnc": "^1.1.0",
+    "connect": "^3.7.0",
+    "marked": "^0.7.0",
+    "rfb2": "^0.2.0",
+    "socket.io": "^2.3.0"
+  }
+}
