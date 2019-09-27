@@ -1,0 +1,110 @@
+server {
+  server_name grepawk.net;
+  rewrite ^ https://www.grepawk.com permanent;
+}
+server {
+
+	root /home/yisheng/grepawk/reactUI/build;
+	server_name grepawk.com www.grepawk.com grepawk.net www.grepawk.net;
+
+       location /node {
+	        proxy_pass http://localhost:8080;
+        	proxy_http_version 1.1;
+        	proxy_set_header Upgrade $http_upgrade;
+        	proxy_set_header Connection 'upgrade';
+        	proxy_set_header Host $host;
+        	proxy_cache_bypass $http_upgrade;
+        }
+
+       location /api {
+                proxy_pass http://localhost:8080;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+
+
+       location /stdout {
+                proxy_pass http://localhost:8085;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+       location /stdin {
+                proxy_pass http://localhost:8086;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+
+	location /signal {
+                proxy_pass http://localhost:9091;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+	}
+        location /ws {
+                proxy_pass http://localhost:8081;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+        }
+
+        location /ice {
+                # First attempt to serve request as file, then
+
+                # as directory, then fall back to displaying a 404.
+                proxy_pass http://localhost:9090;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection 'upgrade';
+                proxy_set_header Host $host;
+                proxy_cache_bypass $http_upgrade;
+                proxy_set_header X-Forwarded-For $remote_addr;
+        }
+
+    listen [::]:443 ssl; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/grepawk.com/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/grepawk.com/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
+
+server {
+    if ($host = grepawk.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+	listen 80 ;
+	listen [::]:80 ;
+    server_name grepawk.com;
+    return 404; # managed by Certbot
+
+
+}
+
+server {
+    if ($host = www.grepawk.com) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+	listen 80 default_server;
+	listen [::]:80 default_server;
+
+	server_name grepawk.com www.grepawk.com grepawk.net www.grepawk.net;
+    return 404; # managed by Certbot
+
+}
