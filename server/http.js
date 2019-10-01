@@ -132,7 +132,7 @@ app.get("/cb/reddit", function (req, res) {
 app.get("/google_login", function (req, res) {
   var url = 'https://accounts.google.com/o/oauth2/v2/auth';
   url += "?client_id=" + process.env.GOOGLE_CLIENT_ID;
-  url += "&redirect_uri=" + process.env.HOSTNAME + "/stdin";
+  url += "&redirect_uri=" + process.env.HOSTNAME + "/gauth";
   url += "&response_type=code";
   url += "&scope=" + (req.query.scope || "email profile openid");
   // url+="&state=" + req.cookies.uuid;
@@ -147,7 +147,7 @@ const url = require('url')
 app.get("/cb", function (req, res) {
   res.status(200).end("welcome");
 });
-app.get("/stdin", function (req, res) {
+app.get("/gauth", function (req, res) {
   var body = {
     code: req.query.code,
     client_id: process.env.GOOGLE_CLIENT_ID,
