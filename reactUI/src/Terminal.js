@@ -117,7 +117,8 @@ class Terminal extends React.Component{
                     </Composer>);
             case 'stdout':
             case 'text':
-                return (<pre key={"op-"+i}> {row.data}</pre>)
+                const stdoutStyle = {color:"white !important"};
+                return (<pre style={stdoutStyle} key={"op-"+i}> {row.data}</pre>)
             case 'stderr':
                 var redStyle={color:"red"};
                 return (<pre key={"op-"+i}> <span style={redStyle}>{row.data}</span></pre>)

@@ -30,6 +30,7 @@ bodyParser({limit: '99MB'});
 app.set('view engine', 'ejs');
 app.use("/admin", admin);
 app.use("/bt", bt);
+app.use("/public", express.static("public/"));
 app.use("/lib", express.static("lib"));
 app.use("/rct", express.static("reactUI/build/"));
 app.use("/queue", queue);
