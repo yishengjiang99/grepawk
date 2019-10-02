@@ -33,7 +33,7 @@ class Window extends React.Component{
             this.setState(prev=>({
                 minimized: !prev.minimized
             }));
-        }else if(mode==='close'){
+        }else if(mode==='closee'){
             this.setState({closed:true});
             this.props.ipc("close", [this.props.pid]);
         }
@@ -41,7 +41,7 @@ class Window extends React.Component{
     renderNavTop=()=>{
         return (
         <div className='title' onMouseDown={this.onNavbarMouseDown}>
-            <button className='close' onClick={this.onNavBarClick}>x</button>
+            <button className='closee' onClick={this.onNavBarClick}>x</button>
             <button className='maximize' onClick={this.onNavBarClick}>[]</button>
             <button className='minimize' onClick={this.onNavBarClick}>_</button>
             <p className='title'>{this.props.title}</p>

@@ -4,16 +4,6 @@ import AceEditor from 'react-ace';
 import Window from '../components/Window';
 import SearchBar from "../SearchBar";
 
-const editorStyle={
-    width:"800px",
-    height:"80%",
-    top: "5vh",
-    left:"10vw",
-    backgroundColor:"white",
-    color:"black",
-    position: "fixed",
-    display:"block"    
-}
 class Composer extends React.Component{
     constructor(props){
         super(props);
@@ -35,26 +25,8 @@ class Composer extends React.Component{
         return(
             <Window width={1000} height={600} left={220} 
             ipc={this.props.ipc} 
-            icon='computer' title='Compose Stream/Video'>
-                <SearchBar 
-                    autoFocus={false}
-                    verbSuggestions={['radio', 'scan', 'gif', 'clip', 'mime', 'ppt']}
-                    additionalSuggestionGraph={"http://localhost/api/autocomplete"}
-                    searchBarStyle={{
-                                position: 'absolute',
-                                left: "10%",
-                                width:"80%",
-                                top:"15%"
+            icon='computer' title={this.props.title}>
 
-                            }}
-                    placeholderText={"Compose tracks"}
-                    searchBarStyleTyping={{
-                        position: 'absolute',
-                        left: "10%",
-                        width:"80%",
-                        top:"15%"
-                    }}                
-                ></SearchBar>
             </Window> 
         )
     }

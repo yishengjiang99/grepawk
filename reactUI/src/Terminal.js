@@ -4,8 +4,7 @@ import './Terminal.css'
 import Table from './components/Table'
 import GFileSelector from './FileExplorer/GFileSelector'
 import BroadcastClient from "./Broadcast/BroadcastClient"
-import Composer from "./Composer";
-
+import Composer from "./FileExplorer/Composer"
 var socket=null;
 const node_ws_url = window.location.hostname.includes('localhost') ?"ws://localhost:8081" : "wss://grepawk.com/ws";
 
@@ -46,6 +45,8 @@ class Terminal extends React.Component{
             socket = new WebSocket(node_ws_url);
             socket.onopen = e => {
               clearTimeout(timeoutId);
+              this.onAddOutputRow({type:"text",data:"CONNECTED"});
+
               socket.send("check-in " + this.state.uuid);
               resolve();
             }

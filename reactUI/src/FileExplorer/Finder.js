@@ -122,10 +122,6 @@ class Finder extends React.Component{
                             this.setState({isPublishing:true, fileBeingPublished:file});
                         }}> Publish </button>
                     </div>
-                    <div className='md-col-3'>
-                      <button class='btn btn-primary'>Share</button>
-
-                    </div>
                 </div>
             </div>
         )

@@ -133,7 +133,7 @@ class Desktop extends React.Component{
                     )
                 }else if(proc.name==="compose"){
                     return(
-                        <Composer></Composer>
+                        <Composer userInfo={this.state.userInfo} title='write code' ipc={this.ipc}></Composer>
                     )
                 }
             })
@@ -167,9 +167,9 @@ class Desktop extends React.Component{
                 <nav style={{width:"100vw",height:"18px"}} className='navbar navbar-light bg-light'>
                     <a className="navbar-brand" href="#">GrepAwk</a>
 
-                    <ul class="navbar-nav">
-                    <li class="nav-item">
-                         <a class="nav-link btn" href="#">Compose</a>
+                    <ul className="navbar-nav">
+                    <li className="nav-item">
+                         <a className="nav-link btn" href="#">Compose</a>
                     </li>
                     </ul>
                     {this.renderHud()}
