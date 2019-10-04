@@ -12,9 +12,8 @@ const wss = new WebSocket.Server({
 
 wss.on('connection', (ws, request) => {
   var exitCode = 1;
-  const xpath = url.parse(request.url).pathname;
+  const xpath = url.parse(request.url).pathname.replace("/stdout","");
   console.log("connection on readstream \nxpath= "+xpath);
-
   const parts = xpath.split("/");
 
   if(parts.length<3){
@@ -27,16 +26,23 @@ wss.on('connection', (ws, request) => {
   // ws.send("EOF");
   // ws.close();
   console.log(schema);
-
+  console.log("schema",schema);
   if(schema==='azure'){
     const containerName = filePath[0];
     const blobName = filePath[1];
 
     const fh = xfs.blobClient.createReadStream(containerName,blobName);
-       
+	
+        
     ws.send(("Content-Type: "+mime.lookup(blobName)).toString("UTF-8"));
     fh.on("data",data=>ws.send(data));
-    fh.on("end", ()=>{
+    fh.on("error",(e)=>{
+		
+        ws.send("read error error "+e.message);
+	console.log("eerror", e);
+    });
+
+     fh.on("end", ()=>{
       console.log("closing ws after loaeding "+xpath);
       ws.close()
     });
