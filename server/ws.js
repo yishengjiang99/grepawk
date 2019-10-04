@@ -315,6 +315,8 @@ wss.on('connection', (ws, request) => {
                         ws.send("stdout: " + containerName + " created");
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
+                    xfs.send_description(cwd, ws);
+
                     //ws.send("You look around in "+cwd);
                    // xfs.auto_complete_hints(cwd, ws);
                     //xfs.list_files_table(cwd, ws);

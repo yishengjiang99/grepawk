@@ -4,10 +4,9 @@ import './Terminal.css'
 import Table from './components/Table'
 import GFileSelector from './FileExplorer/GFileSelector'
 import BroadcastClient from "./Broadcast/BroadcastClient"
-import Composer from "./Composer";
+import Composer from "./FileExplorer/Composer"
 var socket=null;
-const node_ws_url = window.location.hostname == 'localhost' ?
-"ws://localhost:8081" : "wss://grepawk.com/ws";
+const node_ws_url = window.location.hostname.includes('localhost') ?"ws://localhost:8081" : "wss://grepawk.com/ws";
 
 class Terminal extends React.Component{
     constructor(props){
@@ -32,6 +31,8 @@ class Terminal extends React.Component{
 
     initSocket=()=>{
         return new Promise((resolve, reject) => {
+            this.onAddOutputRow({type:"text",data:"Initializing connection"});
+
             if (socket && socket.readyState === WebSocket.OPEN) {
               resolve();
               return;
@@ -44,6 +45,8 @@ class Terminal extends React.Component{
             socket = new WebSocket(node_ws_url);
             socket.onopen = e => {
               clearTimeout(timeoutId);
+              this.onAddOutputRow({type:"text",data:"CONNECTED"});
+
               socket.send("check-in " + this.state.uuid);
               resolve();
             }
@@ -65,6 +68,8 @@ class Terminal extends React.Component{
             }
             var timeoutId=setTimeout(() => {
                 if(socket.readyState!==WebSocket.OPEN){
+                    this.onAddOutputRow({type:"stderr", data:"Connection timed out"});
+
                    // reject(new Error("connection timed outt"));
                 }
             }, 5000);
@@ -192,7 +197,11 @@ class Terminal extends React.Component{
     stdin=(cmd)=>{
         this.onAddOutputRow({type:"stdin",cmd});
         if(!this.locallyProcessed(cmd)){
-            socket.send(cmd);
+            if(socket.readyState!==WebSocket.OPEN){
+                this.onAddOutputRow({type:"stderr", data:"Not connected"});
+            }else{
+                socket.send(cmd);
+            }
         }
     }
     

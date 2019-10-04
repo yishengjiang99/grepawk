@@ -9,9 +9,11 @@ var chrome_fs = function(){
     var localFS;
     function g_init_local_fs(){
       return new Promise((resolve,reject)=>{
-        window.requestFileSystem(window.PERSISTENT, 5*1024*1024, function(_localFS){
+        window.requestFileSystem(window.PERSISTENT, 100*1024*1024, function(_localFS){
           localFS= _localFS.root;
           resolve(localFS);
+        }, function(err){
+          reject(new Error("error requesting local fs"));
         })
       })
     }
