@@ -7,6 +7,8 @@ import BroadcastClient from "./Broadcast/BroadcastClient"
 import Composer from "./FileExplorer/Composer"
 var socket=null;
 const node_ws_url = window.location.hostname.includes('localhost') ?"ws://localhost:8081" : "wss://grepawk.com/ws";
+const redStyle={color:"red"};
+
 
 class Terminal extends React.Component{
     constructor(props){
@@ -122,11 +124,9 @@ class Terminal extends React.Component{
                     </Composer>);
             case 'stdout':
             case 'text':
-                const stdoutStyle = {color:"white !important"};
-                return (<pre style={stdoutStyle} key={"op-"+i}> {row.data}</pre>)
+                return (<pre key={"op-"+i}>{row.data}</pre>)
             case 'stderr':
-                var redStyle={color:"red"};
-                return (<pre key={"op-"+i}> <span style={redStyle}>{row.data}</span></pre>)
+                return (<pre key={"op-"+i}><span style={redStyle}>{row.data}</span></pre>)
             case 'stdin':      
                 return (<div className='input-line' key={"op-"+i}>
                             <div className='prompt'>{this.state.foregroundPid}></div> 

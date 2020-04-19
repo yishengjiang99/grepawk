@@ -44,13 +44,10 @@ function getVideoInfo(videoId){
 router.get("/dl_audio", async function (req, res) {
   const id = req.query.id || "kFpAh7d7JG0";
   const title=await getVideoInfo(id);
-  const video = ytdl(id, {
-    audioFormat: 'mp3',
-    quality: 'lowest',
-    filter(format) {
-      return format.container === "mp4" && format.audioEncoding
-    }
-  });
+  id = 'kFpAh7d7JG0'
+
+
+  ytdl(id, {audioFormat: 'mp3'});
 
   const ffmpeg = new FFmpeg(video);
   res.setHeader('Content-disposition', 'attachment; filename='+title+'.mp3');

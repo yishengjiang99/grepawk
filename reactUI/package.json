@@ -18,6 +18,7 @@
     "react-moment": "^0.9.2",
     "react-scripts": "3.1.0",
     "react-simple-code-editor": "^0.9.14",
+    "redux": "^4.0.4",
     "typescript": "^3.6.2"
   },
   "scripts": {

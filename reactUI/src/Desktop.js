@@ -29,9 +29,10 @@ class Desktop extends React.Component{
             // {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
             {name:"terminal",   title:"terminal",cmd:"tty", args:[]},
             {name:"broadcast-tower", title:"Broadcast", cmd:"stream",   args:[]},
-            // {name:"play-circle", title:"Watch Hearthstone", cmd:"watch", args:["r5rogue"]},
+            {name:"play-circle", title:"Watch Hearthstone", cmd:"watch", args:["r5rogue"]},
             {name:"shipping-fast",title:"Write Javascript", cmd:"compose", args:['javascript']}
-          ]
+          ],
+          files: []
     }
     constructor(props){
         super(props);
@@ -66,7 +67,12 @@ class Desktop extends React.Component{
     ipc(cmd, args){
         console.log("desktop ipc ",cmd,args);
        switch(cmd){
-  
+            case "files":
+                const fileList = args;
+                this.setFiles(fileList);
+                
+        this.setState({processes:plist});
+                break;
             case "close":
                 const pid = args[0];
                 const list = this.state.processes;
