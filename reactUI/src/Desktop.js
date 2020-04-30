@@ -40,6 +40,7 @@ class Desktop extends React.Component{
     }
 
     componentDidMount(){
+        debugger;
         if(window.location.pathname!=='/'){
             var xpath = window.location.pathname.split("/").splice(1);
             if(xpath.length===1){
@@ -49,6 +50,7 @@ class Desktop extends React.Component{
             }   
         }
         else if(window.location.search){
+            debugger;
             var t = window.location.search.replace("?","").split("/");
             const cmd = t[0];
             const args = t.splice(1);
@@ -60,7 +62,7 @@ class Desktop extends React.Component{
         API.api_get_json("/checkin?uuid="+uuid).then(_userInfo=>{
             this.setState({userInfo:_userInfo});
         }).catch(err=>{
-            alert("check in failed");
+            //alert("check in failed");
         })
     }
 

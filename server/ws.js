@@ -244,7 +244,8 @@ wss.on('connection', (ws, request) => {
                     break;
                 case 'check-in':
                     const uuid = args[0];
-                    user = await db.get_user(uuid, request.headers['x-forwarded-for'] || request.connection.remoteAddress);
+      /*            
+        user = await db.get_user(uuid, request.headers['x-forwarded-for'] || request.connection.remoteAddress);
                     if (!user) {
                         ws.send("stderr: db error");
                     }
@@ -260,6 +261,7 @@ wss.on('connection', (ws, request) => {
                     send_json_resonse(ws,{quests:ws.quests});
                     xfs.send_description(cwd, ws);
                     //xfs.auto_complete_hints(cwd, ws);
+*/
                     break;
                 case 'shout':
                     console.log('shouting');

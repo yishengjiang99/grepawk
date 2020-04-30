@@ -109,10 +109,11 @@ function BroadcastViewerClient(config){
                     mediaObjectReady(trackId, stream,remoteTracks[trackId].kind, metadata.dimensions);
                     onEvent("showing tracking ");
                 }else{
-                    let stream = new MediaStream();
-                    stream.addTrack(remoteTracks[trackId]);
-                    mediaObjectReady(trackId, stream,remoteTracks[trackId].kind, metadata.dimensions);
-                    onEvent("showing tracking ");
+                    debugger;
+                    // let stream = new MediaStream();
+                    // stream.addTrack(remoteTracks[trackId]);
+                    // mediaObjectReady(trackId, stream,remoteTracks[trackId].kind, metadata.dimensions);
+                    // onEvent("showing tracking ");
 
                     onEvent("Got meta data but not track")
                 }

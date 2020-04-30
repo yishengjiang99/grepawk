@@ -15,8 +15,9 @@ class MediaObject extends React.Component{
     renderImage=(pictureUrl)=>{
         return (<img src={pictureUrl}></img>);
     }
-    renderAudio=()=>{
-        return (<div>todo</div>)
+    renderAudio=(stream)=>{
+        debugger;
+     
     }
     render(){
         const streamType = this.props.mediaObject[0];

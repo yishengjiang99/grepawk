@@ -1,5 +1,3 @@
-const db = require("./lib/db");
-
 var WebSocketServer = require('ws').Server;
 
 var wss = new WebSocketServer({
@@ -7,7 +5,6 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
-   console.log("send msg ",message);
    connection.send(JSON.stringify(message));
 }
 
@@ -36,7 +33,10 @@ wss.on('connection', function (connection) {
       const data = JSON.parse(message);
       const to_connection = data.to_uuid ? connections[data.to_uuid] : null;
       console.log(data.type);
-      switch (data.type) {
+      switch (data.type) {  
+         case 'list':
+            sendTo(connection, {type:data.type, data:broadcasts, tid: data.tid});
+            break;
          case 'offer':
          case 'answer':
          case 'candidate':
@@ -118,7 +118,7 @@ wss.on('connection', function (connection) {
       });
       // console.log("Got message from a user:", message);
    });
-   //sendTo(connection,{type:"connected"});
+   sendTo(connection,{type:"connected"});
 });
 
 console.log("stream signal running on 9091");
