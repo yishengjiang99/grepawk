@@ -1,1 +1,1 @@
-npm run-script build && scp -r build/* yisheng@grepawk.com:/home/yisheng/grepawk/reactUI/build
+npm run-script build && cp -r build/* /var/www/reactUI && scp -r build/* yisheng,jiang@media.grepawk.com:/var/www/grep2/reactUI/build/

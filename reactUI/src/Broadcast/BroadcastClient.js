@@ -47,6 +47,12 @@ function BroadcasterClient(config) {
     let peerConnections = {};
     let localTracks=[];
     var host_uuid;
+    var audioCtx = new AudioContext();
+    var audioMeter = audioCtx.createAnalyser();
+
+    var audioMeterBuffer = new Uint8Array(256);
+    
+
 
     function trackDescriptor(id, track,dimensions){
         return{
@@ -172,7 +178,8 @@ function BroadcasterClient(config) {
         addStream: addStream,
         removeStream:removeStream,
         peerConnections: peerConnections,
-        startBroadcast: startBroadcast
+        startBroadcast: startBroadcast,
+        audioMeter: audioMeter
     }
 }
 function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEvent) {

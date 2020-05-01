@@ -4,14 +4,14 @@ import MediaObject from "./MediaObject";
 import './broadcast.css';
 import BroadcastClient from "./BroadcastClient";
 
-
 const streamHost = "https://grepawk.com/watch/";
 const defaultDimensions ={
     screenshare: [0,0,100,100],
     webcam: [80, 80, 20,20],
     audio: [90,0,10,10],
     text:[5,5,80, 10],
-    picture:[0, 10, 20,20]
+    picture:[0, 10, 20,20],
+    audioMeter: [60,70, 20,20]
 }
 
 class Broadcast extends React.Component {
@@ -39,9 +39,10 @@ class Broadcast extends React.Component {
       this.setState({broadcastEvents:events});
   }
 
-  updateStreamElements=(type, mediaObject, dimensions)=>{
+  updateStreamElements=(type, mediaObject, dimensions,extra)=>{
     let cstate = this.state.streamElements;
-    cstate[type]=[type, mediaObject, dimensions];
+    cstate[type]=[type, mediaObject, dimensions,extra];
+    
     if(mediaObject!==null && this.state.broadcasting===true){
         this.broadcastClient.addStream(mediaObject, dimensions);
         this.onBroadcastEvent("Adding stream "+type);
@@ -56,6 +57,9 @@ class Broadcast extends React.Component {
     if(mediaObject!==null && this.state.broadcasting===true){
         this.broadcastClient.addStream(mediaObject, dimensions);
         this.onBroadcastEvent("Adding stream "+type);
+    }else{
+        // this.onBroadcastEvent("failed adding stream "+type);
+
     }
   }
 
@@ -100,7 +104,16 @@ class Broadcast extends React.Component {
            case "audio":
                 stream = turnOn ? await this.broadcastClient.requestUserStream(control) 
                                     : await this.broadcastClient.removeStream(existingStream);
+
                 this.updateStreamElements(control, stream, defaultDimensions[control]);
+                    // player.srcObject=_stream;
+
+                    //     var node = audioCtx.createMediaStreamSource(_stream);
+                    // node.connect(audioMeter).connect(audioCtx.destination);
+                    // stream = audioCtx.createMediaStreamDestination().stream;
+
+                // this.updateAdditionalStreamElements("audioMeter", this.broadcastClient.audioMeter, defaultDimensions['audioMeter']);
+
                 this.setState({audio:turnOn});
                 break;
             case 'text':
@@ -187,7 +200,7 @@ class Broadcast extends React.Component {
   }
   render() {
     return (
-      <Window  width={1000} height={600} left={220}
+      <Window  width={900} height={700} left={120}
         className="stream"
         title={this.props.title}
         pid={this.props.pid}
