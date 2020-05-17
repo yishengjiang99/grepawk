@@ -40,7 +40,6 @@ class Desktop extends React.Component{
     }
 
     componentDidMount(){
-        debugger;
         if(window.location.pathname!=='/'){
             var xpath = window.location.pathname.split("/").splice(1);
             if(xpath.length===1){

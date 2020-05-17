@@ -14,6 +14,7 @@ class Stream extends React.Component{
     render(){
         return(
             <Window className='stream' title={this.props.title} pid={this.props.pid} ipc={this.props.ipc}>
+                    <script src="https://sdk.scdn.co/spotify-player.js"></script>
                 <iframe src='/broadcast.html' width='100%' height='100%' frameBorder="0">stop using IE 4</iframe>
             </Window>
         )

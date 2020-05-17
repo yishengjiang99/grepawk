@@ -1,4 +1,4 @@
-const NODE_API_HOSTNAME =  window.location.hostname === "localhost:3000" ? "http://localhost:8080" : "https://dsp.grepawk.com";
+const NODE_API_HOSTNAME =  window.location.hostname === "localhost:3000" ? "https://api.grepawk.com/" : "https://api.grepawk.com/";
 
 var API={
 }

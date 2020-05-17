@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+/*
 const {
     ServiceBusClient,
     ReceiveMode
@@ -78,5 +79,5 @@ router.get("/healthcheck", async (req, res) => {
         //        await queueClient.close();
     }
 });
-
+*/
 module.exports = router

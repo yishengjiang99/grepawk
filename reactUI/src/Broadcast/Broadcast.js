@@ -8,10 +8,10 @@ const streamHost = "https://grepawk.com/watch/";
 const defaultDimensions ={
     screenshare: [0,0,100,100],
     webcam: [80, 80, 20,20],
-    audio: [90,0,10,10],
+    audio: [70, 0,30,10],
     text:[5,5,80, 10],
     picture:[0, 10, 20,20],
-    audioMeter: [60,70, 20,20]
+    audioMeter: [0,0, 20,20]
 }
 
 class Broadcast extends React.Component {
@@ -86,7 +86,11 @@ class Broadcast extends React.Component {
       let turnOn = !this.state[control];
 
       let existingStream = (this.state.streamElements[control] && this.state.streamElements[control][1]) || null; 
-      let stream;
+      let stream, player;
+      const ctx =  this.broadcastClient.audioCtx;
+      player = document.createElement("audio");
+      player.controls = true;
+      player.muted = true;
       switch(control){
           case "screenshare":
                 stream = turnOn ? await this.broadcastClient.requestUserStream(control) 
@@ -105,14 +109,17 @@ class Broadcast extends React.Component {
                 stream = turnOn ? await this.broadcastClient.requestUserStream(control) 
                                     : await this.broadcastClient.removeStream(existingStream);
 
-                this.updateStreamElements(control, stream, defaultDimensions[control]);
-                    // player.srcObject=_stream;
 
-                    //     var node = audioCtx.createMediaStreamSource(_stream);
-                    // node.connect(audioMeter).connect(audioCtx.destination);
-                    // stream = audioCtx.createMediaStreamDestination().stream;
+                this.setState({audio:turnOn});
 
-                // this.updateAdditionalStreamElements("audioMeter", this.broadcastClient.audioMeter, defaultDimensions['audioMeter']);
+                player.srcObject=stream;
+
+                var node = ctx.createMediaStreamSource(stream);
+                node.connect(this.broadcastClient.audioMeter).connect(ctx.destination);
+                var streamFromCtx = ctx.createMediaStreamDestination().stream;
+                this.updateStreamElements(control, streamFromCtx, defaultDimensions[control]);
+
+                this.updateAdditionalStreamElements("audioMeter", this.broadcastClient.audioMeter, defaultDimensions['audioMeter']);
 
                 this.setState({audio:turnOn});
                 break;

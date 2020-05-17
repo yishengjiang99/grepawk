@@ -48,6 +48,8 @@ function BroadcastViewerClient(config){
     let remoteTrackMetaData={};
     let metadataChannel;
     let host_uuid;
+
+
     function watchChannel(channelName){
         signalConnection = new WebSocket(hostname);
         signalConnection.onopen = function (e) {
@@ -109,7 +111,6 @@ function BroadcastViewerClient(config){
                     mediaObjectReady(trackId, stream,remoteTracks[trackId].kind, metadata.dimensions);
                     onEvent("showing tracking ");
                 }else{
-                    debugger;
                     // let stream = new MediaStream();
                     // stream.addTrack(remoteTracks[trackId]);
                     // mediaObjectReady(trackId, stream,remoteTracks[trackId].kind, metadata.dimensions);

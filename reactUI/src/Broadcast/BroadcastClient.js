@@ -179,7 +179,8 @@ function BroadcasterClient(config) {
         removeStream:removeStream,
         peerConnections: peerConnections,
         startBroadcast: startBroadcast,
-        audioMeter: audioMeter
+        audioMeter: audioMeter,
+        audioCtx: audioCtx
     }
 }
 function BroadcasterRTCConnection(signalConnection, client_uuid,host_uuid,onEvent) {

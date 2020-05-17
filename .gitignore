@@ -16,3 +16,4 @@ nohup.out
 */nohup.out
 /target/
 desktop/node_modules
+rdx/node_modules/@babel/runtime/helpers/decorate.js
