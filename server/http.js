@@ -36,7 +36,7 @@ app.use("/rct", express.static("reactUI/build/"));
 app.use("/queue", queue);
 app.use("/file", file);
 app.use("/api/files", file);
-app.use("/api/", api);
+app.use("//api/", api);
 
 const video = require("./routes/video");
 app.use("/video",video); 

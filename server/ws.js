@@ -275,9 +275,12 @@ wss.on('connection', (ws, request) => {
 
                 case 'cd':
                     if (args.length < 1) {
-                        ws.send("Usage: cd [directory]");
-                        break;
+			user.cwd  = "~";
                     }
+		    if(args[0] == '/'){
+			user.cwd = '/'; ws.send('reset to /');  db.update_user(user.uuid, 'cwd', user.cwd); return;	
+		    }
+	            
                     var cd_parts = args[0].split("/");
                     var current_pwd = user.cwd.split("/");
                     ws.send("heading to "+args[0]);
@@ -294,8 +297,8 @@ wss.on('connection', (ws, request) => {
                     ws.send(JSON.stringify({
                         userInfo: user
                     }));
-                    //xfs.init_pwd_container_if_neccessary(cwd);
-                    //xfs.list_files_table(cwd, ws);
+                    xfs.init_pwd_container_if_neccessary(cwd);
+                    xfs.list_files_table(cwd, ws);
                     quests.check_quest_completion(message, user, ws);
                     xfs.send_description(cwd, ws);
                     //quests.send_quests(user, ws);
@@ -315,11 +318,13 @@ wss.on('connection', (ws, request) => {
                         ws.send("stdout: " + containerName + " created");
                     }).catch(err => ws.send("stderr: " + err.message));
                 case 'ls':
+                    ws.send("You look around in "+cwd);
+
                     xfs.send_description(cwd, ws);
 
-                    //ws.send("You look around in "+cwd);
-                   // xfs.auto_complete_hints(cwd, ws);
-                    //xfs.list_files_table(cwd, ws);
+                    ws.send("You look around in "+cwd);
+                    xfs.auto_complete_hints(cwd, ws);
+                    xfs.list_files_table(cwd, ws);
                 case 'echo':
                 case 'touch':
                     console.log(cwd);
@@ -350,7 +355,5 @@ wss.on('connection', (ws, request) => {
 })
 
 require("./http.js");
-require("./ice.js");
-require("./stream_signal.js");
 //require("./readStream.js");
 //require("./writeStream.js");
