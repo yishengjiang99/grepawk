@@ -5,6 +5,13 @@ var wss = new WebSocketServer({
 });
 
 function sendTo(connection, message) {
+	
+    if(!connection){
+   
+	console.log("message for "+connection+" but not found");
+console.log(connections);
+return;
+}
    connection.send(JSON.stringify(message));
 }
 
@@ -87,9 +94,11 @@ wss.on('connection', function (connection) {
             }
             var host_uuid = broadcasts[data.channel].host_uuid;
             var hostConnection = connections[host_uuid];
+		
             sendTo(hostConnection, {
                type: "user_joined",
-               client_uuid: connection.uuid
+               client_uuid: connection.uuid,
+	       args: data.args
             })
             broadcasts[data.channel].peer_connections.push(connection.uuid);
             break;
@@ -102,21 +111,17 @@ wss.on('connection', function (connection) {
             break;
       }
       connection.on("close", function () {
-         // if (connection.uuid) {
-         //    delete users[connection.uuid];
-         //    if (connection.otheruuid) {
-         //       console.log("Disconnecting from ", connection.otheruuid);
-         //       var conn = users[connection.otheruuid];
-         //       conn.otheruuid = null;
-         //       if (conn != null) {
-         //          sendTo(conn, {
-         //             type: "leave"
-         //          });
-         //       }
-         //    }
-         // }
+         if (connection.uuid) {
+             delete connections[connection.uuid];
+             if (connection.otheruuid) {
+                console.log("Disconnecting from ", connection.otheruuid);
+                var conn = users[connection.otheruuid];
+                conn.otheruuid = null;
+             }
+             delete broadcasts[connection.channel];
+         }
       });
-      // console.log("Got message from a user:", message);
+      console.log("Got message from a user:", message);
    });
    sendTo(connection,{type:"connected"});
 });

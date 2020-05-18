@@ -63,7 +63,6 @@ var Terminal = Terminal || function (cmdLineContainer, outputContainer) {
 
     //
     async function processNewCommand_(e) {
-  debugger;
       await connectSocketIfNotOpen();
       if (e.keyCode == 37) {
         socket.send("esc");

@@ -18,7 +18,6 @@ function get_container_name(pwd) {
     str = str || 'root';
     return str;
 }
-
 function init_pwd_container_if_neccessary(pwd) {
     return new Promise((resolve, reject) => {
         const containerName = get_container_name(pwd);
