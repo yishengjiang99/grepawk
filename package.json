@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "cd reactUI && npm i && npm run build && cd ../server && npm i && cd ..",
-    "start": "npm run build && node index.js"
+    "build": "cd server && npm i && cd -",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
