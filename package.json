@@ -1,0 +1,23 @@
+{
+  "name": "grepawk-1",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "bin": {
+    "grepawk-1": "fix_content_type.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yishengjiang99/grepawk.git"
+  },
+  "keywords": [],
+  "author": "Yisheng Jiang",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/yishengjiang99/grepawk/issues"
+  },
+  "homepage": "https://github.com/yishengjiang99/grepawk#readme"
+}

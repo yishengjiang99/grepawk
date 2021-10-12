@@ -4,6 +4,7 @@
   "description": "remote shared vfs",
   "main": "ws.js",
   "scripts": {
+    "start": "node ws.js",
     "test": "ls"
   },
   "repository": {

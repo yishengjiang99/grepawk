@@ -1,191 +1,174 @@
-const {
-    Pool,
-    Client
-} = require('pg')
+const { Pool, Client } = require("pg");
 
-const Promise = require('promise')
-const uuidv4 = require('uuid/v4');
-
-require('dotenv').config();
-
+const Promise = require("promise");
+const uuidv4 = require("uuid/v4");
+console.log(process.env.DATABASE_URL);
+require("dotenv").config();
+const clientc = new Client({
+  connectionString: process.env.DATABASE_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
+});
+clientc.connect();
+const client = { query: async (query, args) => [], end: () => {} };
 const db = {
-    connect: function(){
-        const client = new Client({connectionString: process.env.PG_CONNNECTION_STRING});
-        return client; 
-    },
-    query: function (query, args = []) {
-        //systemctl daemon-reload
-        return new Promise((resolve, reject) => {
-            const pool = new Pool({
-                connectionString: process.env.PG_CONNNECTION_STRING,
-            })
-            pool.query(query, args, (err, res) => {
-                if (err) reject(err);
-                else resolve(res.rows);
-                pool.end();
-                return;
-            })
-        })
-    },
-    new_user: async function (uuid, username) {
-        try {
-            var user = await db.query("insert into users (uuid, xp, points, cwd,username) values ($1, $2, $3, $4,$5) returning *",
-                [uuid, 0, 0, '', username]);
-            return user[0];
-        } catch (err) {
-            console.log(err);
-            throw err;
-        }
-    },
-    get_user_cols: async function (uuid, cols) {
-        try {
-            var user = await db.query("select "+cols.join(",")+" from users where uuid = $1", [uuid]);
-            if (user && user[0]) return user[0];
-            username = ip;
-            return await db.new_user(uuid, username);
-        } catch (err) {
-            throw err;
-        }
-    },
-    get_user: async function (uuid, ip) {
-        try {
-            var user = await db.query("select * from users where uuid = $1", [uuid]);
-            if (user && user[0]) return user[0];
-            username = ip;
-            return await db.new_user(uuid, username);
-        } catch (err) {
-            throw err;
-        }
-    },
-    get_oauth_user: async function (userInfo) {
-        try {
-            var user = await db.query("select * from users where email = $1", [userInfo.email]);
-            if (user && user[0]) return user[0];
-            console.log(userInfo, "crete new user with email " + userInfo.email);
+  new_user: async function (uuid, username) {
+    try {
+      var user = await client.query(
+        "insert into users (uuid, xp, points, cwd,username) values ($1, $2, $3, $4,$5) returning *",
+        [uuid, 0, 0, "", username]
+      );
+      return user && user[0];
+    } catch (err) {
+      return [];
+    }
+  },
+  get_user_cols: async function (uuid, cols) {
+    try {
+      var user = await client.query(
+        "select " + cols.join(",") + " from users where uuid = $1",
+        [uuid]
+      );
+      if (user && user[0]) return user[0];
+      username = ip;
+      return await db.new_user(uuid, username);
+    } catch (err) {
+      throw err;
+    }
+  },
+  get_user: (uuid, ip) =>
+    client.query("select * from users where uuid = $1", [uuid]),
 
-            const uuid = userInfo.uuid || uuidv4()
-            username = userInfo.email;
+  get_oauth_user: async function (userInfo) {
+    try {
+      var user = await client.query("select * from users where email = $1", [
+        userInfo.email,
+      ]);
+      if (user && user[0]) return user[0];
+      const uuid = userInfo.uuid || uuidv4();
+      username = userInfo.email;
 
-            user = await db.query("insert into users \
+      user = await client.query(
+        "insert into users \
             (uuid, xp, points, cwd, username, email, fname, lname, avatar)      \
             values ($1, $2, $3, $4, $5,$6,$7,$8,$9) returning *",
-                [uuid, 0, 0, '', username, userInfo.email, userInfo.given_name, userInfo.family_name, userInfo.picture]);
-            return user;
-        } catch (err) {
-            console.log(err);
-            throw err;
-        }
-
-    },
-
-    update_user: async function (uuid, attr, val) {
-        try {
-            return await db.query("update users set " + attr + "=$1 where uuid=$2 returning *", [val, uuid]);
-        } catch (err) {
-            console.log(err);
-            throw err;
-        }
-    },
-    get_user_with_password: async function (username, password) {
-        try {
-            var user = await db.query("select * from users where username = $1 and password=$2", [username, password]);
-            if (user && user[0]) return user[0];
-            else return false;
-        } catch (err) {
-            throw err;
-        }
-    },
-    create_table: async function (filename, fields) {
-        try {
-
-            //const ret db.query("create table $1 ()", [val, uuid]);
-        } catch (err) {
-            console.log(err);
-            throw err;
-        }
-    },
-    list_table: async function (tableName, filter, val) {
-        const client = new Client()
-        await client.connect();
-        var sql = "select * from " + tableName + " where " + filter + "=$1";
-        var vals = [val];
-        console.log(sql);
-        console.log(vals);
-        return client.query(sql, vals);
-
+        [
+          uuid,
+          0,
+          0,
+          "",
+          username,
+          userInfo.email,
+          userInfo.given_name,
+          userInfo.family_name,
+          userInfo.picture,
+        ]
+      );
+      return user;
+    } catch (err) {
+      console.log(err);
+      throw err;
     }
-}
+  },
+
+  update_user: function (uuid, attr, val) {
+    return client.query(
+      "update users set " + attr + "=$1 where uuid=$2 returning *",
+      [val, uuid]
+    );
+  },
+  get_user_with_password: function (username, password) {
+    return client.query(
+      "update users set " + attr + "=$1 where uuid=$2 returning *",
+      [val, uuid]
+    );
+  },
+  create_table: async function (filename, fields) {
+    try {
+      //const ret db.query("create table $1 ()", [val, uuid]);
+    } catch (err) {
+      console.log(err);
+      throw err;
+    }
+  },
+  list_table: async function (tableName, filter, val) {
+    var sql = "select * from " + tableName + " where " + filter + "=$1";
+    var vals = [val];
+    console.log(sql);
+    console.log(vals);
+    return client.query(sql, vals);
+  },
+};
 
 function updateTable(tableName, id, updates) {
-    return new Promise(async (resolve, reject) => {
-        if (!id) {
-            throw new Error("Id required");
-        }
-        const client = new Client({
-            connectionString: process.env.PG_CONNNECTION_STRING
-        })
-        await client.connect();
-        let sql = `update ${tableName} set `;
-        let sqlUpdates = [];
+  return new Promise(async (resolve, reject) => {
+    if (!id) {
+      throw new Error("Id required");
+    }
 
-        Object.keys(updates).forEach(field => {
-            if (field == 'id') return;
-            else {
-                sql += `${field}=$${sqlUpdates.length+1}`;
-                sqlUpdates.push(updates[field]);
-            }
-        });
+    let sql = `update ${tableName} set `;
+    let sqlUpdates = [];
 
-        sql += ` where id = $${sqlUpdates.length+1}`;
-        sqlUpdates.push(id);
+    Object.keys(updates).forEach((field) => {
+      if (field == "id") return;
+      else {
+        sql += `${field}=$${sqlUpdates.length + 1}`;
+        sqlUpdates.push(updates[field]);
+      }
+    });
 
-        client.query(sql, sqlUpdates).then(_res => {
-            resolve();
-        }).catch(err => {
-            console.log(err);
-            reject(err);
-        });
+    sql += ` where id = $${sqlUpdates.length + 1}`;
+    sqlUpdates.push(id);
+
+    client
+      .query(sql, sqlUpdates)
+      .then((_res) => {
         client.end();
-    })
+
+        resolve();
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err);
+      });
+  });
 }
 
 function insertTable(tableName, columns) {
-    return new Promise(async (resolve, reject) => {
-        const client = new Client({
-            connectionString: process.env.PG_CONNNECTION_STRING
-        })
-        await client.connect();
-        let columnsClause = Object.keys(columns).join(",");
+  return new Promise(async (resolve, reject) => {
+    let columnsClause = Object.keys(columns).join(",");
 
-        let sql = `insert into ${tableName} (${columnsClause}) values (`;
-        let sqlUpdates = [];
-        Object.keys(columns).forEach((field, index, arr) => {
-            sql += `$${sqlUpdates.length+1}`;
-            if (index < arr.length - 1) sql += ",";
-            sqlUpdates.push(columns[field]);
-        });
-        sql += ") on CONFLICT do nothing RETURNING *";
+    let sql = `insert into ${tableName} (${columnsClause}) values (`;
+    let sqlUpdates = [];
+    Object.keys(columns).forEach((field, index, arr) => {
+      sql += `$${sqlUpdates.length + 1}`;
+      if (index < arr.length - 1) sql += ",";
+      sqlUpdates.push(columns[field]);
+    });
+    sql += ") on CONFLICT do nothing RETURNING *";
 
-        client.query(sql, sqlUpdates).then(_res => {
-            resolve(_res.rows[0]);
-            client.end();
-        }).catch(err => {
-            console.log(err);
-            reject(err);
-        });
-	client.end();
-    })
+    client
+      .query(sql, sqlUpdates)
+      .then((_res) => {
+        resolve(_res.rows[0]);
+        client.end();
+      })
+      .catch((err) => {
+        console.log(err);
+        reject(err);
+      });
+    client.end();
+  });
 }
 
 db.updateTable = updateTable;
 db.insertTable = insertTable;
 module.exports = db;
 
-
-
 var test = async function () {
-    db.list_table("fs_graph", "type", "dir").then(res => {
-        console.log(res.rows);
-    })
-}
+  db.list_table("fs_graph", "type", "dir").then((res) => {
+    console.log(res.rows);
+  });
+};
 //test();

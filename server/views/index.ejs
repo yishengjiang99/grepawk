@@ -12,28 +12,28 @@
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-  </script>
+    </script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
 
   <script src="js/webrtc_client.js"></script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
-<script>
-  (adsbygoogle = window.adsbygoogle || []).push({
-    google_ad_client: "ca-pub-5293413693915559",
-    enable_page_level_ads: true
-  });
-</script>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+  <script>
+    (adsbygoogle = window.adsbygoogle || []).push({
+      google_ad_client: "ca-pub-5293413693915559",
+      enable_page_level_ads: true
+    });
+  </script>
 
-<!-- Global site tag (gtag.js) - Google Analytics -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=UA-145355896-1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-145355896-1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() {dataLayer.push(arguments);}
+    gtag('js', new Date());
 
-  gtag('config', 'UA-145355896-1');
-</script>
+    gtag('config', 'UA-145355896-1');
+  </script>
 
 </head>
 
@@ -48,17 +48,17 @@
     <div class="collapse navbar-collapse" id="navbarSupportedContent">
       <ul class="navbar-nav mr-auto">
         <% if(user){ %>
-        <li class="nav-item">
-          Welcome <%= user.fname %>
-        </li>
-        <% }else{ %>
-        <li class="nav-item active">
-          <a class="nav-link" href="/google_login">Login with Google <span class="sr-only">(current)</span></a>
-        </li>
-       <% } %>
-	<li class='nav-item active'>
-		<a class='nav-link' href='/react/'>V2 UI in React</a>
-	</li>
+          <li class="nav-item">
+            Welcome <%= user.fname %>
+          </li>
+          <% }else{ %>
+            <li class="nav-item active">
+              <a class="nav-link" href="/google_login">Login with Google <span class="sr-only">(current)</span></a>
+            </li>
+            <% } %>
+              <li class='nav-item active'>
+                <a class='nav-link' href='/react/'>V2 UI in React</a>
+              </li>
       </ul>
       <form class="form-inline my-2 my-lg-0">
         <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
@@ -79,10 +79,10 @@
           </div>
           <div class="modal-body">
             <p>
-              <div class="custom-file">
-                <input type="file" class="custom-file-input" id="customFile">
-                <label class="custom-file-label" for="customFile">Choose file</label>
-              </div>
+            <div class="custom-file">
+              <input type="file" class="custom-file-input" id="customFile">
+              <label class="custom-file-label" for="customFile">Choose file</label>
+            </div>
             </p>
           </div>
           <div class="modal-footer">
@@ -129,7 +129,9 @@
         <div class="icon3 maximize-window">[]</div>
       </div>
       <div class='card-body' style="margin:0px;padding:0px;overflow:hidden">
-         <iframe src="" frameborder="0" style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;height:100%;width:100%;position:absolute;top:30px;left:0px;right:0px;bottom:0px" height="100%" width="100%"></iframe>
+        <iframe src="" frameborder="0"
+          style="overflow:hidden;overflow-x:hidden;overflow-y:hidden;height:100%;width:100%;position:absolute;top:30px;left:0px;right:0px;bottom:0px"
+          height="100%" width="100%"></iframe>
       </div>
     </div>
   </div>
@@ -151,8 +153,8 @@
     if (cmd == 'upload') {
       var modal = $("#modal-singleton");
       modal.show();
-    }else if(cmd=='new'){
-      loadIframe("/file/edit?mode=new&filename="+args[0]+"&cwp="+args[1],'editor')
+    } else if (cmd == 'new') {
+      loadIframe("/file/edit?mode=new&filename=" + args[0] + "&cwp=" + args[1], 'editor')
     }
     else if (cmd == 'show_cam') {
       $("#camera").show();
@@ -164,25 +166,25 @@
       }).catch(e => {
         console.log(e);
       });
-    }else if(cmd=="file_saved"){
+    } else if (cmd == "file_saved") {
       $("#iframe-template").hide();
       terminalWindow.terminal.output_ext("file saved");
 
     }
-    else if(cmd=='edit'){
-      loadIframe("/file/edit?url="+args[0]+"&context="+args[1],'editor')
+    else if (cmd == 'edit') {
+      loadIframe("/file/edit?url=" + args[0] + "&context=" + args[1], 'editor')
     }
   }
 
   var terminalWindow;
 
 
-  function loadIframe(url,title){
-   var window=$("#iframe-template");
-   window.find(".card-title-string").html(title);
-   var iframe = window.find("iframe");
-   iframe.attr("src",url);
-   window.css("display","block");
+  function loadIframe(url, title) {
+    var window = $("#iframe-template");
+    window.find(".card-title-string").html(title);
+    var iframe = window.find("iframe");
+    iframe.attr("src", url);
+    window.css("display", "block");
   }
 
   $(document).ready(function () {
@@ -205,9 +207,9 @@
       e.preventDefault();
       $(this).parent().parent().css("width", desktop.width);
     });
-    terminalWindow= $(".tty").find("iframe")[0].contentWindow;
+    terminalWindow = $(".tty").find("iframe")[0].contentWindow;
 
-    $(".terminal").animate({scrollTo:$(".terminal").height()});
+    $(".terminal").animate({scrollTo: $(".terminal").height()});
   })
 </script>
 
