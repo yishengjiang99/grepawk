@@ -11,10 +11,10 @@
   <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"
     integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous">
-  </script>
+    </script>
   <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"
     integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous">
-  </script>
+    </script>
   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src='https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.0.0/papaparse.min.js'></script>
@@ -29,7 +29,7 @@
   <script src='js/terminal.js'></script>
   <script>
     iframe_interface = function (msg) {
-      if (msg=="uploaded") {
+      if (msg == "uploaded") {
         $("#new_file_upload_form").remove();
         window.terminal.output_ext("Upload complete");
         window.terminal.cmd_string("ls -l");
@@ -54,9 +54,7 @@
       return Array.prototype.slice.call(list || [], 0);
     };
 
-    var node_url = window.location.hostname == 'localhost' ?
-      "http://localhost" : "https://grepawk.com";
-
+    var node_url = window.location.host;
 
     $(function () {
       var term = new Terminal('#input-line .cmdline', '#container output');

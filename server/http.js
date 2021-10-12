@@ -26,7 +26,7 @@ const serverRoot = __dirname;
 const reactRoot = require("path").resolve(serverRoot, "../reactUI/build");
 app.set("view engine", "ejs");
 app.use("/admin", admin);
-app.use("/public", express.static("public/"));
+app.use("/public", express.static(path.resolve(serverRoot, "public")));
 app.use("/lib", express.static("lib"));
 app.use("/queue", queue);
 app.use("/file", file);

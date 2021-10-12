@@ -245,7 +245,7 @@ wss.on("connection", (ws, request) => {
             );
           }
           setUserForWs(ws, luser);
-          ws.quests = await quests.list(user);
+          ws.quests = [];
           send_json_resonse(ws, { quests: quests });
           break;
         case "check-in":
@@ -269,7 +269,7 @@ wss.on("connection", (ws, request) => {
             if (_user.user.uuid !== user.uuid)
               _user.ws.send("stdout: user " + user.username + " arrived");
           });
-          ws.quests = await quests.list(user);
+          // ws.quests = await quests.list(user);
           send_json_resonse(ws, { quests: ws.quests });
           xfs.send_description(cwd, ws);
           xfs.auto_complete_hints(cwd, ws);

@@ -2,8 +2,6 @@ const { Pool, Client } = require("pg");
 
 const Promise = require("promise");
 const uuidv4 = require("uuid/v4");
-console.log(process.env.DATABASE_URL);
-require("dotenv").config();
 
 const client = { query: async (query, args) => [], end: () => {} };
 const db = {
