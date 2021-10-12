@@ -1,5 +1,4 @@
 node_modules
 server/node_modules
-java_1
-desktop
-reactUI/node_modules
+reactUI/node_modules/**/*
+reactUI/build

@@ -3,11 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "bin": {
-    "grepawk-1": "fix_content_type.js"
-  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "cd reactUI && npm i && npm run build && cd ../server && npm i && cd ..",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",

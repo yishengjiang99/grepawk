@@ -1,12 +1,10 @@
-require("dotenv").config();
 const WebSocket = require("ws");
 const HttpRequest = require("request");
 
 const fs = require("fs");
 const path = require("path");
-const port = process.env.ws_port || 8081;
 const wss = new WebSocket.Server({
-  port: port,
+  noServer: true,
 });
 const { exec, spawn } = require("child_process");
 
@@ -386,6 +384,4 @@ wss.on("connection", (ws, request) => {
   });
 });
 
-require("./http.js");
-// require("./readStream.js");
-// require("./writeStream.js");
+module.exports = wss;

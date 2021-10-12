@@ -1,4 +1,3 @@
-require("dotenv").config();
 const express = require("express");
 const db = require("./lib/db");
 const xfs = require("./lib/xfs");

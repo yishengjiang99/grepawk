@@ -6,9 +6,7 @@
     "@fortawesome/fontawesome-svg-core": "^1.2.21",
     "@fortawesome/free-solid-svg-icons": "^5.10.1",
     "@fortawesome/react-fontawesome": "^0.1.4",
-    "@xarc/create-app": "^3.0.4",
     "brace": "^0.11.1",
-    "electrode-redux-router-engine": "^4.0.0",
     "eslint": "^6.8.0",
     "html-to-react": "^1.4.1",
     "moment": "^2.24.0",
@@ -20,10 +18,7 @@
     "react-moment": "^0.9.2",
     "react-scripts": "^3.4.1",
     "react-simple-code-editor": "^0.9.14",
-    "redux": "^4.0.4",
-    "subapp-server": "^1.1.18",
-    "typescript": "^3.6.2",
-    "xclap": "^0.2.51"
+    "redux": "^4.0.4"
   },
   "scripts": {
     "start": "react-scripts start",
