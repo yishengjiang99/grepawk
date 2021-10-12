@@ -6,7 +6,9 @@ import GFileSelector from "./FileExplorer/GFileSelector";
 import BroadcastClient from "./Broadcast/BroadcastClient";
 import Composer from "./FileExplorer/Composer";
 var socket = null;
-const node_ws_url = window.location.href;
+const node_ws_url = `${
+  window.location.protocol.includes("https") ? "wss" : "ws"
+}://${window.location.host}`;
 const redStyle = { color: "red" };
 
 class Terminal extends React.Component {
