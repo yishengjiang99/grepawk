@@ -8,4 +8,3 @@ server.on("upgrade", function upgrade(req, sock, head) {
 });
 
 app.listen(process.env.PORT || 3000);
-require("./server/ws.js").rung;
