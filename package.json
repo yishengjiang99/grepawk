@@ -5,7 +5,14 @@
   "main": "index.js",
   "scripts": {
     "build": "cd server && npm i && cd -",
-    "start": "node index.js"
+    "start": "node index.js",
+    "test": "mocha"
+  },
+  "mocha": {
+    "require": [
+      "test/setup.js"
+    ],
+    "spec": "test/*.spec.js"
   },
   "repository": {
     "type": "git",
@@ -17,5 +24,10 @@
   "bugs": {
     "url": "https://github.com/yishengjiang99/grepawk/issues"
   },
-  "homepage": "https://github.com/yishengjiang99/grepawk#readme"
+  "homepage": "https://github.com/yishengjiang99/grepawk#readme",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "dotenv": "^10.0.0",
+    "uuid": "^8.3.2"
+  }
 }
