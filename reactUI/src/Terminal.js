@@ -144,7 +144,7 @@ class Terminal extends React.Component {
           <div key={"op-" + i}>
             <Table
               clickedCmd={this.stdin}
-              className="table table-dark"
+              // className="table table-dark"
               headers={row.data.headers}
               rows={row.data.rows}
             ></Table>
@@ -192,6 +192,7 @@ class Terminal extends React.Component {
     switch (cmd) {
       case "compose":
         this.setState({ foregroundPid: "compose" });
+        break;
       case "upload":
       case "openimage":
         this.onAddOutputRow({ type: cmd, data: args[0] });

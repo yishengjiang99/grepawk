@@ -293,17 +293,19 @@ const xfs = {
   },
 
   list_containers: function (ws) {
-    var _page_through = function (ws, nextPage) {
+    var _page_through = function (nextPage) {
       blobClient.listContainersSegmented(nextPage, (error, result) => {
-        result.entries.forEach((entry) => {
-          ws.send(xfs.tabular_list_view([entry.lastModified, entry.name]));
-        });
+        result.entries.forEach(
+          (entry) =>
+            ws &&
+            ws.send(xfs.tabular_list_view([entry.lastModified, entry.name]))
+        );
         if (result.continuationToken) {
-          _page_through(ws, result.continuationToken);
+          _page_through(result.continuationToken);
         }
       });
     };
-    _page_through(ws, null);
+    _page_through(null);
   },
   list_virtual_folders: (pwd) => {
     return new Promise((resolve, reject) => {
@@ -347,10 +349,11 @@ const xfs = {
     });
   },
 
-  list_fs_graph_table: async function (parent_node, ws) {
+  list_fs_graph_table: async function (parent_node, ws = null) {
+    console.log("parent_node", parent_node);
     var dbrows = await db.query(
       "select * from fs_graph where parent_node = $1",
-      [parent_node]
+      [parent_node || 0]
     );
     var headers = ["name", "type", "opts"];
     var rows = [];
@@ -479,7 +482,7 @@ const xfs = {
             };
             db.insertTable("fs_graph", columns)
               .then((parent) => {
-                console.log("inserted ", parent);
+                console.log("inserted ", columns);
                 if (stat.isDirectory()) {
                   _init_fs_children(c_path + "/" + item, item, level + 1);
                 }
@@ -538,5 +541,4 @@ function autoImplementedMode(filename) {
 }
 
 xfs.autoImplementedMode = autoImplementedMode;
-//xfs.init_fs_graph();
 module.exports = xfs;

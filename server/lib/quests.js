@@ -69,47 +69,28 @@ const quests = {
       });
   },
 
-  list: async function (user) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const c = await getClient();
-        const res = await c.query(
-          "select quests.* from quests      \
-                               where (pwd is null or pwd = $1)  \
-                                and quests.id not in            \
-                                    (select quest_id            \
-                                     from quest_completion      \
-                                     where uuid = $2            \
-                                     )",
-          [user.cwd, user.uuid]
-        );
-        await c.end();
-        resolve(res.rows);
-      } catch (e) {
-        reject(e);
-      }
-    });
+  list: function (user) {
+    return db.query(
+      "select quests.* from quests      \
+                           where (pwd is null or pwd = $1)  \
+                            and quests.id not in            \
+                                (select quest_id            \
+                                 from quest_completion      \
+                                 where uuid = $2            \
+                                 )",
+      [user.cwd, user.uuid]
+    );
   },
-  list_all: async function (user) {
-    return new Promise(async (resolve, reject) => {
-      try {
-        const c = await getClient();
-        const res = await c.query(
-          "select quests.* from quests      \
-                               where quests.id not in            \
-                                    (select quest_id            \
-                                     from quest_completion      \
-                                     where uuid = $1            \
-                                     )",
-          [user.uuid]
-        );
-        await c.end();
-        resolve(res.rows);
-      } catch (e) {
-        reject(e);
-      }
-    });
-  },
+  list_all: (user) =>
+    db.query(
+      "select quests.* from quests      \
+                         where quests.id not in            \
+                              (select quest_id            \
+                               from quest_completion      \
+                               where uuid = $1            \
+                               )",
+      [user.uuid]
+    ),
 };
 
 var test = async function () {

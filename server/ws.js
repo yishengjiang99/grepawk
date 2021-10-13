@@ -32,7 +32,7 @@ function setUserForWs(ws, user) {
 }
 
 wss.on("connection", (ws, request) => {
-  var user;
+  let user;
   ws.on("message", async (message) => {
     console.log(message);
     try {
@@ -47,8 +47,8 @@ wss.on("connection", (ws, request) => {
         stdin.write(message);
         return;
       }
-      var cwd = user ? root_path + user.cwd : root_path;
-      var containerName = cwd.replace(root_path + "/", "");
+      var cwd = user ? user.cwd : root_path;
+      var containerName = cwd.replace(root_path + "/", "_");
       message = message.trim();
       var t = message.split(" ");
       if (t === "") return;
@@ -250,16 +250,15 @@ wss.on("connection", (ws, request) => {
           break;
         case "check-in":
           const uuid = args[0];
-          user = await db.get_user(
-            uuid,
+          const ip =
             request.headers["x-forwarded-for"] ||
-              request.connection.remoteAddress
-          );
+            request.connection.remoteAddress;
+          user = (await db.get_user(uuid, ip)) || (await db.new_user(uuid));
+          console.log("user", user);
           if (!user) {
             ws.send("stderr: db error");
           }
           setUserForWs(ws, user);
-          cwd = root_path + user.cwd;
           ws.send(
             JSON.stringify({
               userInfo: user,
@@ -269,7 +268,7 @@ wss.on("connection", (ws, request) => {
             if (_user.user.uuid !== user.uuid)
               _user.ws.send("stdout: user " + user.username + " arrived");
           });
-          // ws.quests = await quests.list(user);
+          ws.quests = await quests.list(user);
           send_json_resonse(ws, { quests: ws.quests });
           xfs.send_description(cwd, ws);
           xfs.auto_complete_hints(cwd, ws);
@@ -313,19 +312,17 @@ wss.on("connection", (ws, request) => {
             }
           });
           user.cwd = current_pwd.join("/");
-          cwd = root_path + "/" + user.cwd;
-          db.update_user(user.uuid, "cwd", user.cwd);
           ws.send(
             JSON.stringify({
               userInfo: user,
             })
           );
-          xfs.init_pwd_container_if_neccessary(cwd);
-          xfs.list_files_table(cwd, ws);
+          db.update_user(user.uuid, "cwd", user.cwd);
+          xfs.list_files_table(user.cwd, ws);
           quests.check_quest_completion(message, user, ws);
-          xfs.send_description(cwd, ws);
-          //quests.send_quests(user, ws);
-          //xfs.auto_complete_hints(cwd, ws);
+          xfs.send_description(user.cwd, ws);
+          quests.send_quests(user, ws);
+          xfs.auto_complete_hints(user.cwd, ws);
           break;
         //break;
         case "pwd":
@@ -343,14 +340,13 @@ wss.on("connection", (ws, request) => {
               ws.send("stdout: " + containerName + " created");
             })
             .catch((err) => ws.send("stderr: " + err.message));
+          break;
         case "ls":
           ws.send("You look around in " + cwd);
-
           xfs.send_description(cwd, ws);
-
-          ws.send("You look around in " + cwd);
           xfs.auto_complete_hints(cwd, ws);
           xfs.list_files_table(cwd, ws);
+          break;
         case "echo":
         case "touch":
           console.log(cwd);

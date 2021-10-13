@@ -6,13 +6,16 @@ const pool = new Pool({
     rejectUnauthorized: false,
   },
 });
-
+let client;
 let db = {
   query: (sql, arr) =>
-    pool
-      .query(sql, arr)
-      .then((res) => res.rows)
-      .catch(console.trace),
+    pool.connect().then((client) =>
+      client
+        .query(sql, arr)
+        .then((res) => res.rows)
+        .catch(console.trace)
+        .finally(client.release)
+    ),
   row: (sql, arr) =>
     db.query(sql, arr).then((rows) => (rows.length ? rows[0] : null)),
   close: () => pool.end(),
@@ -21,7 +24,7 @@ let db = {
   },
   listAll: (tableName) => db.query(`select * from ${tableName}`),
   list_table: (tableName, filter, val) =>
-    pool.query(`select * from ${tableName} where $1 = $2`, [filter, val]),
+    db.query(`select * from ${tableName} where $1 = $2`, [filter, val]),
   updateTable: (tableName, id, updates) =>
     db.query(
       `update ${tableName} set ${Object.keys(updates)
@@ -34,22 +37,22 @@ let db = {
     db.query(
       `insert into ${tableName} 
         (${Object.keys(columns).join(",")}) 
-        values (${columns
-          .map((c, idx) => idx + 1)
+        values (${Object.keys(columns)
+          .map((c, idx) => "$" + (idx + 1))
           .join(",")}) on conflict do nothing returning *`,
       Object.values(columns)
     ),
   new_user: (uuid, username) =>
-    db.query(
-      "insert into users (uuid, xp, points, cwd, username) values ( $1, $2, $3, $4,$5) " +
+    db.row(
+      "insert into users (uuid, xp, points, cwd, username) values ( $1, $2, $3, $4, $5) " +
         " returning *",
-      [uuid, 0, 0, "", username]
+      [uuid, 0, 0, "root", username]
     ),
   get_user_cols: (uuid, cols) =>
-    pool.query(`select ${cols.join(",")} from users where uuid = $1`, [uuid]),
-  get_user: (uuid, ip) => db.get_user_cols(uuid, []),
+    db.query(`select ${cols.join(",")} from users where uuid = $1`, [uuid]),
+  get_user: (uuid, ip) => db.row(`select * from users where uuid = $1`, [uuid]),
   update_user: (uuid, attr, val) =>
-    pool.query("update users set " + attr + "=$1 where uuid=$2 returning *", [
+    db.query("update users set " + attr + "=$1 where uuid=$2 returning *", [
       val,
       uuid,
     ]),

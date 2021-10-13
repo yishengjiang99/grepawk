@@ -12,7 +12,7 @@ describe("db", () => {
     const uuid = require("uuid").v4();
     const rrr = await db.new_user(uuid, "a");
 
-    expect(rrr[0].uuid).eq(uuid);
+    expect(rrr.uuid).eq(uuid);
   });
   after(async function () {
     await db.close();
