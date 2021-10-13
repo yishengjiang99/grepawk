@@ -312,6 +312,7 @@ wss.on("connection", (ws, request) => {
             }
           });
           user.cwd = current_pwd.join("/");
+          xfs.send_description(cwd, ws);
           ws.send(
             JSON.stringify({
               userInfo: user,
@@ -320,7 +321,6 @@ wss.on("connection", (ws, request) => {
           db.update_user(user.uuid, "cwd", user.cwd);
           xfs.list_files_table(user.cwd, ws);
           quests.check_quest_completion(message, user, ws);
-          xfs.send_description(user.cwd, ws);
           quests.send_quests(user, ws);
           xfs.auto_complete_hints(user.cwd, ws);
           break;
@@ -342,7 +342,7 @@ wss.on("connection", (ws, request) => {
             .catch((err) => ws.send("stderr: " + err.message));
           break;
         case "ls":
-          ws.send("You look around in " + cwd);
+          ws.send("stdout: You look around in " + cwd);
           xfs.send_description(cwd, ws);
           xfs.auto_complete_hints(cwd, ws);
           xfs.list_files_table(cwd, ws);

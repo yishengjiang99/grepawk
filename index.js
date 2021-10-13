@@ -1,2 +1,2 @@
 require("dotenv").config();
-require("./server.js").start(process.env.PORTgit add);
+require("./server.js").startServer(process.env.PORT || 3000);
