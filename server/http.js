@@ -65,7 +65,8 @@ app.post("/data", async (req, res) => {
 });
 
 app.use("/", express.static(reactRoot));
-console.log(path.join(reactRoot, "static"));
+app.use("/watch", express.static(reactRoot));
+
 app.use("/static", express.static(path.join(reactRoot, "static")));
 
 app.get("/oauth/reddit", function (req, res) {
@@ -125,6 +126,7 @@ app.get("/google_login", function (req, res) {
 app.get("/cb", function (req, res) {
   res.status(200).end("welcome");
 });
+
 app.get("/gauth", function (req, res) {
   var body = {
     code: req.query.code,
