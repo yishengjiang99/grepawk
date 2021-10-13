@@ -12,9 +12,11 @@ let db = {
     pool.connect().then((client) =>
       client
         .query(sql, arr)
-        .then((res) => res.rows)
+        .then((res) => {
+          client.release();
+          return res.rows;
+        })
         .catch(console.trace)
-        .finally(client.release)
     ),
   row: (sql, arr) =>
     db.query(sql, arr).then((rows) => (rows.length ? rows[0] : null)),
@@ -25,12 +27,14 @@ let db = {
   listAll: (tableName) => db.query(`select * from ${tableName}`),
   list_table: (tableName, filter, val) =>
     db.query(`select * from ${tableName} where $1 = $2`, [filter, val]),
-  updateTable: (tableName, id, updates) =>
-    db.query(
+
+  updateTable: (tableName, id, updates, pk = "id") =>
+    console.log(
       `update ${tableName} set ${Object.keys(updates)
         .filter((k) => k != "id")
-        .map((field, idx) => `${field}=${idx + 1}`)}
-        where id=${parseInt(id)}`,
+        .map((field, idx) => `${field}=$${idx + 1}`)
+        .join(", ")} 
+        where ${pk}=${parseInt(id)}`,
       Object.values(updates)
     ),
   insertTable: (tableName, columns) =>
@@ -46,7 +50,7 @@ let db = {
     db.row(
       "insert into users (uuid, xp, points, cwd, username) values ( $1, $2, $3, $4, $5) " +
         " returning *",
-      [uuid, 0, 0, "root", username]
+      [uuid, 0, 0, "", username]
     ),
   get_user_cols: (uuid, cols) =>
     db.query(`select ${cols.join(",")} from users where uuid = $1`, [uuid]),

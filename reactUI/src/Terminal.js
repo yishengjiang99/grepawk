@@ -5,8 +5,11 @@ import Table from "./components/Table";
 import GFileSelector from "./FileExplorer/GFileSelector";
 import BroadcastClient from "./Broadcast/BroadcastClient";
 import Composer from "./FileExplorer/Composer";
-var socket = null;
-const node_ws_url = window.location.origin;
+import { wsRoot } from "./constants";
+import { useChannel } from "./useChannel";
+import { getUUID } from "./APICalls";
+let socket = null;
+
 const redStyle = { color: "red" };
 
 class Terminal extends React.Component {
@@ -28,58 +31,46 @@ class Terminal extends React.Component {
       foregroundPid: null,
       composerPhase: "root",
     };
+    this.onMsg.bind(this);
+    this.parseAPIResponse.bind(this);
   }
 
-  initSocket = () => {
-    return new Promise((resolve, reject) => {
-      this.onAddOutputRow({ type: "text", data: "Initializing connection" });
-
-      if (socket && socket.readyState === WebSocket.OPEN) {
-        resolve();
-        return;
+  initSocket() {
+    this.onAddOutputRow({ type: "text", data: "Init.." + wsRoot });
+    socket = new WebSocket(wsRoot);
+    socket.onopen = (e) => {
+      this.onAddOutputRow({ type: "text", data: "CONNECTED" });
+      socket.onmessage = this.onMsg;
+      socket.send("check-in " + this.state.uuid);
+    };
+  }
+  onMsg = (e) => {
+    if (!e.data) return;
+    if (typeof e.data === "object") {
+      var image = new Image();
+      image.src = URL.createObjectURL(e.data);
+      this.onAddOutputRow({ type: "image", data: image });
+    } else if (e.data.startsWith("stdout: ")) {
+      var stdout = e.data.replace("stdout: ", "");
+      this.onAddOutputRow({ type: "text", data: stdout });
+    } else if (e.data.startsWith("stderr: ")) {
+      var stdout = e.data.replace("stderr: ", "");
+      this.onAddOutputRow({ type: "text", data: stdout });
+    } else {
+      try {
+        const jsonObj = JSON.parse(e.data);
+        this.parseAPIResponse(jsonObj);
+      } catch (e) {
+        this.onAddOutputRow({ type: "text", data: stdout });
       }
-      if (socket && socket.readyState === WebSocket.CONNECTING) {
-        this.onAddOutputRow({ type: "text", data: "Connecting.." });
-        resolve();
-        return;
-      }
-      socket = new WebSocket(node_ws_url);
-      socket.onopen = (e) => {
-        clearTimeout(timeoutId);
-        this.onAddOutputRow({ type: "text", data: "CONNECTED" });
-
-        socket.send("check-in " + this.state.uuid);
-        resolve();
-      };
-      socket.onmessage = (event) => {
-        if (typeof event.data === "object") {
-          var image = new Image();
-          image.src = URL.createObjectURL(event.data);
-          this.onAddOutputRow({ type: "image", data: image });
-        } else if (event.data && event.data.startsWith("stdout: ")) {
-          var stdout = event.data.replace("stdout: ", "");
-          this.onAddOutputRow({ type: "text", data: stdout });
-        } else if (event.data && event.data.startsWith("stderr: ")) {
-          var stdout = event.data.replace("stderr: ", "");
-          this.onAddOutputRow({ type: "text", data: stdout });
-        } else {
-          this.parseAPIResponse(JSON.parse(event.data));
-        }
-      };
-      var timeoutId = setTimeout(() => {
-        if (socket.readyState !== WebSocket.OPEN) {
-          this.onAddOutputRow({ type: "stderr", data: "Connection timed out" });
-
-          // reject(new Error("connection timed outt"));
-        }
-      }, 5000);
-    });
+    }
   };
-  onAddOutputRow = (row) => {
+  onAddOutputRow(row) {
     const list = this.state.output_rows.concat(row);
     this.setState({ output_rows: list });
-  };
-  parseAPIResponse = (data) => {
+  }
+
+  parseAPIResponse(data) {
     if (data.stdout) {
       this.onAddOutputRow({ type: "text", data: data.stdout });
     }
@@ -100,10 +91,10 @@ class Terminal extends React.Component {
     if (data.hint) {
       //todo
     }
-  };
+  }
 
-  async componentDidMount() {
-    await this.initSocket();
+  componentDidMount() {
+    this.initSocket();
   }
 
   onBroadcastEvent = (evt) => {
@@ -167,15 +158,15 @@ class Terminal extends React.Component {
         break;
     }
   };
-  keyboardLoaded = (e) => {
+  keyboardLoaded(e) {
     e.target.focus();
-  };
-  windowLoaded = (e) => {
+  }
+  windowLoaded(e) {
     document.getElementsByClassName("terminal-body").scrollTo(0, 100);
     e.target.offsetHeight = 1000;
-  };
+  }
 
-  locallyProcessed = (cmd_str) => {
+  locallyProcessed(cmd_str) {
     if (!cmd_str) return false;
 
     var t = cmd_str.split(" ");
@@ -209,7 +200,7 @@ class Terminal extends React.Component {
       default:
         return false;
     }
-  };
+  }
   stdin = (cmd) => {
     this.onAddOutputRow({ type: "stdin", cmd });
     if (!this.locallyProcessed(cmd)) {
@@ -229,12 +220,11 @@ class Terminal extends React.Component {
     }
   };
 
-  renderInputBar = () => {
+  renderInputBar() {
     const stdinPromptString = this.state.foregroundPid || "";
     return (
       <div className="input-line">
         <div id="stdin-prompt" className="prompt">
-          {" "}
           {stdinPromptString}>{" "}
         </div>
         <input
@@ -248,7 +238,7 @@ class Terminal extends React.Component {
         />
       </div>
     );
-  };
+  }
 
   clickOnTerminal = (e) => {
     document.getElementById("terminal_input").focus();
@@ -295,26 +285,4 @@ class Terminal extends React.Component {
   };
 }
 
-function generateUUID() {
-  // Public Domain/MIT
-  var d = new Date().getTime();
-  if (
-    typeof performance !== "undefined" &&
-    typeof performance.now === "function"
-  ) {
-    d += performance.now(); //use high-precision timer if available
-  }
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
-    var r = (d + Math.random() * 16) % 16 | 0;
-    d = Math.floor(d / 16);
-    return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
-  });
-}
-function getUUID() {
-  var uuid = localStorage.getItem("uuid");
-  if (uuid) return uuid;
-
-  uuid = generateUUID();
-  localStorage.setItem("uuid", uuid);
-}
 export default Terminal;

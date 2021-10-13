@@ -15,42 +15,57 @@ import * as API from "./APICalls";
 import Composer from "./FileExplorer/Composer";
 
 class Desktop extends React.Component {
-  state = {
-    processes: [],
-    // processes:[{name:"tty", state:"on"}],
-    userInfo: { name: "guest", xp: 0, gold: 0 },
-    quests: [],
-    icons: [
-      { name: "folder", title: "Local Files", cmd: "finder", args: ["chrome"] },
-      { name: "folder", title: "Public Files", cmd: "finder", args: ["azure"] },
-      {
-        name: "folder",
-        title: "Content Market",
-        cmd: "finder",
-        args: ["market"],
-      },
-      // {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
-      // {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
-      { name: "terminal", title: "terminal", cmd: "tty", args: [] },
-      { name: "broadcast-tower", title: "Broadcast", cmd: "stream", args: [] },
-      {
-        name: "play-circle",
-        title: "Watch Hearthstone",
-        cmd: "watch",
-        args: ["r5rogue"],
-      },
-      {
-        name: "shipping-fast",
-        title: "Write Javascript",
-        cmd: "compose",
-        args: ["javascript"],
-      },
-    ],
-    files: [],
-  };
   constructor(props) {
     super(props);
     this.ipc = this.ipc.bind(this);
+    this.state = {
+      processes: [],
+      // processes:[{name:"tty", state:"on"}],
+      userInfo: { name: "guest", xp: 0, gold: 0 },
+      quests: [],
+      icons: [
+        {
+          name: "folder",
+          title: "Local Files",
+          cmd: "finder",
+          args: ["chrome"],
+        },
+        {
+          name: "folder",
+          title: "Public Files",
+          cmd: "finder",
+          args: ["azure"],
+        },
+        {
+          name: "folder",
+          title: "Content Market",
+          cmd: "finder",
+          args: ["market"],
+        },
+        // {name:"folder",     title:"Dropbox Files",    cmd:"finder", args:["dropbox"]},
+        // {name:"folder",     title:"Facebook Files",    cmd:"finder", args:["fb"]},
+        { name: "terminal", title: "terminal", cmd: "tty", args: [] },
+        {
+          name: "broadcast-tower",
+          title: "Broadcast",
+          cmd: "stream",
+          args: [],
+        },
+        {
+          name: "play-circle",
+          title: "Watch Hearthstone",
+          cmd: "watch",
+          args: ["r5rogue"],
+        },
+        {
+          name: "shipping-fast",
+          title: "Write Javascript",
+          cmd: "compose",
+          args: ["javascript"],
+        },
+      ],
+      files: [],
+    };
   }
 
   componentDidMount() {

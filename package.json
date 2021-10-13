@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "cd server && npm i && cd -",
-    "start": "node index.js",
-    "test": "mocha"
+    "start": "nodemon --watch *.js,server/**/*.js",
+    "test": "mocha --check-leaks"
   },
   "mocha": {
     "require": [

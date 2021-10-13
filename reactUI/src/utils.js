@@ -1,23 +1,3 @@
-import { apiRoot } from "./constants";
-var API = {};
-
-export function api_post_json(uri, data) {
-  return fetch(`${apiRoot}${uri}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    cache: "no-cache",
-    body: JSON.stringify(data),
-  }).then((resp) => resp.json());
-}
-
-export function api_get_json(uri) {
-  return fetch(`${apiRoot}${uri}`, {
-    method: "GET",
-    headers: { accept: "application/json" },
-  }).then((resp) => resp.json());
-}
 export function generateUUID() {
   // Public Domain/MIT
   var d = new Date().getTime();
@@ -35,7 +15,8 @@ export function generateUUID() {
 }
 export function getUUID() {
   var uuid = localStorage.getItem("uuid");
-  if (uuid && uuid !== "undefined") return uuid;
+  if (uuid) return uuid;
+
   uuid = generateUUID();
   localStorage.setItem("uuid", uuid);
 }

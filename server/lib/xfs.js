@@ -17,6 +17,7 @@ function get_container_name(pwd) {
   var str = pwd.replace(vfs_root, "");
   str = str.replace(/\//g, "");
   str = str || "root";
+  console.log(strcd);
   return str;
 }
 function init_pwd_container_if_neccessary(pwd) {
@@ -350,50 +351,25 @@ const xfs = {
   },
 
   list_fs_graph_table: async function (parent_node, ws = null) {
-    console.log("parent_node", parent_node);
+    let retRows = [];
     var dbrows = await db.query(
       "select * from fs_graph where parent_node = $1",
       [parent_node || 0]
     );
     var headers = ["name", "type", "opts"];
-    var rows = [];
-    if (dbrows) {
-      dbrows.forEach((row) => {
-        var retrow = {
-          name: row.name,
-          type: row.type,
-          opts: [],
-        };
-
-        if (row.type == "dir") {
-          retrow.opts.push({
-            cmd: "cd " + row.name,
-            desc: "open",
-          });
-        } else {
-          retrow.opts.push({
-            cmd: "cat " + row.name,
-            desc: "read",
-          });
-        }
-        rows.push(retrow);
-      });
-      var json = {
-        headers: headers,
-        rows: rows,
-      };
-
-      ws.send(
-        JSON.stringify({
-          table: json,
-        })
-      );
-    }
+    return {
+      headers,
+      rows: dbrows.map((row) => ({
+        name: row.name,
+        type: row.type,
+        opts: [row.type == "dir" ? "open" : "read"],
+      })),
+    };
   },
   list_files_table: async (pwd, ws) => {
     try {
       let containerName = get_container_name(pwd);
-      xfs.list_fs_graph_table(containerName, ws);
+      xfs.list_fs_graph_table(pwd, ws);
       if (containerName == "root") return;
       var rows = await xfs.list_virtual_folders(pwd);
       var azfiles = await xfs.list_files(containerName);
@@ -464,54 +440,43 @@ const xfs = {
     });
   },
   init_fs_graph: async function () {
-    var _init_fs_children = async function (c_path, parent_name, level) {
+    async function _init_fs_children(c_path, level) {
       try {
-        fs.readdir(c_path, function (err, items) {
-          if (!items) {
-            console.log("reached leaf at " + c_path);
-            return;
+        const items = fs.readdirSync(path.resolve(vfs_root, c_path));
+
+        while (items.length) {
+          const item = items.shift();
+          const itemPath = path.join(c_path, item);
+          const stat = fs.statSync(path.join(vfs_root, itemPath)); //, { cwd: vfs_root });
+          let columns = {
+            name: item,
+            parent_node: c_path,
+            type: stat.isDirectory() ? "dir" : "file",
+            uri: itemPath,
+            level: level,
+          };
+          console.log(columns);
+          await db.insertTable("fs_graph", columns);
+          if (stat.isDirectory()) {
+            _init_fs_children(itemPath, level + 1);
           }
-          items.forEach(async function (item) {
-            const stat = fs.statSync(c_path + "/" + item);
-            let columns = {
-              name: item,
-              parent_node: parent_name,
-              type: stat.isDirectory() ? "dir" : "file",
-              uri: (c_path + "/" + item).replace(vfs_root, ""),
-              level: level,
-            };
-            db.insertTable("fs_graph", columns)
-              .then((parent) => {
-                console.log("inserted ", columns);
-                if (stat.isDirectory()) {
-                  _init_fs_children(c_path + "/" + item, item, level + 1);
-                }
-              })
-              .catch((e) => {
-                console.log(e);
-              });
-          });
-        });
+        }
       } catch (e) {
         console.log(e);
       }
-    };
+    }
 
     let root = {
-      name: "root",
+      name: "",
       type: "root",
       description: "root dir",
-      uri: "/",
+      uri: "",
       level: 0,
     };
 
     db.insertTable("fs_graph", root)
-      .then((parent) => {
-        _init_fs_children(vfs_root, root.name, 1);
-      })
-      .catch((e) => {
-        console.log(e);
-      });
+      .then((parent) => _init_fs_children("", 1))
+      .catch(console.trace);
   },
 };
 
