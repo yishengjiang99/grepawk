@@ -1,21 +1,11 @@
-const { Pool, Client } = require("pg");
 const db = require("./db");
-
-const getClient = async function () {
-  const client = new Client({
-    connectionString: process.env.PG_CONNNECTION_STRING,
-  });
-  await client.connect();
-  return client;
-};
 
 const mark_quest_complete = async function (user, quest) {
   return new Promise(async (resolve, reject) => {
     try {
-      const c = await getClient();
-      await c.query(
+      await db.query(
         "insert into quest_completion (uuid, quest_id) \
-                         values ($1,$2)",
+                         values ($1,$2) returning * ",
         [user.uuid, quest.id]
       );
 
