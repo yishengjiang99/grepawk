@@ -9,7 +9,7 @@ router.get("/checkin", async function (req, res) {
     return;
   }
   try {
-    const user = await db.get_user(uuid, "123");
+    const user = (await db.get_user(uuid, "..")) || (await db.new_user(uuid));
     res.json(user);
   } catch (e) {
     console.trace(e);
