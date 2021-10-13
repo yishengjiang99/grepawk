@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "build": "cd server && npm i && cd -",
-    "start": "nodemon --watch *.js,server/**/*.js",
+    "dev": "nodemon --watch *.js,server/**/*.js",
+    "start": "node index.js",
     "test": "mocha --check-leaks"
   },
   "mocha": {
