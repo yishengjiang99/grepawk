@@ -62,7 +62,6 @@ class Desktop extends React.Component {
         this.ipc(xpath[0], xpath.splice(1));
       }
     } else if (window.location.search) {
-      debugger;
       var t = window.location.search.replace("?", "").split("/");
       const cmd = t[0];
       const args = t.splice(1);

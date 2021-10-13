@@ -1,4 +1,4 @@
-const NODE_API_HOSTNAME = process.env.API_HOST || window.location.hostname;
+const NODE_API_HOSTNAME = process.env.API_HOST || window.location.href;
 var API = {};
 
 export function api_post_json(uri, data) {
