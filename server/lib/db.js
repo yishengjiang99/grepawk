@@ -2,6 +2,7 @@ const { Pool, Client } = require("pg");
 
 const Promise = require("promise");
 const uuidv4 = require("uuid/v4");
+const client = Client({ connectionString: process.env.DATA_URL || "" });
 
 const client = { query: async (query, args) => [], end: () => {} };
 const db = {

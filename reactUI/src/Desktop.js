@@ -71,7 +71,7 @@ class Desktop extends React.Component {
       this.ipc("tty", []);
     }
     const uuid = API.getUUID();
-    API.api_get_json("/checkin?uuid=" + uuid)
+    API.api_get_json("/api/checkin?uuid=" + uuid)
       .then((_userInfo) => {
         this.setState({ userInfo: _userInfo });
       })

@@ -1,25 +1,27 @@
-const formidable = require('formidable')
-var express = require('express');
+const formidable = require("formidable");
+var express = require("express");
 var router = express.Router();
 const db = require("../lib/db");
 const xfs = require("../lib/xfs");
 const path = require("path");
 const request = require("request");
 const mime = require("mime-types");
-const { PassThrough } = require('stream')
-
-
+const { PassThrough } = require("stream");
 
 router.get("/azure", async function (req, res) {
   const path = req.query.path || "data/file.txt";
   var parts = path.split("/");
-  xfs.blob_get_content(parts[0], parts[1], function (err) {
-    res.status(500).send(err.message);
-  }, function (content) {
-    res.end(content);
-  });
+  xfs.blob_get_content(
+    parts[0],
+    parts[1],
+    function (err) {
+      res.status(500).send(err.message);
+    },
+    function (content) {
+      res.end(content);
+    }
+  );
 });
-
 
 router.get("/market/list", async function (req, res) {
   const tagQuery = req.query.tag;
@@ -36,25 +38,35 @@ router.get("/market/list", async function (req, res) {
       rows = await db.query(
         "select content_listing.* \
          from content_listing join content_list_tags on content_listing.id=list_id \
-         where tag = $1 order by $2 " + order + " limit $3 offset $4", [tagQuery, orderBy, limit, offset])
+         where tag = $1 order by $2 " +
+          order +
+          " limit $3 offset $4",
+        [tagQuery, orderBy, limit, offset]
+      );
     } else if (titleQuery) {
       rows = await db.query(
         "select content_listing.* \
          from content_listing \
-         where title ilike $1 order by $2 " + order + " limit $3 offset $4",
-        ["%" + titleQuery + "%", orderBy, limit, offset]);
+         where title ilike $1 order by $2 " +
+          order +
+          " limit $3 offset $4",
+        ["%" + titleQuery + "%", orderBy, limit, offset]
+      );
     } else {
       rows = await db.query(
         "select content_listing.* \
          from content_listing \
-         order by $1 " + order + "  limit $2 offset $3",
-        [orderBy, limit, offset]);
+         order by $1 " +
+          order +
+          "  limit $2 offset $3",
+        [orderBy, limit, offset]
+      );
     }
     var nodes = [];
     var edges = {};
     nodes.push({
       id: 0,
-      name: 'root'
+      name: "root",
     });
     edges[0] = [];
     rows.forEach((row, idx) => {
@@ -62,17 +74,17 @@ router.get("/market/list", async function (req, res) {
         id: nodes.length,
         name: row.title,
         modificationTime: row.updated_at || row.created_at,
-        pricing: row.pricing
+        pricing: row.pricing,
       });
       edges[0].push(idx);
-    })
+    });
     res.json([nodes, edges]);
   } catch (e) {
     res.status(500).end(e.message);
   }
 });
 router.post("/azure/upload", function (req, res) {
-  try{
+  try {
     var path = req.query.basepath;
 
     const parts = path.split("/");
@@ -81,32 +93,35 @@ router.post("/azure/upload", function (req, res) {
     }
 
     const containerName = parts[1] || "data";
-    const fileName = parts[2] || req.headers['x-file-name'] || "file.txt";
-    const size = req.headers['x-file-size'];
-    console.log("file", fileName, containerName,size);
+    const fileName = parts[2] || req.headers["x-file-name"] || "file.txt";
+    const size = req.headers["x-file-size"];
+    console.log("file", fileName, containerName, size);
     var pass = new PassThrough();
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
 
     res.write("started upload<br>");
 
-    var speedsummary = xfs.blobClient.createBlockBlobFromStream(containerName, fileName, pass, size,
-        (err, result)=>{
-          if(err) res.end(err.message);
-          else res.write("writing "+fileName);
-        }
-   );
-  
-  
-   speedsummary.on("progress", (e)=>{
-     console.log(speedsummary);
-     var prog = speedsummary.getCompletePercent();
-     res.write(fileName+": "+prog+"<br>");
-     res.flush();
-     if(prog>99) res.end(`uploaded: azure/${containerName}/${fileName}`);
-   }) 
-   req.pipe(pass);
-  }catch(e){
-    console.log("EERROR",e);
+    var speedsummary = xfs.blobClient.createBlockBlobFromStream(
+      containerName,
+      fileName,
+      pass,
+      size,
+      (err, result) => {
+        if (err) res.end(err.message);
+        else res.write("writing " + fileName);
+      }
+    );
+
+    speedsummary.on("progress", (e) => {
+      console.log(speedsummary);
+      var prog = speedsummary.getCompletePercent();
+      res.write(fileName + ": " + prog + "<br>");
+      res.flush();
+      if (prog > 99) res.end(`uploaded: azure/${containerName}/${fileName}`);
+    });
+    req.pipe(pass);
+  } catch (e) {
+    console.log("EERROR", e);
   }
 });
 
@@ -116,7 +131,7 @@ router.get("/azure/list", async function (req, res) {
   var edges = {};
   nodes.push({
     id: 0,
-    name: 'root'
+    name: "root",
   });
   edges[0] = [];
   let containers = await xfs.list_containers2();
@@ -128,8 +143,8 @@ router.get("/azure/list", async function (req, res) {
       id: nodes.length,
       fullPath: "az/" + container,
       isDirectory: true,
-      type: "dir"
-    }
+      type: "dir",
+    };
     nodes.push(parent);
     edges[0].push(parent.id);
     edges[parent.id] = [];
@@ -141,8 +156,8 @@ router.get("/azure/list", async function (req, res) {
         name: file.name,
         type: file.contentSettings.contentType,
         isDirectory: false,
-        fullPath: "azure/" + parent.name + "/" + file.name
-      }
+        fullPath: "azure/" + parent.name + "/" + file.name,
+      };
       nodes.push(node);
       edges[parent.id].push(node.id);
     }
@@ -152,16 +167,16 @@ router.get("/azure/list", async function (req, res) {
 
 router.post("/publish", function (req, res) {
   res.json({
-    'status': 'ok'
+    status: "ok",
   });
 });
 
 router.get("/", async function (req, res) {
   res.json(await db.query("select * from fs_graph where type='dir'"));
-})
+});
 
 router.get("/edit", function (req, res, next) {
-  if (req.query.mode == 'new') {
+  if (req.query.mode == "new") {
     var filename = req.query.filename;
     var fileMode = xfs.autoImplementedMode(filename);
 
@@ -171,8 +186,8 @@ router.get("/edit", function (req, res, next) {
     data = {
       text: "",
       mode: fileMode,
-      context: context
-    }
+      context: context,
+    };
     res.render("editor", data);
   } else {
     if (!req.query.url) {
@@ -190,16 +205,15 @@ router.get("/edit", function (req, res, next) {
         url: req.query.url,
         text: body,
         mode: mode,
-        context: req.query.context
-      }
+        context: req.query.context,
+      };
       res.render("editor", data);
-    })
+    });
   }
-
 });
 
 router.post("/edit", function (req, res, next) {
-  var context = req.headers['x-context'];
+  var context = req.headers["x-context"];
   var t = context.split("/");
   if (t.length < 2) {
     res.status(400).send("invalid context header");
@@ -214,18 +228,20 @@ router.post("/edit", function (req, res, next) {
       res.end();
     }
     console.log(fields.text);
-    xfs.edit_file(containerName, blobName, fields.text).then(function (result) {
-      console.log(result);
-      res.end("ok");
-    }).catch(err => {
-      console.log(error);
-      res.status(400).send(err.message);
-      res.end("bad");
-    })
+    xfs
+      .edit_file(containerName, blobName, fields.text)
+      .then(function (result) {
+        console.log(result);
+        res.end("ok");
+      })
+      .catch((err) => {
+        console.log(error);
+        res.status(400).send(err.message);
+        res.end("bad");
+      });
   });
-
 });
 
-router.post('/upload', xfs.upload_handler);
+router.post("/upload", xfs.upload_handler);
 
 module.exports = router;
