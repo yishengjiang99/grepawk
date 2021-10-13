@@ -8,7 +8,7 @@ import Composer from "./FileExplorer/Composer";
 var socket = null;
 const node_ws_url = `${
   window.location.protocol.includes("https") ? "wss" : "ws"
-}://${window.location.host}`;
+}://${window.location.hostname}:${process.env.PORT || 3000}`;
 const redStyle = { color: "red" };
 
 class Terminal extends React.Component {

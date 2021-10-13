@@ -23,7 +23,7 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "test": "react-scripts test",
+    "test": "API_HOST=http://localhost:3000 react-scripts test",
     "eject": "react-scripts eject"
   },
   "eslintConfig": {

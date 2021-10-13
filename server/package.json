@@ -49,5 +49,8 @@
     "ws": "^7.1.0",
     "youtube-dl": "^2.0.0",
     "ytdl-core": "^0.29.5"
+  },
+  "devDependencies": {
+    "mocha": "^9.1.2"
   }
 }

@@ -1,9 +1,9 @@
-const NODE_API_HOSTNAME = "";
+const NODE_API_HOSTNAME = process.env.API_HOST || window.location.hostname;
 var API = {};
 
-API.api_post_json = function (uri, data) {
+export function api_post_json(uri, data) {
   return new Promise((resolve, reject) => {
-    var url = NODE_API_HOSTNAME + "/api" + uri;
+    var url = NODE_API_HOSTNAME + uri;
     fetch(url, {
       method: "POST",
       headers: {
@@ -16,21 +16,15 @@ API.api_post_json = function (uri, data) {
       .then(resolve)
       .catch(reject);
   });
-};
+}
 
-API.api_get_json = function (uri) {
-  return new Promise((resolve, reject) => {
-    var url = NODE_API_HOSTNAME + "/api" + uri;
-    fetch(url, {
-      method: "GET",
-    })
-      .then((resp) => resp.json())
-      .then(resolve)
-      .catch(reject);
-  });
-};
-
-API.generateUUID = function () {
+export function api_get_json(uri) {
+  return fetch(NODE_API_HOSTNAME + uri, {
+    method: "GET",
+    headers: { accept: "application/json" },
+  }).then((resp) => resp.json());
+}
+export function generateUUID() {
   // Public Domain/MIT
   var d = new Date().getTime();
   if (
@@ -44,11 +38,10 @@ API.generateUUID = function () {
     d = Math.floor(d / 16);
     return (c === "x" ? r : (r & 0x3) | 0x8).toString(16);
   });
-};
-API.getUUID = function () {
+}
+export function getUUID() {
   var uuid = localStorage.getItem("uuid");
   if (uuid && uuid !== "undefined") return uuid;
-  uuid = API.generateUUID();
+  uuid = generateUUID();
   localStorage.setItem("uuid", uuid);
-};
-export default API;
+}

@@ -170,7 +170,7 @@ class SearchBar extends React.Component {
               this.updateAutoSuggest(e.target.value);
             }
           }}
-          placeHolder={
+          placeholder={
             this.state.isTyping ? "type query" : "are you feeling lucky?"
           }
           className="form-control"
